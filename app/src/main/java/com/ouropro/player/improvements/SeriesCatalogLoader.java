@@ -15,9 +15,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/** Carrega o catálogo real de séries por categoria, sem aceitar uma resposta parcial global. */
+/** Carrega o catálogo de séries preservando o caminho global do APK original e usando categorias como fallback. */
 public final class SeriesCatalogLoader {
-    private static final int MAX_IN_FLIGHT = 4;
+    private static final int MAX_IN_FLIGHT = 8;
+    private static final int MIN_COMPLETE_CATALOG = 100;
 
     public interface Listener {
         void onComplete(List<SeriesModel> models, List<CategoryModel> categories);
@@ -28,12 +29,32 @@ public final class SeriesCatalogLoader {
     }
 
     public static void load(APIService api, String username, String password, Listener listener) {
+        // O APK original usava esta rota e, para a maioria dos servidores, ela é a mais rápida.
+        api.get_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
+                List<SeriesModel> body = response.body();
+                if (response.isSuccessful() && body != null && body.size() >= MIN_COMPLETE_CATALOG) {
+                    listener.onComplete(body, new ArrayList<>());
+                    return;
+                }
+                loadByCategories(api, username, password, listener, body);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
+                loadByCategories(api, username, password, listener, null);
+            }
+        });
+    }
+
+    private static void loadByCategories(APIService api, String username, String password, Listener listener, List<SeriesModel> partialGlobal) {
         api.get_series_categories(username, password).enqueue(new Callback<List<CategoryModel>>() {
             @Override
             public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                 List<CategoryModel> categories = response.body();
                 if (!response.isSuccessful() || categories == null || categories.isEmpty()) {
-                    loadGlobalFallback(api, username, password, listener, "O servidor não retornou categorias de séries");
+                    failOrKeepPartial(listener, partialGlobal, "O servidor retornou apenas um subconjunto de séries e não forneceu categorias");
                     return;
                 }
                 List<CategoryModel> validCategories = new ArrayList<>();
@@ -43,41 +64,22 @@ public final class SeriesCatalogLoader {
                     }
                 }
                 if (validCategories.isEmpty()) {
-                    loadGlobalFallback(api, username, password, listener, "As categorias de séries não possuem IDs válidos");
+                    failOrKeepPartial(listener, partialGlobal, "As categorias de séries não possuem IDs válidos");
                     return;
                 }
-                loadCategories(api, username, password, validCategories, listener);
+                new LoaderState(api, username, password, validCategories, partialGlobal, listener).start();
             }
 
             @Override
             public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable throwable) {
-                loadGlobalFallback(api, username, password, listener, "Falha ao consultar categorias de séries");
+                failOrKeepPartial(listener, partialGlobal, "Falha ao consultar categorias de séries");
             }
         });
     }
 
-    private static void loadCategories(APIService api, String username, String password, List<CategoryModel> categories, Listener listener) {
-        LoaderState state = new LoaderState(api, username, password, categories, listener);
-        state.start();
-    }
-
-    private static void loadGlobalFallback(APIService api, String username, String password, Listener listener, String reason) {
-        api.get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
-                List<SeriesModel> body = response.body();
-                if (response.isSuccessful() && body != null && !body.isEmpty()) {
-                    listener.onComplete(body, new ArrayList<>());
-                } else {
-                    listener.onFailure(reason);
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
-                listener.onFailure(reason);
-            }
-        });
+    private static void failOrKeepPartial(Listener listener, List<SeriesModel> partialGlobal, String message) {
+        // Não entrega uma lista parcial como se fosse completa. O chamador preserva o cache existente.
+        listener.onFailure(message);
     }
 
     private static final class LoaderState {
@@ -85,17 +87,19 @@ public final class SeriesCatalogLoader {
         private final String username;
         private final String password;
         private final List<CategoryModel> categories;
+        private final List<SeriesModel> partialGlobal;
         private final Listener listener;
         private final Map<String, SeriesModel> models = new LinkedHashMap<>();
         private int nextIndex;
         private int active;
         private int finished;
 
-        private LoaderState(APIService api, String username, String password, List<CategoryModel> categories, Listener listener) {
+        private LoaderState(APIService api, String username, String password, List<CategoryModel> categories, List<SeriesModel> partialGlobal, Listener listener) {
             this.api = api;
             this.username = username;
             this.password = password;
             this.categories = categories;
+            this.partialGlobal = partialGlobal;
             this.listener = listener;
         }
 
@@ -150,10 +154,10 @@ public final class SeriesCatalogLoader {
                 launchNext();
             }
             if (finished >= categories.size() && active == 0) {
-                if (models.isEmpty()) {
-                    listener.onFailure("Nenhuma série foi retornada pelas categorias");
-                } else {
+                if (models.size() >= MIN_COMPLETE_CATALOG) {
                     listener.onComplete(new ArrayList<>(models.values()), categories);
+                } else {
+                    listener.onFailure("O servidor retornou apenas " + models.size() + " séries nas categorias");
                 }
             }
         }

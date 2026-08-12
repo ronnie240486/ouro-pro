@@ -26,7 +26,7 @@ As preferências passaram a ser abertas por `SecurePreferenceStore`, usando Andr
 
 O **comando de voz** agora usa um ícone de microfone na tela principal, nos canais mobile/TV, filmes e séries. Ele aceita títulos sem prefixo obrigatório, como “Esqueceram de Mim”, e frases como “abrir Space HD”. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no microfone, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
 
-A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm. Quando a tela encontra menos de 100 séries, ela consulta as categorias reais e agrega as respostas por `category_id`, em vez de aceitar o conjunto parcial global. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md), [`docs/series-voice-recovery.md`](docs/series-voice-recovery.md) e [`docs/series-category-cache.md`](docs/series-category-cache.md).
+A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm. Quando a tela encontra menos de 100 séries, ela consulta as categorias reais e agrega as respostas por `category_id`, em vez de aceitar o conjunto parcial global. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md), [`docs/series-voice-recovery.md`](docs/series-voice-recovery.md), [`docs/series-category-cache.md`](docs/series-category-cache.md) e [`docs/original-flow-fix.md`](docs/original-flow-fix.md).
 
 ## Estrutura
 
@@ -45,7 +45,7 @@ improvements/            Backlog de melhorias planejadas
 
 É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
 
-O instalador desta correção é `artifacts/OuroPro6.4-series-category-cache-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, usa `versionName=6.4`, abre a Home a partir do cache local e carrega séries por categoria em segundo plano quando o catálogo possui menos de 100 itens. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
+O instalador desta correção é `artifacts/OuroPro6.4-original-flow-fix-debug.apk`. Ele restaura o caminho global do APK original quando a resposta é completa, usa categorias reais apenas quando a resposta é parcial, abre a Home pelo cache local sem exigir consulta remota e grava séries em segundo plano. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

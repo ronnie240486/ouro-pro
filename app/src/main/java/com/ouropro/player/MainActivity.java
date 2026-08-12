@@ -199,9 +199,6 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
 
     private boolean hasUsableLocalCatalog() {
         try {
-            if (this.preferenceHelper.getSharedPreferenceServerUrl().trim().isEmpty()) {
-                return false;
-            }
             return this.realm.where(MovieModel.class).count() > 0
                     || this.realm.where(EPGChannel.class).count() > 0
                     || this.realm.where(SeriesModel.class).count() > 0;
