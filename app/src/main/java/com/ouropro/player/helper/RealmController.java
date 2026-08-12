@@ -252,12 +252,12 @@ public class RealmController {
     }
 
     public RealmResults<EPGChannel> getLiveChannelsByKey(String str, boolean z) {
+        String query = str == null ? "" : str.toLowerCase(Locale.ROOT);
+        RealmQuery<EPGChannel> result = this.realm.where(EPGChannel.class).contains("name", query, Case.INSENSITIVE);
         if (!z) {
-            return this.realm.where(EPGChannel.class).contains("name", str.toLowerCase(Locale.ROOT), Case.INSENSITIVE).notEqualTo("category_id", Constants.xxx_live_categories.size() > 0 ? Constants.xxx_live_categories.get(0) : "").findAll();
+            return result.notEqualTo("category_id", Constants.xxx_live_categories.size() > 0 ? Constants.xxx_live_categories.get(0) : "").findAll();
         }
-        RealmQuery realmQueryNot = this.realm.where(EPGChannel.class).contains("name", str.toLowerCase(Locale.ROOT)).not();
-        Case r4 = Case.INSENSITIVE;
-        return realmQueryNot.contains("category_name", "xxx", r4).not().contains("category_name", "adult", r4).not().contains("category_name", "porn", r4).findAll();
+        return result.findAll();
     }
 
     public MovieModel getMovieById(String str) {
@@ -325,13 +325,13 @@ public class RealmController {
     }
 
     public RealmResults<MovieModel> getMoviesByKey(String str, boolean z) {
-        String str2 = z ? "category_name" : "category_id";
+        String query = str == null ? "" : str.toLowerCase(Locale.ROOT);
+        String categoryField = z ? "category_name" : "category_id";
+        RealmQuery<MovieModel> result = this.realm.where(MovieModel.class).contains("name", query, Case.INSENSITIVE);
         if (!z) {
-            return this.realm.where(MovieModel.class).contains("name", str.toLowerCase(Locale.ROOT), Case.INSENSITIVE).notEqualTo("category_id", Constants.xxx_vod_categories.size() > 0 ? Constants.xxx_vod_categories.get(0) : "").findAll();
+            return result.notEqualTo("category_id", Constants.xxx_vod_categories.size() > 0 ? Constants.xxx_vod_categories.get(0) : "").findAll();
         }
-        RealmQuery realmQueryNot = this.realm.where(MovieModel.class).contains("name", str.toLowerCase(Locale.ROOT)).not();
-        Case r5 = Case.INSENSITIVE;
-        return realmQueryNot.contains(str2, "xxx", r5).not().contains(str2, "adult", r5).not().contains(str2, "porn", r5).findAll();
+        return result.findAll();
     }
 
     public List<ResumeSeriesModel> getResentSeriesNames() {

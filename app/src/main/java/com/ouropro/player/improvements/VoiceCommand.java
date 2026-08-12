@@ -96,6 +96,11 @@ public final class VoiceCommand {
             return new VoiceCommand(action, query, original);
         }
 
+        String untypedQuery = removePrefix(normalized, "abrir ", "assistir ", "ver ", "tocar ");
+        if (!untypedQuery.isEmpty()) {
+            return new VoiceCommand(Action.OPEN_TITLE, untypedQuery, original);
+        }
+
         // Sem prefixo, a frase é tratada como um título e será resolvida no catálogo da tela atual.
         return new VoiceCommand(Action.OPEN_TITLE, normalized, original);
     }

@@ -2063,14 +2063,13 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     }
 
     private void openVoiceChannel(String query) {
-        if (this.epgChannels == null || this.epgChannels.isEmpty()) {
-            Toast.makeText(this, "Nenhum canal carregado nesta categoria", Toast.LENGTH_SHORT).show();
-            return;
-        }
         if (this.et_search != null && this.et_search.length() > 0) {
             this.et_search.setText("");
         }
-        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
+        EPGChannel channel = this.epgChannels == null ? null : VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
+        if (channel == null) {
+            channel = VoiceChannelMatcher.findUniqueMatch(RealmController.with().getLiveChannelsByKey(query, true), query);
+        }
         if (channel == null) {
             Toast.makeText(this, "Não encontrei um único canal para: " + query, Toast.LENGTH_SHORT).show();
             return;
@@ -2081,6 +2080,19 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
                 index = i;
                 break;
+            }
+        }
+        if (index < 0) {
+            this.epgChannels = RealmController.with().getLiveChannelsByKey(query, true);
+            if (this.channelAdapter != null) {
+                this.channelAdapter.updateData(this.epgChannels, 0);
+            }
+            for (int i = 0; i < this.epgChannels.size(); i++) {
+                EPGChannel item = this.epgChannels.get(i);
+                if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
+                    index = i;
+                    break;
+                }
             }
         }
         if (index < 0) {

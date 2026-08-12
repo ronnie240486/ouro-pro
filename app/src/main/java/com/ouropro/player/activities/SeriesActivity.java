@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -43,16 +44,22 @@ import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.SubTitleUserModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.remote.GetSubtitleLoginRequest;
+import com.ouropro.player.remote.RetroClass;
 import com.ouropro.player.utils.Security;
 import com.ouropro.player.utils.Utils;
 import com.ouropro.player.view.CustomSpinner;
 import com.ouropro.player.view.LiveVerticalGridView;
 import io.realm.RealmResults;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import kotlin.Unit;
 import org.json.JSONObject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SeriesActivity extends AppCompatActivity implements View.OnClickListener {
@@ -380,6 +387,106 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         return super.dispatchKeyEvent(keyEvent);
     }
 
+    private List<CategoryModel> fallbackSeriesCategories() {
+        ArrayList<CategoryModel> result = new ArrayList<>();
+        result.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
+        result.add(new CategoryModel(Constants.all_id, this.wordModels.getAll()));
+        result.add(new CategoryModel(Constants.fav_id, this.wordModels.getFavorite()));
+        Set<String> seen = new HashSet<>();
+        for (SeriesModel model : RealmController.with().getSeriesByKey("")) {
+            if (model == null || model.getCategory_name() == null || model.getCategory_name().trim().isEmpty()) {
+                continue;
+            }
+            String id = model.getCategory_id();
+            String name = model.getCategory_name();
+            String key = (id == null || id.isEmpty()) ? name : id;
+            if (seen.add(key)) {
+                result.add(new CategoryModel(key, name));
+            }
+        }
+        return result;
+    }
+
+    private List<CategoryModel> categoriesFromSeries(List<SeriesModel> models) {
+        ArrayList<CategoryModel> result = new ArrayList<>();
+        result.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
+        result.add(new CategoryModel(Constants.all_id, this.wordModels.getAll()));
+        result.add(new CategoryModel(Constants.fav_id, this.wordModels.getFavorite()));
+        Set<String> seen = new HashSet<>();
+        if (models != null) {
+            for (SeriesModel model : models) {
+                if (model == null || model.getCategory_name() == null || model.getCategory_name().trim().isEmpty()) {
+                    continue;
+                }
+                String id = model.getCategory_id();
+                String name = model.getCategory_name();
+                String key = (id == null || id.isEmpty()) ? name : id;
+                if (seen.add(key)) {
+                    result.add(new CategoryModel(key, name));
+                }
+            }
+        }
+        return result;
+    }
+
+    private void refreshRecoveredSeries() {
+        Constants.getSeriesGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleSeriesCategories(), this);
+        this.categoryModels = LTVApp.series_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = fallbackSeriesCategories();
+        }
+        for (int i = 0; i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                this.category_pos = i;
+                break;
+            }
+        }
+        this.seriesModels = RealmController.with().getSeriesModelsByCategory(this.categoryModels.get(this.category_pos), "", this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
+        if (this.seriesAdapter != null) {
+            this.seriesAdapter.updateData(this.seriesModels);
+        }
+        if (this.txt_category != null) {
+            this.txt_category.setText(this.categoryModels.get(this.category_pos).getName() + "(" + this.seriesModels.size() + ")");
+        }
+        if (this.recycler_category != null) {
+            this.recycler_category.setSelectedPosition(this.category_pos);
+        }
+        if (this.recycler_series != null) {
+            this.recycler_series.setSelectedPosition(0);
+        }
+    }
+
+    private void recoverSeriesIfEmpty() {
+        if (this.seriesModels != null && !this.seriesModels.isEmpty()) {
+            return;
+        }
+        final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String username = this.preferenceHelper.getSharedPreferenceUsername();
+        final String password = this.preferenceHelper.getSharedPreferencePassword();
+        if (server == null || server.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
+            return;
+        }
+        RetroClass.getAPIService(server).get_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
+                List<SeriesModel> body = response.body();
+                if (!response.isSuccessful() || body == null || body.isEmpty()) {
+                    Toast.makeText(SeriesActivity.this, "O servidor não retornou séries; o cache local foi preservado", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(body));
+                preferenceHelper.setSharedPreferenceSeriesCategory(categoriesFromSeries(body));
+                refreshRecoveredSeries();
+                Toast.makeText(SeriesActivity.this, "Séries carregadas", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
+                Toast.makeText(SeriesActivity.this, "Não foi possível atualizar as séries; tente novamente", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void setupVoiceButton() {
         FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
         if (content == null) {
@@ -527,6 +634,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.sortLists = GetSharedInfo.getVodSortLists(this.wordModels);
         Constants.getSeriesGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleSeriesCategories(), this);
         this.categoryModels = LTVApp.series_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = fallbackSeriesCategories();
+        }
         this.category_pos = getAvailableCategoryPosition();
         this.sort_pos = this.preferenceHelper.getSharedPreferenceSeriesOrder();
         this.seriesModels = RealmController.with().getSeriesModelsByCategory(this.categoryModels.get(this.category_pos), "", this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
@@ -578,6 +688,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
         setupVoiceButton();
+        recoverSeriesIfEmpty();
         String voiceQuery = getIntent().getStringExtra("voice_query");
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
             openSeriesByVoice(voiceQuery);

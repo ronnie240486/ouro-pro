@@ -1574,11 +1574,10 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void openVoiceChannel(String query) {
-        if (this.epgChannels == null || this.epgChannels.isEmpty()) {
-            Toast.makeText(this, "Nenhum canal carregado", Toast.LENGTH_SHORT).show();
-            return;
+        EPGChannel channel = this.epgChannels == null ? null : VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
+        if (channel == null) {
+            channel = VoiceChannelMatcher.findUniqueMatch(RealmController.with().getLiveChannelsByKey(query, true), query);
         }
-        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
         if (channel == null) {
             Toast.makeText(this, "Canal não encontrado ou nome ambíguo", Toast.LENGTH_SHORT).show();
             return;
@@ -1592,6 +1591,20 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             }
         }
         if (index < 0) {
+            this.epgChannels = RealmController.with().getLiveChannelsByKey(query, true);
+            if (this.channelAdapter != null) {
+                this.channelAdapter.updateData(this.epgChannels, 0);
+            }
+            for (int i = 0; i < this.epgChannels.size(); i++) {
+                EPGChannel item = this.epgChannels.get(i);
+                if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index < 0) {
+            Toast.makeText(this, "Canal não encontrado na lista carregada", Toast.LENGTH_SHORT).show();
             return;
         }
         if (isAdultChannel(channel.getCategory_id(), channel.getCategory_name())) {

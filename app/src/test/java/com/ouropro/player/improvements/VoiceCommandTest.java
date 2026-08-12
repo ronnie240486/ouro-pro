@@ -61,6 +61,17 @@ public class VoiceCommandTest {
     }
 
     @Test
+    public void parsesUntypedAndPrefixedChannelTitles() {
+        VoiceCommand plain = VoiceCommand.parse("Space HD");
+        assertEquals(VoiceCommand.Action.OPEN_TITLE, plain.getAction());
+        assertEquals("space hd", plain.getQuery());
+
+        VoiceCommand prefixed = VoiceCommand.parse("abrir Space HD");
+        assertEquals(VoiceCommand.Action.OPEN_TITLE, prefixed.getAction());
+        assertEquals("space hd", prefixed.getQuery());
+    }
+
+    @Test
     public void treatsUntypedPhraseAsTitle() {
         VoiceCommand command = VoiceCommand.parse("Esqueceram de Mim");
         assertEquals(VoiceCommand.Action.OPEN_TITLE, command.getAction());
