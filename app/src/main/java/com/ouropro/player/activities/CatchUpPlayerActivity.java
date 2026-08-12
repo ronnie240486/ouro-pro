@@ -10,7 +10,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import androidx.activity.ComponentDialog$$ExternalSyntheticLambda0;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
@@ -66,7 +65,7 @@ public class CatchUpPlayerActivity extends AppCompatActivity implements View.OnC
     public DataSource.Factory dataSourceFactory;
     public PlayErrorDlgFragment errorDlgFragment;
     public ExitDlgFragment exitDlgFragment;
-    public ComponentDialog$$ExternalSyntheticLambda0 hideInfoTicker;
+    public Runnable hideInfoTicker;
     public ImageView image_forward;
     public ImageView image_rewind;
     public ConstraintLayout ly_control;
@@ -333,9 +332,8 @@ public class CatchUpPlayerActivity extends AppCompatActivity implements View.OnC
     /* JADX INFO: Access modifiers changed from: private */
     public void listTimer() {
         this.maxTime = 10;
-        ComponentDialog$$ExternalSyntheticLambda0 componentDialog$$ExternalSyntheticLambda0 = new ComponentDialog$$ExternalSyntheticLambda0(this, 3);
-        this.hideInfoTicker = componentDialog$$ExternalSyntheticLambda0;
-        componentDialog$$ExternalSyntheticLambda0.run();
+        this.hideInfoTicker = this::lambda$listTimer$0;
+        this.hideInfoTicker.run();
     }
 
     /* JADX INFO: Access modifiers changed from: private */

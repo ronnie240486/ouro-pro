@@ -13,7 +13,7 @@ android {
         minSdk 21
         targetSdk 34
         versionCode 128
-        versionName '6.4-reconstructed'
+        versionName '6.4'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
     }
@@ -21,7 +21,6 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
             buildConfigField 'boolean', 'ENABLE_VERBOSE_NETWORK_LOGS', 'false'
         }
         release {

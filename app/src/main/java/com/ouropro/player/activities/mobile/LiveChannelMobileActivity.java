@@ -21,7 +21,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.ComponentDialog$$ExternalSyntheticLambda0;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -125,7 +124,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
     public LiveActivity$$ExternalSyntheticLambda3 epgTicker;
     public int epgTime;
     public EditText et_search;
-    public ComponentDialog$$ExternalSyntheticLambda0 hideInfoTicker;
+    public Runnable hideInfoTicker;
     public int hide_time;
     public ImageView image_def;
     public LockDlgFragment lockDlgFragment;
@@ -643,9 +642,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
     /* JADX INFO: Access modifiers changed from: private */
     public void mInfoHideTimer() {
         this.hide_time = 10;
-        ComponentDialog$$ExternalSyntheticLambda0 componentDialog$$ExternalSyntheticLambda0 = new ComponentDialog$$ExternalSyntheticLambda0(this, 4);
-        this.hideInfoTicker = componentDialog$$ExternalSyntheticLambda0;
-        componentDialog$$ExternalSyntheticLambda0.run();
+        this.hideInfoTicker = this::lambda$mInfoHideTimer$4;
+        this.hideInfoTicker.run();
     }
 
     private void moveNexHideTicker() {

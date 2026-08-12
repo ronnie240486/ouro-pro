@@ -19,7 +19,6 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.activity.ComponentDialog$$ExternalSyntheticLambda0;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -95,7 +94,7 @@ public class MovieMobilePlayer extends AppCompatActivity implements View.OnClick
     public String description;
     public PlayErrorDlgFragment errorDlgFragment;
     public ExitDlgFragment exitDlgFragment;
-    public ComponentDialog$$ExternalSyntheticLambda0 hideInfoTicker;
+    public Runnable hideInfoTicker;
     public MovieInfoDlgFragment infoDlgFragment;
     public ConstraintLayout ly_control;
     public int maxTime;
@@ -399,9 +398,8 @@ public class MovieMobilePlayer extends AppCompatActivity implements View.OnClick
     /* JADX INFO: Access modifiers changed from: private */
     public void listTimer() {
         this.maxTime = 10;
-        ComponentDialog$$ExternalSyntheticLambda0 componentDialog$$ExternalSyntheticLambda0 = new ComponentDialog$$ExternalSyntheticLambda0(this, 6);
-        this.hideInfoTicker = componentDialog$$ExternalSyntheticLambda0;
-        componentDialog$$ExternalSyntheticLambda0.run();
+        this.hideInfoTicker = this::lambda$listTimer$2;
+        this.hideInfoTicker.run();
     }
 
     private void pictureInPictureMode() {

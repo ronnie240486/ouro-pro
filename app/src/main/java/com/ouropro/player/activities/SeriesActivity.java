@@ -1,16 +1,23 @@
 package com.ouropro.player.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -27,6 +34,9 @@ import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceCommandController;
+import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.SubTitleUserModel;
@@ -63,6 +73,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
     public TextView txt_search;
     public TextView txt_series;
     public WordModels wordModels;
+    private Button voiceButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 911;
     public List<String> sortLists = new ArrayList();
     public int category_pos = 0;
     public int sort_pos = 0;
@@ -366,6 +379,122 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         return super.dispatchKeyEvent(keyEvent);
     }
 
+    private void setupVoiceButton() {
+        FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
+        if (content == null) {
+            return;
+        }
+        this.voiceButton = new Button(this);
+        this.voiceButton.setText("Voz");
+        this.voiceButton.setAllCaps(false);
+        this.voiceButton.setContentDescription("Comando de voz para séries");
+        this.voiceButton.setOnClickListener(view -> requestVoicePermissionAndStart());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        params.setMargins(0, 0, 24, 24);
+        content.addView(this.voiceButton, params);
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.voiceButton.setVisibility(View.GONE);
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                if (voiceButton != null) {
+                    voiceButton.setText(state.startsWith("Ouvindo") ? "Ouvindo..." : "Voz");
+                }
+            }
+
+            public void onVoiceError(String message) {
+                if (voiceButton != null) {
+                    voiceButton.setText("Voz");
+                }
+                Toast.makeText(SeriesActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (android.os.Build.VERSION.SDK_INT >= 23
+                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    private void handleVoiceCommand(VoiceCommand command) {
+        switch (command.getAction()) {
+            case OPEN_SERIES_ITEM:
+            case SEARCH_SERIES:
+                openSeriesByVoice(command.getQuery());
+                break;
+            case OPEN_MOVIES:
+                startActivity(new Intent(this, MovieActivity.class));
+                finish();
+                break;
+            case OPEN_LIVE:
+                startActivity(new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class));
+                finish();
+                break;
+            case OPEN_SETTINGS:
+                startActivity(new Intent(this, SettingActivity.class));
+                break;
+            default:
+                Toast.makeText(this, "Diga: abrir série seguido do título", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void openSeriesByVoice(String query) {
+        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(this.seriesModels, query);
+        if (series == null) {
+            Toast.makeText(this, "Série não encontrada ou nome ambíguo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        int index = 0;
+        for (int i = 0; i < this.seriesModels.size(); i++) {
+            if (this.seriesModels.get(i) == series) {
+                index = i;
+                break;
+            }
+        }
+        new AnonymousClass1().onItemClick(series, index);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
+    }
+
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_back /* 2131427888 */:
@@ -452,5 +581,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         }
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
+        setupVoiceButton();
     }
 }

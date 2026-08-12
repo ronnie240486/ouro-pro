@@ -3,13 +3,17 @@ package com.ouropro.player.improvements;
 import java.text.Normalizer;
 import java.util.Locale;
 
-/** Comando de voz normalizado e seguro para ações de navegação no app. */
+/** Comando de voz normalizado e seguro para navegação e seleção de conteúdo. */
 public final class VoiceCommand {
     public enum Action {
         OPEN_CHANNEL,
         OPEN_LIVE,
         OPEN_MOVIES,
+        OPEN_MOVIE_ITEM,
+        SEARCH_MOVIE,
         OPEN_SERIES,
+        OPEN_SERIES_ITEM,
+        SEARCH_SERIES,
         OPEN_SETTINGS,
         SEARCH_CHANNEL,
         NEXT_CHANNEL,
@@ -42,16 +46,16 @@ public final class VoiceCommand {
         if (matches(normalized, "abrir filmes", "ir para filmes", "abrir movies")) {
             return new VoiceCommand(Action.OPEN_MOVIES, "", original);
         }
-        if (matches(normalized, "abrir series", "abrir séries", "ir para series", "ir para séries")) {
+        if (matches(normalized, "abrir series", "ir para series")) {
             return new VoiceCommand(Action.OPEN_SERIES, "", original);
         }
-        if (matches(normalized, "abrir configuracoes", "abrir configurações", "abrir ajustes", "ir para configuracoes", "ir para configurações")) {
+        if (matches(normalized, "abrir configuracoes", "abrir ajustes", "ir para configuracoes")) {
             return new VoiceCommand(Action.OPEN_SETTINGS, "", original);
         }
-        if (matches(normalized, "proximo canal", "próximo canal", "canal seguinte", "mudar canal para frente")) {
+        if (matches(normalized, "proximo canal", "canal seguinte", "mudar canal para frente")) {
             return new VoiceCommand(Action.NEXT_CHANNEL, "", original);
         }
-        if (matches(normalized, "canal anterior", "voltar canal", "mudar canal para tras", "mudar canal para trás")) {
+        if (matches(normalized, "canal anterior", "voltar canal", "mudar canal para tras")) {
             return new VoiceCommand(Action.PREVIOUS_CHANNEL, "", original);
         }
         if (matches(normalized, "pausar", "pausar canal", "pause")) {
@@ -62,6 +66,40 @@ public final class VoiceCommand {
         }
 
         String query = removePrefix(normalized,
+                "abrir filme ",
+                "abrir o filme ",
+                "assistir filme ",
+                "assistir o filme ",
+                "ver filme ",
+                "ver o filme ",
+                "buscar filme ",
+                "buscar o filme ",
+                "pesquisar filme ",
+                "pesquisar o filme ");
+        if (!query.isEmpty()) {
+            Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
+                    ? Action.SEARCH_MOVIE : Action.OPEN_MOVIE_ITEM;
+            return new VoiceCommand(action, query, original);
+        }
+
+        query = removePrefix(normalized,
+                "abrir serie ",
+                "abrir a serie ",
+                "assistir serie ",
+                "assistir a serie ",
+                "ver serie ",
+                "ver a serie ",
+                "buscar serie ",
+                "buscar a serie ",
+                "pesquisar serie ",
+                "pesquisar a serie ");
+        if (!query.isEmpty()) {
+            Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
+                    ? Action.SEARCH_SERIES : Action.OPEN_SERIES_ITEM;
+            return new VoiceCommand(action, query, original);
+        }
+
+        query = removePrefix(normalized,
                 "abrir canal ",
                 "abrir o canal ",
                 "assistir canal ",

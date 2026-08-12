@@ -37,6 +37,30 @@ public class VoiceCommandTest {
     }
 
     @Test
+    public void parsesMovieAndSeriesTitles() {
+        VoiceCommand movie = VoiceCommand.parse("Abrir filme Titanic");
+        assertEquals(VoiceCommand.Action.OPEN_MOVIE_ITEM, movie.getAction());
+        assertEquals("titanic", movie.getQuery());
+
+        VoiceCommand series = VoiceCommand.parse("Abrir série The Last of Us");
+        assertEquals(VoiceCommand.Action.OPEN_SERIES_ITEM, series.getAction());
+        assertEquals("the last of us", series.getQuery());
+    }
+
+    @Test
+    public void parsesMediaSearchCommands() {
+        assertEquals(VoiceCommand.Action.SEARCH_MOVIE, VoiceCommand.parse("Pesquisar filme ação").getAction());
+        assertEquals(VoiceCommand.Action.SEARCH_SERIES, VoiceCommand.parse("Buscar série policial").getAction());
+    }
+
+    @Test
+    public void normalizesChannelNamesWithSpaces() {
+        VoiceCommand command = VoiceCommand.parse("Abrir canal Space HD");
+        assertEquals(VoiceCommand.Action.OPEN_CHANNEL, command.getAction());
+        assertEquals("space hd", command.getQuery());
+    }
+
+    @Test
     public void rejectsUnknownCommands() {
         assertEquals(VoiceCommand.Action.UNKNOWN, VoiceCommand.parse("aumentar volume").getAction());
     }
