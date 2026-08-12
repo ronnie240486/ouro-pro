@@ -930,7 +930,8 @@ public class BaseActivity extends AppCompatActivity {
             seriesModels.add(series);
         }
         this.realm.executeTransaction(realm -> {
-            realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
+            // Não apagar séries locais: isso preserva capas recuperadas do catálogo,
+            // favoritos, histórico e registros que ainda não foram reprocessados.
             realm.insertOrUpdate(seriesModels);
         });
         for (String favoriteName : favoriteNames) {
@@ -952,6 +953,8 @@ public class BaseActivity extends AppCompatActivity {
             });
         }
         getSeriesCategoryModels(seriesModels);
+        getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
+                .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
     }
 
     /* JADX INFO: Access modifiers changed from: private */

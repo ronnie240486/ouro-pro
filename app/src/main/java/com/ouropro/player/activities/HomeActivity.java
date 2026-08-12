@@ -41,6 +41,7 @@ import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.improvements.SeriesCatalogLoader;
+import com.ouropro.player.improvements.SeriesPosterRepair;
 import com.ouropro.player.models.EPGChannel;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SeriesModel;
@@ -137,10 +138,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void refreshSeriesInBackground() {
-        if (RealmController.with().realm.where(SeriesModel.class).count() >= 100) {
+        final long localSeriesCount = RealmController.with().realm.where(SeriesModel.class).count();
+        final boolean recoverCatalog = localSeriesCount < 100;
+        final String configuredServerForKey = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String posterRepairKey = "series_posters_repaired_v2_" + Integer.toHexString(
+                Utils.getUserId(configuredServerForKey == null ? "" : configuredServerForKey).hashCode());
+        final boolean repairPosters = this.preferenceHelper.getSharedPreferenceISM3U()
+                && !getSharedPreferences("ouropro_migrations", MODE_PRIVATE)
+                .getBoolean(posterRepairKey, false);
+        if (!recoverCatalog && !repairPosters) {
             return;
         }
-        final String configuredServer = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String configuredServer = configuredServerForKey;
         String username = this.preferenceHelper.getSharedPreferenceUsername();
         String password = this.preferenceHelper.getSharedPreferencePassword();
         if (configuredServer == null || configuredServer.trim().isEmpty()) {
@@ -161,8 +170,23 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             SeriesCatalogLoader.load(RetroClass.getAPIService(server, allowLegacyCleartext), username, password, new SeriesCatalogLoader.Listener() {
             @Override
             public void onComplete(List<SeriesModel> models, List<CategoryModel> categories) {
-                saveSeriesBackground(models);
-                if (models.size() >= 100) {
+                if (recoverCatalog) {
+                    saveSeriesBackground(models);
+                }
+                if (repairPosters) {
+                    final ArrayList<SeriesModel> catalogCopy = new ArrayList<>(models);
+                    new Thread(() -> {
+                        io.realm.Realm backgroundRealm = io.realm.Realm.getDefaultInstance();
+                        try {
+                            SeriesPosterRepair.apply(backgroundRealm, catalogCopy);
+                            getSharedPreferences("ouropro_migrations", MODE_PRIVATE)
+                                    .edit().putBoolean(posterRepairKey, true).apply();
+                        } finally {
+                            backgroundRealm.close();
+                        }
+                    }, "ouro-series-poster-repair").start();
+                }
+                if (recoverCatalog && models.size() >= 100) {
                     Toast.makeText(HomeActivity.this, "Catálogo de séries atualizado: " + models.size(), Toast.LENGTH_SHORT).show();
                 }
             }

@@ -16,6 +16,14 @@ import org.jetbrains.annotations.NotNull;
 public class ImageLoaderJava {
     public static void imageLoadUrlWithVodHolder(Context context, @NonNull final ImageView imageView, @NonNull String str, int i, @NonNull final ImageView imageView2) {
         try {
+            Glide.with(context).clear(imageView);
+            imageView.setImageDrawable(null);
+            imageView.setVisibility(android.view.View.INVISIBLE);
+            imageView2.setImageResource(i);
+            imageView2.setVisibility(android.view.View.VISIBLE);
+            if (str == null || str.trim().isEmpty() || "null".equalsIgnoreCase(str.trim())) {
+                return;
+            }
             Glide.with(context).load(str.trim()).override(300, 450).listener(new RequestListener<Drawable>() { // from class: com.ouropro.player.utils.ImageLoaderJava.2
                 public boolean onLoadFailed(@Nullable GlideException glideException, Object obj, Target<Drawable> target, boolean z) {
                     imageView2.setVisibility(0);
