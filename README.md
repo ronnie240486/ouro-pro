@@ -26,7 +26,7 @@ As preferências passaram a ser abertas por `SecurePreferenceStore`, usando Andr
 
 O **comando de voz** agora usa um ícone de microfone na tela principal, nos canais mobile/TV, filmes e séries. Ele aceita títulos sem prefixo obrigatório, como “Esqueceram de Mim”, e frases como “abrir Space HD”. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no microfone, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
 
-A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm. Quando a tela encontra menos de 100 séries, ela consulta as categorias reais e agrega as respostas por `category_id`, em vez de aceitar o conjunto parcial global. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md), [`docs/series-voice-recovery.md`](docs/series-voice-recovery.md), [`docs/series-category-cache.md`](docs/series-category-cache.md) e [`docs/original-flow-fix.md`](docs/original-flow-fix.md).
+A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm. Quando a fonte é M3U e a tela encontra menos de 100 séries, ela reimporta os episódios e reconstrói o catálogo por nome base, temporada e `group-title`. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md), [`docs/series-voice-recovery.md`](docs/series-voice-recovery.md), [`docs/series-category-cache.md`](docs/series-category-cache.md), [`docs/original-flow-fix.md`](docs/original-flow-fix.md) e [`docs/m3u-series-fix.md`](docs/m3u-series-fix.md).
 
 ## Estrutura
 
@@ -45,7 +45,7 @@ improvements/            Backlog de melhorias planejadas
 
 É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
 
-O instalador desta correção é `artifacts/OuroPro6.4-original-flow-fix-debug.apk`. Ele restaura o caminho global do APK original quando a resposta é completa, usa categorias reais apenas quando a resposta é parcial, abre a Home pelo cache local sem exigir consulta remota e grava séries em segundo plano. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
+O instalador desta correção é `artifacts/OuroPro6.4-m3u-series-fix-debug.apk`. Ele preserva o fluxo rápido do APK original, importa séries M3U por marcadores de episódio e grupo, reconstrói categorias e força a reimportação quando o cache M3U tem menos de 100 séries. Filmes continuam no caminho direto original. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

@@ -3,6 +3,7 @@ package com.ouropro.player.models;
 import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import com.google.gson.annotations.SerializedName;
+import com.ouropro.player.improvements.M3USeriesNaming;
 import io.realm.RealmObject;
 import io.realm.internal.RealmObjectProxy;
 import iptv.m3u.parser.M3UItem;
@@ -40,20 +41,21 @@ public class EpisodeModel extends RealmObject implements Serializable {
     @Nullable
     public static EpisodeModel fromM3UItem(M3UItem m3UItem) {
         try {
+            if (m3UItem == null || TextUtils.isEmpty(m3UItem.getStreamURL())) {
+                return null;
+            }
             EpisodeModel episodeModel = new EpisodeModel();
+            episodeModel.setId(m3UItem.getChannelId());
             episodeModel.setCategory_name(TextUtils.isEmpty(m3UItem.getGroupTitle()) ? "All" : m3UItem.getGroupTitle());
-            if (!TextUtils.isEmpty(m3UItem.getChannelName())) {
-                episodeModel.setTitle(m3UItem.getChannelName());
-                for (String str : episodeModel.getTitle().split(" ")) {
-                    if (str.matches("S\\d{2}")) {
-                        episodeModel.setSeason_name(episodeModel.getTitle().split(str)[0] + str);
-                        episodeModel.setSeries_name(episodeModel.getTitle().split(str)[0]);
-                    }
-                }
+            String title = TextUtils.isEmpty(m3UItem.getChannelName()) ? m3UItem.getStreamURL() : m3UItem.getChannelName();
+            episodeModel.setTitle(title);
+            String seriesName = M3USeriesNaming.seriesName(title);
+            if (TextUtils.isEmpty(seriesName)) {
+                return null;
             }
-            if (!TextUtils.isEmpty(m3UItem.getStreamURL())) {
-                episodeModel.setUrl(m3UItem.getStreamURL());
-            }
+            episodeModel.setSeries_name(seriesName);
+            episodeModel.setSeason_name(M3USeriesNaming.seasonName(title));
+            episodeModel.setUrl(m3UItem.getStreamURL());
             if (!TextUtils.isEmpty(m3UItem.getLogoURL())) {
                 episodeModel.setStream_icon(m3UItem.getLogoURL());
             }

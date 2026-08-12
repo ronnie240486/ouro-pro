@@ -17,6 +17,7 @@ import com.ouropro.player.models.ResumeModel;
 import com.ouropro.player.models.ResumeSeriesModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
+import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -612,7 +613,9 @@ public class BaseTVActivity extends FragmentActivity {
     private void getEpisodeModels() {
         RealmResults realmResultsFindAll = this.realm.where(EpisodeModel.class).findAll();
         if (realmResultsFindAll.size() != 0) {
-            if (System.currentTimeMillis() / 1000 <= (((long) this.preferenceHelper.getSharedPreferenceUpdatePeriod()) * Constants.date_mils) + this.preferenceHelper.getSharedPreferenceLastPlaylistDate()) {
+            boolean m3uNeedsRebuild = this.preferenceHelper.getSharedPreferenceISM3U()
+                    && this.realm.where(SeriesModel.class).count() < 100;
+            if (!m3uNeedsRebuild && System.currentTimeMillis() / 1000 <= (((long) this.preferenceHelper.getSharedPreferenceUpdatePeriod()) * Constants.date_mils) + this.preferenceHelper.getSharedPreferenceLastPlaylistDate()) {
                 if (this.is_stop) {
                     return;
                 }
@@ -742,7 +745,7 @@ public class BaseTVActivity extends FragmentActivity {
         if (streamURL.contains("movie/") || streamURL.contains("=movie") || streamURL.contains("==movie") || streamURL.contains("vod/") || streamURL.contains("video/")) {
             return 1;
         }
-        return streamURL.contains("series/") ? 2 : 0;
+        return M3USeriesNaming.isSeriesItem(m3UItem) ? 2 : 0;
     }
 
     private void getMovieCategoryModels(List<MovieModel> list) {
