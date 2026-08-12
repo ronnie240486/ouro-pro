@@ -68,7 +68,6 @@ public final class VoiceCommandController implements RecognitionListener {
         }
     }
 
-    @Override
     public void onResults(Bundle results) {
         listening = false;
         ArrayList<String> matches = results == null
@@ -80,7 +79,6 @@ public final class VoiceCommandController implements RecognitionListener {
         listener.onVoiceCommand(VoiceCommand.parse(matches.get(0)));
     }
 
-    @Override
     public void onError(int error) {
         listening = false;
         String message;
@@ -105,34 +103,27 @@ public final class VoiceCommandController implements RecognitionListener {
         listener.onVoiceError(message);
     }
 
-    @Override
     public void onReadyForSpeech(Bundle params) {
     }
 
-    @Override
     public void onBeginningOfSpeech() {
     }
 
-    @Override
     public void onRmsChanged(float rmsdB) {
     }
 
-    @Override
     public void onBufferReceived(byte[] buffer) {
     }
 
-    @Override
     public void onEndOfSpeech() {
         if (listening) {
             listener.onVoiceState("Processando comando…");
         }
     }
 
-    @Override
     public void onPartialResults(Bundle partialResults) {
     }
 
-    @Override
     public void onEvent(int eventType, Bundle params) {
     }
 }

@@ -74,7 +74,6 @@ public class Logo extends ImageView {
             new ImageLoaderTask(this, context, IMAGE_NAME) { // from class: com.diegodev.travarlaucnher.md.img.Logo.1
                 /* JADX INFO: Access modifiers changed from: protected */
                 /* JADX WARN: Can't rename method to resolve collision */
-                @Override // com.diegodev.travarlaucnher.md.img.ImageLoaderTask, android.os.AsyncTask
                 public void onPostExecute(Bitmap result) {
                     if (result != null) {
                         Logo.this.setImageBitmap(result);

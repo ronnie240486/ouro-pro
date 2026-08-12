@@ -14,7 +14,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 
 /* JADX INFO: loaded from: classes.dex */
-public class LiveSortRecyclerAdapter extends RecyclerView.Adapter<HideCategoryViewHolder> {
+public class LiveSortRecyclerAdapter extends RecyclerView.Adapter<LiveSortRecyclerAdapter.HideCategoryViewHolder> {
     public List<String> category_data;
     public int checked_pos;
     public Function2<Integer, Boolean, Unit> clickFunctionListener;
@@ -52,7 +52,6 @@ public class LiveSortRecyclerAdapter extends RecyclerView.Adapter<HideCategoryVi
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<String> list = this.category_data;
         if (list == null) {
@@ -61,7 +60,6 @@ public class LiveSortRecyclerAdapter extends RecyclerView.Adapter<HideCategoryVi
         return list.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull HideCategoryViewHolder hideCategoryViewHolder, @SuppressLint({"RecyclerView"}) int i) {
         hideCategoryViewHolder.txt_name.setText(this.category_data.get(i));
@@ -76,7 +74,6 @@ public class LiveSortRecyclerAdapter extends RecyclerView.Adapter<HideCategoryVi
         hideCategoryViewHolder.itemView.setOnFocusChangeListener(new LiveSortRecyclerAdapter$$ExternalSyntheticLambda0(hideCategoryViewHolder, i2));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public HideCategoryViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new HideCategoryViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_hide_category, viewGroup, false));

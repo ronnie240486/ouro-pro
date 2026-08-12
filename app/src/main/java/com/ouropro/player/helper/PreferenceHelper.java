@@ -130,6 +130,7 @@ public class PreferenceHelper {
             }
             return string;
         } catch (Exception unused) {
+            return null;
         }
     }
 
@@ -249,6 +250,7 @@ public class PreferenceHelper {
             }
             return string;
         } catch (Exception unused) {
+            return null;
         }
     }
 
@@ -264,6 +266,7 @@ public class PreferenceHelper {
             String string = this.settings.getString(LAST_M3U_DATE + getSharedPreferenceUserId(), "");
             return (string == null || string.isEmpty()) ? "" : string;
         } catch (Exception unused) {
+            return "";
         }
     }
 
@@ -293,6 +296,7 @@ public class PreferenceHelper {
             String string = this.settings.getString(LIVE_STREAM_FORMAT, "");
             return (string == null || string.isEmpty()) ? "ts" : string;
         } catch (Exception unused) {
+            return "ts";
         }
     }
 
@@ -315,6 +319,7 @@ public class PreferenceHelper {
             }
             return string;
         } catch (Exception unused) {
+            return null;
         }
     }
 
@@ -323,6 +328,7 @@ public class PreferenceHelper {
             String string = this.settings.getString(PARENT_CONTROL, "0000");
             return (string == null || string.isEmpty()) ? "0000" : string;
         } catch (Exception unused) {
+            return "0000";
         }
     }
 

@@ -69,14 +69,13 @@ public class AccountDlgFragment extends DialogFragment {
         this.txt_max_con = (TextView) view.findViewById(R.id.txt_max_connections);
         this.txt_playlist_expire = (TextView) view.findViewById(R.id.txt_playlist_expire);
         final int i = 0;
-        this.view_click.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.AccountDlgFragment$$ExternalSyntheticLambda0
+        this.view_click.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.AccountDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ AccountDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = AccountDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i) {
                     case 0:
@@ -91,14 +90,13 @@ public class AccountDlgFragment extends DialogFragment {
         Button button = (Button) view.findViewById(R.id.btn_pay);
         this.btn_pay = button;
         final int i2 = 1;
-        button.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.AccountDlgFragment$$ExternalSyntheticLambda0
+        button.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.AccountDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ AccountDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = AccountDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i2) {
                     case 0:
@@ -128,13 +126,11 @@ public class AccountDlgFragment extends DialogFragment {
         return accountDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_account, viewGroup, false);
         initView(viewInflate);

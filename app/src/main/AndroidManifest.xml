@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="31" android:compileSdkVersionCodename="12" package="com.ouropro.player" platformBuildVersionCode="31" platformBuildVersionName="12">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" android:compileSdkVersion="31" android:compileSdkVersionCodename="12" package="com.ouropro.player" platformBuildVersionCode="31" platformBuildVersionName="12">
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -89,7 +89,7 @@
             <meta-data android:name="com.google.android.play.core.assetpacks.versionCode" android:value="11003"/>
         </service>
         <service android:enabled="false" android:exported="false" android:name="com.google.android.play.core.assetpacks.ExtractionForegroundService"/>
-        <provider android:authorities="com.ouropro.player.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
+        <provider android:authorities="com.ouropro.player.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider" tools:replace="android:authorities">
             <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
             <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
         </provider>

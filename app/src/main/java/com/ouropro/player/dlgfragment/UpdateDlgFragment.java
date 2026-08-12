@@ -46,7 +46,6 @@ public class UpdateDlgFragment extends DialogFragment implements View.OnClickLis
         return updateDlgFragment;
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.btn_cancel) {
@@ -63,13 +62,11 @@ public class UpdateDlgFragment extends DialogFragment implements View.OnClickLis
         }
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_update, viewGroup, false);
         initView(viewInflate);

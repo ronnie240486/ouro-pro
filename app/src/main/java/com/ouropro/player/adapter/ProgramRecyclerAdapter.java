@@ -17,7 +17,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHolder> {
+public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecyclerAdapter.XCProgramViewHolder> {
     public Function3<CatchUpEpg, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<CatchUpEpg> epgModels;
@@ -70,7 +70,6 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         this.clickFunctionListener.invoke(catchUpEpg, Integer.valueOf(i), Boolean.TRUE);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CatchUpEpg> list = this.epgModels;
         if (list == null) {
@@ -95,7 +94,6 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull XCProgramViewHolder xCProgramViewHolder, int i) {
         CatchUpEpg catchUpEpg = this.epgModels.get(i);
         xCProgramViewHolder.txt_program.setText(Utils.decode64String(catchUpEpg.getTitle()));
@@ -119,7 +117,6 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public XCProgramViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new XCProgramViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_program, viewGroup, false));

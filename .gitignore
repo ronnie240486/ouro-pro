@@ -11,6 +11,7 @@ captures/
 
 # Artefatos de distribuição e assinatura
 *.apk
+artifacts/
 *.aab
 *.apks
 *.keystore
@@ -31,6 +32,7 @@ credentials/
 Thumbs.db
 
 # Diretórios de engenharia reversa locais
+analysis/*-recovered*
 apk-extracted/
 decompiled-apk/
 jadx-sources/

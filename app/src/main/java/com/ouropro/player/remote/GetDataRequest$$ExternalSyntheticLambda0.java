@@ -13,12 +13,10 @@ public final /* synthetic */ class GetDataRequest$$ExternalSyntheticLambda0 impl
         this.f$0 = getDataRequest;
     }
 
-    @Override // com.android.volley.Response.ErrorListener
     public final void onErrorResponse(VolleyError volleyError) {
         this.f$0.lambda$getResponse$1(volleyError);
     }
 
-    @Override // com.android.volley.Response.Listener
     public final void onResponse(Object obj) {
         this.f$0.lambda$getResponse$0((JSONObject) obj);
     }

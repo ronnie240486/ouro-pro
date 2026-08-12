@@ -9,14 +9,12 @@ import org.json.JSONException;
 public class FetchVideosTask extends NetworkTask<Void, Void, List<MovieModel>> {
     private LoadVideosCommand command;
 
-    @Override // com.ouropro.player.net.NetworkTask
     public final List<MovieModel> doNetworkAction() throws JSONException, IOException {
         LoadVideosCommand loadVideosCommand = new LoadVideosCommand();
         this.command = loadVideosCommand;
         return loadVideosCommand.execute();
     }
 
-    @Override // com.ouropro.player.net.NetworkTask, android.os.AsyncTask
     public final void onPreExecute() {
     }
 }

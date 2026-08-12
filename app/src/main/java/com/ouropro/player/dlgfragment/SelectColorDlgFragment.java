@@ -50,7 +50,6 @@ public class SelectColorDlgFragment extends DialogFragment {
             this.recycler_colors.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_colors.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.dlgfragment.SelectColorDlgFragment.1
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -105,13 +104,11 @@ public class SelectColorDlgFragment extends DialogFragment {
         return selectColorDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_select_color, viewGroup, false);
         this.preferenceHelper = new PreferenceHelper(this.context);

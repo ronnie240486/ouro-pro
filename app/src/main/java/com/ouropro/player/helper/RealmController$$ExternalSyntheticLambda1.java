@@ -14,7 +14,6 @@ public final /* synthetic */ class RealmController$$ExternalSyntheticLambda1 imp
     }
 
     /* JADX WARN: Failed to find 'out' block for switch in B:3:0x0002. Please report as an issue. */
-    @Override // io.realm.Realm.Transaction.OnSuccess
     public final void onSuccess() {
         switch (this.$r8$classId) {
         }

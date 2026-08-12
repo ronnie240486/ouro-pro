@@ -138,12 +138,10 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
 
     private void getCastModels() {
         RetroClass.getAPIService(Constants.IMDB_API).getCastModels(Insets$$ExternalSyntheticOutline0.m(new StringBuilder(), this.tmdb_id, "/credits?api_key=", Constants.IMDB_KEY)).enqueue(new Callback<CastResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.2
-            @Override // retrofit2.Callback
             public void onFailure(Call<CastResponse> call, Throwable th) {
                 MovieInfoActivity.this.setCastAdapter(new ArrayList());
             }
 
-            @Override // retrofit2.Callback
             public void onResponse(Call<CastResponse> call, Response<CastResponse> response) {
                 if (response.body() == null || !response.isSuccessful()) {
                     MovieInfoActivity.this.setCastAdapter(new ArrayList());
@@ -156,12 +154,10 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
 
     private void getMovieInfo() {
         RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_vod_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.stream_id).enqueue(new Callback<MovieInfoResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.1
-            @Override // retrofit2.Callback
             public void onFailure(Call<MovieInfoResponse> call, Throwable th) {
                 MovieInfoActivity.this.setNoDescriptionData();
             }
 
-            @Override // retrofit2.Callback
             public void onResponse(Call<MovieInfoResponse> call, Response<MovieInfoResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
                     return;
@@ -212,7 +208,6 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
             this.cast_list.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.cast_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieInfoActivity.3
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -395,7 +390,6 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         startActivity(intent3);
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             switch (keyEvent.getKeyCode()) {
@@ -471,7 +465,6 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         return this.focusStatus;
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         final int i = 0;
         final int i2 = 1;
@@ -486,14 +479,13 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
                     this.is_fav = true;
                     this.image_fav.setImageResource(R.drawable.ic_star_selected);
                     this.image_fav.setColorFilter(getResources().getColor(R.color.yellow));
-                    RealmController.with().addToFavMovie(this.currentMovie.getName(), true, new RealmChangeItemListener(this) { // from class: com.ouropro.player.activities.MovieInfoActivity$$ExternalSyntheticLambda0
+                    RealmController.with().addToFavMovie(this.currentMovie.getName(), true, new RealmChangeItemListener() { // from class: com.ouropro.player.activities.MovieInfoActivity$$ExternalSyntheticLambda0
                         public final /* synthetic */ MovieInfoActivity f$0;
 
                         {
-                            this.f$0 = this;
+                            this.f$0 = MovieInfoActivity.this;
                         }
 
-                        @Override // com.ouropro.player.helper.RealmChangeItemListener
                         public final void onItemChanged() {
                             switch (i2) {
                                 case 0:
@@ -509,14 +501,13 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
                     this.is_fav = false;
                     this.image_fav.setImageResource(R.drawable.ic_star);
                     this.image_fav.setColorFilter(getResources().getColor(R.color.white));
-                    RealmController.with().addToFavMovie(this.currentMovie.getName(), false, new RealmChangeItemListener(this) { // from class: com.ouropro.player.activities.MovieInfoActivity$$ExternalSyntheticLambda0
+                    RealmController.with().addToFavMovie(this.currentMovie.getName(), false, new RealmChangeItemListener() { // from class: com.ouropro.player.activities.MovieInfoActivity$$ExternalSyntheticLambda0
                         public final /* synthetic */ MovieInfoActivity f$0;
 
                         {
-                            this.f$0 = this;
+                            this.f$0 = MovieInfoActivity.this;
                         }
 
-                        @Override // com.ouropro.player.helper.RealmChangeItemListener
                         public final void onItemChanged() {
                             switch (i) {
                                 case 0:
@@ -598,7 +589,6 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_movie_info);

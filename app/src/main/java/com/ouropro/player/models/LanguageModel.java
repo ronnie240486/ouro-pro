@@ -1,6 +1,5 @@
 package com.ouropro.player.models;
 
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 
@@ -10,7 +9,7 @@ public class LanguageModel implements Serializable {
     @SerializedName("code")
     private String code;
 
-    @SerializedName(TtmlNode.ATTR_ID)
+    @SerializedName("id")
     private String id;
 
     @SerializedName("name")

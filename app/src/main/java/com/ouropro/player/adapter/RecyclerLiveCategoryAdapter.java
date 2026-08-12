@@ -18,7 +18,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerLiveCategoryAdapter extends RecyclerView.Adapter<LiveHomeViewHolder> {
+public class RecyclerLiveCategoryAdapter extends RecyclerView.Adapter<RecyclerLiveCategoryAdapter.LiveHomeViewHolder> {
     public List<CategoryModel> categoryModels;
     public Function3<CategoryModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
@@ -82,7 +82,6 @@ public class RecyclerLiveCategoryAdapter extends RecyclerView.Adapter<LiveHomeVi
         this.clickFunctionListener.invoke(categoryModel, Integer.valueOf(i), Boolean.TRUE);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CategoryModel> list = this.categoryModels;
         if (list == null) {
@@ -98,7 +97,6 @@ public class RecyclerLiveCategoryAdapter extends RecyclerView.Adapter<LiveHomeVi
         notifyItemChanged(this.selected_position);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, @SuppressLint({"RecyclerView"}) int i) {
         CategoryModel categoryModel = this.categoryModels.get(i);
         liveHomeViewHolder.txt_name.setText(categoryModel.getName());
@@ -119,7 +117,6 @@ public class RecyclerLiveCategoryAdapter extends RecyclerView.Adapter<LiveHomeVi
         Insets$$ExternalSyntheticOutline0.m(this.context, R.color.white, liveHomeViewHolder.txt_count);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveHomeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return this.is_grid ? new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_live_category_grid, viewGroup, false)) : new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_live_category, viewGroup, false));

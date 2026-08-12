@@ -125,11 +125,9 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
         final ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getDelete_playlist() + "?", this.wordModels.getWant_delete_playlist(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 exitDlgFragmentNewInstance.dismiss();
                 String deleteData = Security.getDeleteData(ChangePlaylistActivity.this.preferenceHelper.getSharedPreferenceMacAddress().toLowerCase(), urlModel.getId());
@@ -166,7 +164,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             this.recycler_playlist.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_playlist.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.3
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -294,7 +291,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             return;
         }
         AddPlaylistDlgFragment addPlaylistDlgFragmentNewInstance = AddPlaylistDlgFragment.newInstance(this, i, new AddPlaylistDlgFragment.SuccessAddedListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.2
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onReload(int i2) {
                 ChangePlaylistActivity changePlaylistActivity = ChangePlaylistActivity.this;
                 changePlaylistActivity.is_home = false;
@@ -302,7 +298,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
                 ChangePlaylistActivity.this.changePlaylistView();
             }
 
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onSkip() {
                 ChangePlaylistActivity changePlaylistActivity = ChangePlaylistActivity.this;
                 changePlaylistActivity.is_home = false;
@@ -339,11 +334,9 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.4
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 ChangePlaylistActivity.this.finishAffinity();
                 System.exit(0);
@@ -368,7 +361,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject != null) {
             if (i == 2000) {
@@ -406,7 +398,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -448,7 +439,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progress_bar.setVisibility(8);
@@ -462,7 +452,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         finish();
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Utils.FullScreenCall(this);

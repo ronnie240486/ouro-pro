@@ -39,7 +39,6 @@ public class AdsViewRTX extends WebView {
         webSettings.setPluginState(WebSettings.PluginState.ON);
         setLayerType(2, null);
         setWebViewClient(new WebViewClient() { // from class: com.diegodev.travarlaucnher.md.img.AdsViewRTX.1
-            @Override // android.webkit.WebViewClient
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 view.loadUrl("file:///android_asset/offline/adindex.html");
             }

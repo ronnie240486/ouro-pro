@@ -45,7 +45,6 @@ public class GetSubtitleLoginRequest {
         RequestQueue requestQueueNewRequestQueue = Volley.newRequestQueue(this.context);
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(str, jSONObject, new GetSubtitleLoginRequest$$ExternalSyntheticLambda0(this), new GetSubtitleLoginRequest$$ExternalSyntheticLambda0(this)) { // from class: com.ouropro.player.remote.GetSubtitleLoginRequest.1
-                @Override // com.android.volley.Request
                 public Map<String, String> getHeaders() {
                     HashMap map = new HashMap();
                     map.put("Api-Key", str2);

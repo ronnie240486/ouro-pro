@@ -27,7 +27,6 @@ public final /* synthetic */ class VodRecyclerAdapter$$ExternalSyntheticLambda0 
         this.f$2 = obj;
     }
 
-    @Override // android.view.View.OnClickListener
     public final void onClick(View view) {
         switch (this.$r8$classId) {
             case 0:

@@ -94,7 +94,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -109,7 +108,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
             if (response.body() != null) {
                 BaseTVActivity.this.realm.executeTransaction(new BaseActivity$5$$ExternalSyntheticLambda0(response, 6));
@@ -156,7 +154,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<EPGChannel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -171,7 +168,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<EPGChannel>> call, @NonNull Response<List<EPGChannel>> response) {
             if (response.body() == null) {
                 BaseTVActivity baseTVActivity = BaseTVActivity.this;
@@ -223,7 +219,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<EPGChannel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -238,7 +233,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<EPGChannel>> call, @NonNull Response<List<EPGChannel>> response) {
             if (response.body() != null) {
                 BaseTVActivity baseTVActivity = BaseTVActivity.this;
@@ -293,7 +287,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<MovieModel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -308,7 +301,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<MovieModel>> call, @NonNull Response<List<MovieModel>> response) {
             if (response.body() != null) {
                 BaseTVActivity baseTVActivity = BaseTVActivity.this;
@@ -369,7 +361,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<MovieModel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -384,7 +375,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<MovieModel>> call, @NonNull Response<List<MovieModel>> response) {
             if (response.body() != null) {
                 BaseTVActivity baseTVActivity = BaseTVActivity.this;
@@ -445,7 +435,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable th) {
             BaseTVActivity baseTVActivity = BaseTVActivity.this;
             if (baseTVActivity.is_stop) {
@@ -460,7 +449,6 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
             if (response.body() != null) {
                 BaseTVActivity.this.realm.executeTransaction(new BaseActivity$5$$ExternalSyntheticLambda0(response, 11));
@@ -526,7 +514,6 @@ public class BaseTVActivity extends FragmentActivity {
     public void authentication(final String str) {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).authentication(this.user, this.password).enqueue(new Callback<LoginResponse>() { // from class: com.ouropro.player.apps.BaseTVActivity.1
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable th) {
                     BaseTVActivity baseTVActivity = BaseTVActivity.this;
                     if (baseTVActivity.is_stop) {
@@ -543,7 +530,6 @@ public class BaseTVActivity extends FragmentActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                     if (response.body() == null || response.body().getUser_info() == null || response.body().getUser_info().getStatus() == null) {
                         BaseTVActivity.this.preferenceHelper.setSharedPreferenceISM3U(true);
@@ -642,7 +628,7 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private String getKeyFromCategoryName(String str) {
-        for (String str2 : new TreeSet(this.categoryHashMap.keySet())) {
+        for (String str2 : (TreeSet<String>) (TreeSet) new TreeSet(this.categoryHashMap.keySet())) {
             if (getCategoryNameFromKey(str2).equalsIgnoreCase(str)) {
                 return str2;
             }
@@ -654,7 +640,6 @@ public class BaseTVActivity extends FragmentActivity {
     public void getLiveCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_live_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseTVActivity.2
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseTVActivity baseTVActivity = BaseTVActivity.this;
                     if (baseTVActivity.is_stop) {
@@ -669,7 +654,6 @@ public class BaseTVActivity extends FragmentActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseTVActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -845,7 +829,6 @@ public class BaseTVActivity extends FragmentActivity {
     public void getSeriesCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_series_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseTVActivity.4
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseTVActivity baseTVActivity = BaseTVActivity.this;
                     if (baseTVActivity.is_stop) {
@@ -860,7 +843,6 @@ public class BaseTVActivity extends FragmentActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseTVActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -923,7 +905,7 @@ public class BaseTVActivity extends FragmentActivity {
         }
         ArrayList arrayList = new ArrayList();
         this.episodeModelHashMap.keySet();
-        for (String str : new TreeSet(this.episodeModelHashMap.keySet())) {
+        for (String str : (TreeSet<String>) (TreeSet) new TreeSet(this.episodeModelHashMap.keySet())) {
             if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
                 SeriesModel seriesModel = new SeriesModel();
                 seriesModel.setName(str);
@@ -974,7 +956,6 @@ public class BaseTVActivity extends FragmentActivity {
     public void getVodCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_vod_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseTVActivity.3
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseTVActivity baseTVActivity = BaseTVActivity.this;
                     if (baseTVActivity.is_stop) {
@@ -989,7 +970,6 @@ public class BaseTVActivity extends FragmentActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseTVActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -1296,7 +1276,6 @@ public class BaseTVActivity extends FragmentActivity {
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Realm.init(this);

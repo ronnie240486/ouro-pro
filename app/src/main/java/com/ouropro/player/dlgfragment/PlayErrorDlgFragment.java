@@ -45,14 +45,13 @@ public class PlayErrorDlgFragment extends DialogFragment {
             this.btn_cancel.requestFocus();
         }
         final int i2 = 0;
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.PlayErrorDlgFragment$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.PlayErrorDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ PlayErrorDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PlayErrorDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i2) {
                     case 0:
@@ -64,14 +63,13 @@ public class PlayErrorDlgFragment extends DialogFragment {
                 }
             }
         });
-        this.btn_ok.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.PlayErrorDlgFragment$$ExternalSyntheticLambda0
+        this.btn_ok.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.PlayErrorDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ PlayErrorDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PlayErrorDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i) {
                     case 0:
@@ -104,13 +102,11 @@ public class PlayErrorDlgFragment extends DialogFragment {
         return playErrorDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_exit, viewGroup, false);
         initView(viewInflate);

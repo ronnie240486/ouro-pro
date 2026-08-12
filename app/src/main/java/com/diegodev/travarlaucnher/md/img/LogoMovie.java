@@ -56,7 +56,6 @@ public class LogoMovie extends ImageView {
         /* JADX INFO: Access modifiers changed from: protected */
         /* JADX WARN: Code duplicated, block: B:20:0x0074 A[Catch: Exception -> 0x0070, TRY_LEAVE, TryCatch #0 {Exception -> 0x0070, blocks: (B:16:0x006c, B:20:0x0074), top: B:35:0x006c }] */
         /* JADX WARN: Code duplicated, block: B:30:0x0088 A[Catch: Exception -> 0x0084, TRY_LEAVE, TryCatch #3 {Exception -> 0x0084, blocks: (B:26:0x0080, B:30:0x0088), top: B:40:0x0080 }] */
-        @Override // android.os.AsyncTask
         public Bitmap doInBackground(String... params) {
             String imageUrl = params[0];
             HttpURLConnection connection = null;
@@ -120,7 +119,6 @@ public class LogoMovie extends ImageView {
         }
 
         /* JADX INFO: Access modifiers changed from: protected */
-        @Override // android.os.AsyncTask
         public void onPostExecute(Bitmap bitmap) {
             if (bitmap == null) {
                 Log.e(LogoMovie.TAG, "Falha ao carregar a imagem.");

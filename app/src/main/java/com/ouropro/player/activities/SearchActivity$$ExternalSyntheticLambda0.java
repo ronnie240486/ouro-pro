@@ -20,7 +20,6 @@ public final /* synthetic */ class SearchActivity$$ExternalSyntheticLambda0 impl
         this.f$0 = obj;
     }
 
-    @Override // android.view.View.OnClickListener
     public final void onClick(View view) {
         switch (this.$r8$classId) {
             case 0:

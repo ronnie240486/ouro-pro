@@ -13,7 +13,6 @@ public final /* synthetic */ class MovieMobilePlayer$$ExternalSyntheticLambda0 i
         this.f$0 = movieMobilePlayer;
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         switch (this.$r8$classId) {
             case 0:

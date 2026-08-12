@@ -18,7 +18,6 @@ public class FetchM3uItemsTask extends NetworkTask<Void, Void, List<M3UItem>> {
         this.params = arrayList;
     }
 
-    @Override // com.ouropro.player.net.NetworkTask
     public final List<M3UItem> doNetworkAction() throws JSONException, IOException {
         LoadM3UItemsCommand loadM3UItemsCommand = new LoadM3UItemsCommand(this.urlServer, this.params);
         this.command = loadM3UItemsCommand;

@@ -95,7 +95,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -110,7 +109,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
             int i = 1;
             if (response.body() != null) {
@@ -158,7 +156,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<EPGChannel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -173,7 +170,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<EPGChannel>> call, @NonNull Response<List<EPGChannel>> response) {
             if (response.body() == null) {
                 BaseActivity baseActivity = BaseActivity.this;
@@ -226,7 +222,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<EPGChannel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -241,7 +236,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<EPGChannel>> call, @NonNull Response<List<EPGChannel>> response) {
             if (response.body() != null) {
                 BaseActivity baseActivity = BaseActivity.this;
@@ -297,7 +291,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<MovieModel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -312,7 +305,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<MovieModel>> call, @NonNull Response<List<MovieModel>> response) {
             if (response.body() != null) {
                 BaseActivity baseActivity = BaseActivity.this;
@@ -374,7 +366,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<MovieModel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -389,7 +380,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<MovieModel>> call, @NonNull Response<List<MovieModel>> response) {
             if (response.body() != null) {
                 BaseActivity baseActivity = BaseActivity.this;
@@ -450,7 +440,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable th) {
             BaseActivity baseActivity = BaseActivity.this;
             if (baseActivity.is_stop) {
@@ -465,7 +454,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-        @Override // retrofit2.Callback
         public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
             if (response.body() != null) {
                 BaseActivity.this.realm.executeTransaction(new BaseActivity$5$$ExternalSyntheticLambda0(response, 5));
@@ -531,7 +519,6 @@ public class BaseActivity extends AppCompatActivity {
     public void authentication(final String str) {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).authentication(this.user, this.password).enqueue(new Callback<LoginResponse>() { // from class: com.ouropro.player.apps.BaseActivity.1
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable th) {
                     BaseActivity baseActivity = BaseActivity.this;
                     if (baseActivity.is_stop) {
@@ -548,7 +535,6 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
                     if (response.body() == null || response.body().getUser_info() == null || response.body().getUser_info().getStatus() == null) {
                         BaseActivity.this.preferenceHelper.setSharedPreferenceISM3U(true);
@@ -647,7 +633,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private String getKeyFromCategoryName(String str) {
-        for (String str2 : new TreeSet(this.categoryHashMap.keySet())) {
+        for (String str2 : (TreeSet<String>) (TreeSet) new TreeSet(this.categoryHashMap.keySet())) {
             if (getCategoryNameFromKey(str2).equalsIgnoreCase(str)) {
                 return str2;
             }
@@ -659,7 +645,6 @@ public class BaseActivity extends AppCompatActivity {
     public void getLiveCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_live_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseActivity.2
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseActivity baseActivity = BaseActivity.this;
                     if (baseActivity.is_stop) {
@@ -674,7 +659,6 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -850,7 +834,6 @@ public class BaseActivity extends AppCompatActivity {
     public void getSeriesCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_series_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseActivity.4
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseActivity baseActivity = BaseActivity.this;
                     if (baseActivity.is_stop) {
@@ -865,7 +848,6 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -985,7 +967,6 @@ public class BaseActivity extends AppCompatActivity {
     public void getVodCategory() {
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_vod_categories(this.user, this.password).enqueue(new Callback<List<CategoryModel>>() { // from class: com.ouropro.player.apps.BaseActivity.3
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<List<CategoryModel>> call, @NonNull Throwable th) {
                     BaseActivity baseActivity = BaseActivity.this;
                     if (baseActivity.is_stop) {
@@ -1000,7 +981,6 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<List<CategoryModel>> call, @NonNull Response<List<CategoryModel>> response) {
                     BaseActivity.this.error_account = 0;
                     List<CategoryModel> listBody = response.body();
@@ -1307,7 +1287,6 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Realm.init(this);

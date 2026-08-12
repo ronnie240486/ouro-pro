@@ -54,13 +54,11 @@ public class PayForTvDlgFragment extends DialogFragment {
         dismiss();
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         final int i = 0;
         View viewInflate = layoutInflater.inflate(R.layout.fragment_pay_tv, viewGroup, false);
@@ -74,7 +72,6 @@ public class PayForTvDlgFragment extends DialogFragment {
         this.et_mac.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.dlgfragment.PayForTvDlgFragment.1
             public int count = 0;
 
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 int length = PayForTvDlgFragment.this.et_mac.getText().toString().length();
                 int i3 = this.count;
@@ -89,22 +86,19 @@ public class PayForTvDlgFragment extends DialogFragment {
                 this.count = PayForTvDlgFragment.this.et_mac.getText().toString().length();
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i3, int i4, int i5) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i3, int i4, int i5) {
             }
         });
-        this.btn_ok.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.PayForTvDlgFragment$$ExternalSyntheticLambda0
+        this.btn_ok.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.PayForTvDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ PayForTvDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PayForTvDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i) {
                     case 0:
@@ -116,14 +110,13 @@ public class PayForTvDlgFragment extends DialogFragment {
                 }
             }
         });
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.PayForTvDlgFragment$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.PayForTvDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ PayForTvDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PayForTvDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i2) {
                     case 0:

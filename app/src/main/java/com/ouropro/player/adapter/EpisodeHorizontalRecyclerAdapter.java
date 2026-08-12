@@ -19,7 +19,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<EpisodeViewHolder> {
+public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<EpisodeHorizontalRecyclerAdapter.EpisodeViewHolder> {
     public Function3<EpisodeModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<EpisodeModel> models;
@@ -63,7 +63,6 @@ public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<Episo
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<EpisodeModel> list = this.models;
         if (list == null) {
@@ -85,7 +84,6 @@ public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<Episo
         notifyItemChanged(this.selected_pos);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull EpisodeViewHolder episodeViewHolder, int i) {
         EpisodeModel episodeModel = this.models.get(i);
@@ -102,7 +100,6 @@ public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<Episo
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public EpisodeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new EpisodeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_episode_play, viewGroup, false));

@@ -25,7 +25,6 @@ public final /* synthetic */ class RecyclerVodHomeAdapter$$ExternalSyntheticLamb
         this.f$3 = i;
     }
 
-    @Override // android.view.View.OnTouchListener
     public final boolean onTouch(View view, MotionEvent motionEvent) {
         switch (this.$r8$classId) {
             case 0:

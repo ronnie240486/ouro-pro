@@ -19,7 +19,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class EpisodeRecyclerAdapter extends RecyclerView.Adapter<XCEpisodeViewHolder> {
+public class EpisodeRecyclerAdapter extends RecyclerView.Adapter<EpisodeRecyclerAdapter.XCEpisodeViewHolder> {
     public Function3<EpisodeModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<EpisodeModel> episodeModels;
@@ -86,7 +86,6 @@ public class EpisodeRecyclerAdapter extends RecyclerView.Adapter<XCEpisodeViewHo
         this.clickFunctionListener.invoke(episodeModel, Integer.valueOf(i), Boolean.TRUE);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<EpisodeModel> list = this.episodeModels;
         if (list == null) {
@@ -101,7 +100,6 @@ public class EpisodeRecyclerAdapter extends RecyclerView.Adapter<XCEpisodeViewHo
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull XCEpisodeViewHolder xCEpisodeViewHolder, int i) {
         EpisodeModel episodeModel = this.episodeModels.get(i);
         xCEpisodeViewHolder.txt_num.setText(episodeModel.getEpisode_num());
@@ -124,7 +122,6 @@ public class EpisodeRecyclerAdapter extends RecyclerView.Adapter<XCEpisodeViewHo
         xCEpisodeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, episodeModel, i, 4));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public XCEpisodeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new XCEpisodeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_episode, viewGroup, false));

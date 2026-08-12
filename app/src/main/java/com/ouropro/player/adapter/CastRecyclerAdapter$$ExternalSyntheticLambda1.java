@@ -28,7 +28,6 @@ public final /* synthetic */ class CastRecyclerAdapter$$ExternalSyntheticLambda1
         this.f$2 = i;
     }
 
-    @Override // android.view.View.OnFocusChangeListener
     public final void onFocusChange(View view, boolean z) {
         switch (this.$r8$classId) {
             case 0:

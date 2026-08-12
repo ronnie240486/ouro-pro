@@ -18,7 +18,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHolder> {
+public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<RecyclerSeriesHomeAdapter.LiveHomeViewHolder> {
     public Function3<SeriesModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<SeriesModel> models;
@@ -74,7 +74,6 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         return false;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<SeriesModel> list = this.models;
         if (list == null) {
@@ -83,7 +82,6 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         return list.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, int i) {
         SeriesModel seriesModel = this.models.get(i);
@@ -94,7 +92,6 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, seriesModel, i, 2));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveHomeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_home_vod, viewGroup, false));

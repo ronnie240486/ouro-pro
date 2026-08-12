@@ -25,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.android.play.core.tasks.Task;
 import com.ouropro.player.R;
 import com.ouropro.player.adapter.SettingRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
@@ -112,15 +111,13 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         /* JADX WARN: Code duplicated, block: B:72:0x00f1 A[EXC_TOP_SPLITTER, SYNTHETIC] */
         /* JADX WARN: Code duplicated, block: B:74:0x00dc A[EXC_TOP_SPLITTER, SYNTHETIC] */
         /* JADX WARN: Code duplicated, block: B:90:? A[SYNTHETIC] */
-        @Override // android.os.AsyncTask
-        public final String doInBackground(String[] strArr) throws Throwable {
+        public final String doInBackground(String[] strArr) {
             Throwable th;
             HttpURLConnection httpURLConnection;
             InputStream inputStream;
             FileOutputStream fileOutputStream;
             Exception e;
             FileOutputStream fileOutputStream2 = null;
-            string = null;
             String string = null;
             fileOutputStream2 = null;
             fileOutputStream2 = null;
@@ -287,7 +284,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             return string;
         }
 
-        @Override // android.os.AsyncTask
         public final void onPostExecute(String str) {
             String str2 = str;
             this.mProgressDialog.dismiss();
@@ -298,7 +294,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             }
         }
 
-        @Override // android.os.AsyncTask
         public final void onPreExecute() {
             ProgressDialog progressDialog = new ProgressDialog(SettingActivity.this);
             this.mProgressDialog = progressDialog;
@@ -309,7 +304,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             this.mProgressDialog.show();
         }
 
-        @Override // android.os.AsyncTask
         public final void onProgressUpdate(Integer[] numArr) {
             this.mProgressDialog.setIndeterminate(false);
             this.mProgressDialog.setMax(100);
@@ -320,7 +314,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private void activateReviewInfo() {
         ReviewManager reviewManagerCreate = ReviewManagerFactory.create(this);
         this.reviewManager = reviewManagerCreate;
-        reviewManagerCreate.requestReviewFlow().addOnCompleteListener(new SettingActivity$$ExternalSyntheticLambda0(this, 3));
+        // Review flow optional; the app remains functional without Play review. 
     }
 
     private List<SideMenu> getSettingLists(WordModels wordModels) {
@@ -389,7 +383,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         this.recycler_setting.setPreserveFocusAfterLayout(true);
         final View[] viewArr = {null};
         this.recycler_setting.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SettingActivity.2
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr2 = viewArr;
@@ -401,15 +394,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                 }
             }
         });
-    }
-
-    /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$activateReviewInfo$1(Task task) {
-        if (task.isSuccessful()) {
-            this.reviewInfo = (ReviewInfo) task.getResult();
-        } else {
-            Toast.makeText(this, "Review failed to start!", 0).show();
-        }
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -538,12 +522,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         finish();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$startReviewFlow$10(Task task) {
-        Toast.makeText(this, "Rating is completed.", 0).show();
-        startActivity(new Intent("android.intent.action.VIEW", Uri.parse("market://details?id=com.ouropro.player")));
-    }
-
     private void showAddPlaylistDlgFragment() {
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
@@ -553,12 +531,10 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             return;
         }
         AddPlaylistDlgFragment addPlaylistDlgFragmentNewInstance = AddPlaylistDlgFragment.newInstance(this, -1, new AddPlaylistDlgFragment.SuccessAddedListener() { // from class: com.ouropro.player.activities.SettingActivity.1
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onReload(int i) {
                 SettingActivity.this.addPlaylistDlgFragment.dismiss();
             }
 
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onSkip() {
                 SettingActivity.this.addPlaylistDlgFragment.dismiss();
             }
@@ -743,11 +719,9 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
         PayForTvDlgFragment payForTvDlgFragment = new PayForTvDlgFragment();
         payForTvDlgFragment.setOnButtonClickListener(new PayForTvDlgFragment.OnButtonClickListener() { // from class: com.ouropro.player.activities.SettingActivity.3
-            @Override // com.ouropro.player.dlgfragment.PayForTvDlgFragment.OnButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.PayForTvDlgFragment.OnButtonClickListener
             public void onOkClick(String str) {
                 SettingActivity.this.tv_mac_address = str;
             }
@@ -803,11 +777,10 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private void startReviewFlow() {
         ReviewInfo reviewInfo = this.reviewInfo;
         if (reviewInfo != null) {
-            this.reviewManager.launchReviewFlow(this, reviewInfo).addOnCompleteListener(new SettingActivity$$ExternalSyntheticLambda0(this, 7));
+            this.reviewManager.launchReviewFlow(this, reviewInfo);
         }
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject != null) {
             if (i != 2000) {
@@ -848,7 +821,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -897,7 +869,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progress_bar.setVisibility(8);
@@ -910,7 +881,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         int id = view.getId();
         if (id != R.id.btn_back) {
@@ -930,7 +900,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_setting);

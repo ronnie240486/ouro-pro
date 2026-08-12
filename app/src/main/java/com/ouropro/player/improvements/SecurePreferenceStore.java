@@ -33,7 +33,7 @@ public final class SecurePreferenceStore {
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
             migrateIfNeeded(legacy, secure);
             return secure;
-        } catch (RuntimeException unavailable) {
+        } catch (Exception unavailable) {
             return legacy;
         }
     }

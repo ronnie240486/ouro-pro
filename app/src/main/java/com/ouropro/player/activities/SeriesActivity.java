@@ -86,17 +86,14 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             SeriesActivity.this.preferenceHelper.setSharedPreferenceSeriesFavNames(RealmController.with().getFavSeriesNames());
         }
 
-        @Override // com.ouropro.player.adapter.SeriesRecyclerAdapter.ItemClickListener
         public void onFavClick(SeriesModel seriesModel, int i) {
             RealmController.with().addToFavSeries(seriesModel.getName(), true, new SeriesActivity$1$$ExternalSyntheticLambda0(this, i, 0));
         }
 
-        @Override // com.ouropro.player.adapter.SeriesRecyclerAdapter.ItemClickListener
         public void onFocusPosition(int i) {
             SeriesActivity.this.pre_series_pos = i;
         }
 
-        @Override // com.ouropro.player.adapter.SeriesRecyclerAdapter.ItemClickListener
         public void onItemClick(SeriesModel seriesModel, int i) {
             Objects.requireNonNull(SeriesActivity.this);
             SeriesActivity seriesActivity = SeriesActivity.this;
@@ -118,7 +115,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             SeriesActivity.this.startActivity(intent2);
         }
 
-        @Override // com.ouropro.player.adapter.SeriesRecyclerAdapter.ItemClickListener
         public void onUnFavClick(SeriesModel seriesModel, int i) {
             RealmController.with().addToFavSeries(seriesModel.getName(), false, new SeriesActivity$1$$ExternalSyntheticLambda0(this, i, 1));
         }
@@ -169,7 +165,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             this.recycler_category.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_category.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SeriesActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -191,7 +186,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             this.recycler_series.setPreserveFocusAfterLayout(true);
             final View[] viewArr2 = {null};
             this.recycler_series.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SeriesActivity.5
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr3 = viewArr2;
@@ -263,7 +257,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.ly_search.setFocusable(z);
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         int i;
         if (keyEvent.getAction() == 0) {
@@ -373,7 +366,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_back /* 2131427888 */:
@@ -400,7 +392,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_series);
@@ -424,7 +415,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.sort_spinner.setAdapter((SpinnerAdapter) new SortSpinnerAdapter(this, this.sortLists));
         this.sort_spinner.setSelection(this.sort_pos);
         this.sort_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { // from class: com.ouropro.player.activities.SeriesActivity.2
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
                 SeriesActivity seriesActivity = SeriesActivity.this;
                 if (seriesActivity.sort_pos != i) {
@@ -440,12 +430,10 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
 
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.SeriesActivity.3
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().isEmpty()) {
                     return;
@@ -453,11 +441,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
                 SeriesActivity.this.searchModels(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });

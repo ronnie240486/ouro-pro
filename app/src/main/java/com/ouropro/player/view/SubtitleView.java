@@ -37,56 +37,11 @@ public class SubtitleView extends TextView implements Runnable {
         super(context);
     }
 
-    /* JADX WARN: Code duplicated, block: B:38:0x0039 A[EXC_TOP_SPLITTER, SYNTHETIC] */
-    private TreeMap<Long, Line> getSubtitleFile(String str) throws Throwable {
-        Throwable th;
-        InputStream inputStream;
-        try {
-            inputStream = ((HttpURLConnection) new URL(str).openConnection()).getInputStream();
-            try {
-                try {
-                    TreeMap<Long, Line> treeMap = parse(inputStream);
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    return treeMap;
-                } catch (Exception e2) {
-                    e = e2;
-                    e.printStackTrace();
-                    if (inputStream != null) {
-                        try {
-                            inputStream.close();
-                        } catch (IOException e3) {
-                            e3.printStackTrace();
-                        }
-                    }
-                    return null;
-                }
-            } catch (Throwable th2) {
-                th = th2;
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e4) {
-                        e4.printStackTrace();
-                    }
-                }
-                throw th;
-            }
-        } catch (Exception e5) {
-            e = e5;
-            inputStream = null;
-        } catch (Throwable th3) {
-            th = th3;
-            inputStream = null;
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            throw th;
+    private TreeMap<Long, Line> getSubtitleFile(String str) {
+        try (InputStream inputStream = ((HttpURLConnection) new URL(str).openConnection()).getInputStream()) {
+            return parse(inputStream);
+        } catch (Exception unused) {
+            return null;
         }
     }
 
@@ -122,19 +77,16 @@ public class SubtitleView extends TextView implements Runnable {
         return treeMap;
     }
 
-    @Override // android.widget.TextView, android.view.View
     public final void onAttachedToWindow() {
         super.onAttachedToWindow();
         postDelayed(this, 300L);
     }
 
-    @Override // android.view.View
     public final void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         removeCallbacks(this);
     }
 
-    @Override // java.lang.Runnable
     public void run() {
         ExoPlayer exoPlayer = this.player;
         if (exoPlayer != null && this.track != null) {

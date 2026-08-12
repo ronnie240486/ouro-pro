@@ -14,12 +14,10 @@ import java.io.InputStream;
 /* JADX INFO: loaded from: classes.dex */
 @GlideModule
 public class MyGlideModule extends AppGlideModule {
-    @Override // com.bumptech.glide.module.AppGlideModule, com.bumptech.glide.module.AppliesOptions
     public void applyOptions(Context context, GlideBuilder glideBuilder) {
         super.applyOptions(context, glideBuilder);
     }
 
-    @Override // com.bumptech.glide.module.LibraryGlideModule, com.bumptech.glide.module.RegistersComponents
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(UnsafeOkHttpClient.getUnsafeOkHttpClient()));
     }

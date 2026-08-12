@@ -15,7 +15,6 @@ public final /* synthetic */ class RealmController$$ExternalSyntheticLambda2 imp
         this.f$1 = z;
     }
 
-    @Override // io.realm.Realm.Transaction
     public final void execute(Realm realm) {
         switch (this.$r8$classId) {
             case 0:

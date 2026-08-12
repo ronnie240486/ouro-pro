@@ -19,7 +19,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 
 /* JADX INFO: loaded from: classes.dex */
-public class PlayEpisodeRecyclerAdapter extends RecyclerView.Adapter<EpisodeViewHolder> {
+public class PlayEpisodeRecyclerAdapter extends RecyclerView.Adapter<PlayEpisodeRecyclerAdapter.EpisodeViewHolder> {
     public Function2<EpisodeModel, Integer, Unit> clickFunctionListener;
     public Context context;
     public List<EpisodeModel> models;
@@ -52,7 +52,6 @@ public class PlayEpisodeRecyclerAdapter extends RecyclerView.Adapter<EpisodeView
         this.clickFunctionListener.invoke(episodeModel, Integer.valueOf(i));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<EpisodeModel> list = this.models;
         if (list == null) {
@@ -61,7 +60,6 @@ public class PlayEpisodeRecyclerAdapter extends RecyclerView.Adapter<EpisodeView
         return list.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull EpisodeViewHolder episodeViewHolder, int i) {
         EpisodeModel episodeModel = this.models.get(i);
@@ -79,7 +77,6 @@ public class PlayEpisodeRecyclerAdapter extends RecyclerView.Adapter<EpisodeView
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public EpisodeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new EpisodeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_episode_play, viewGroup, false));

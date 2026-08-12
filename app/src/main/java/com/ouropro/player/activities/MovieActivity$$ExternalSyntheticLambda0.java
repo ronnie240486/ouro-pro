@@ -16,7 +16,6 @@ public final /* synthetic */ class MovieActivity$$ExternalSyntheticLambda0 imple
         this.f$1 = i;
     }
 
-    @Override // android.content.DialogInterface.OnClickListener
     public final void onClick(DialogInterface dialogInterface, int i) {
         switch (this.$r8$classId) {
             case 0:

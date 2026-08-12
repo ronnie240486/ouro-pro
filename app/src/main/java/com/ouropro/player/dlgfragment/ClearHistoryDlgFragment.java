@@ -153,7 +153,6 @@ public class ClearHistoryDlgFragment extends DialogFragment implements View.OnCl
     }
 
     /* JADX WARN: Type inference incomplete: some casts might be missing */
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.btn_all) {
@@ -190,7 +189,6 @@ public class ClearHistoryDlgFragment extends DialogFragment implements View.OnCl
         }
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
@@ -198,7 +196,6 @@ public class ClearHistoryDlgFragment extends DialogFragment implements View.OnCl
 
     /* JADX WARN: Type inference failed for: r7v20, types: [java.util.ArrayList, java.util.List<java.lang.String>] */
     /* JADX WARN: Type inference failed for: r7v37, types: [java.util.ArrayList, java.util.List<java.lang.String>] */
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         int i = 0;
         View viewInflate = layoutInflater.inflate(R.layout.fragment_hide_categories, viewGroup, false);

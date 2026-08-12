@@ -1,7 +1,6 @@
 package com.ouropro.player.models;
 
 import androidx.core.provider.FontsContractCompat;
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.android.gms.common.internal.ImagesContract;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
@@ -110,7 +109,7 @@ public class SubtitleModel implements Serializable {
         @SerializedName("attributes")
         public AttributesModel attributesModel;
 
-        @SerializedName(TtmlNode.ATTR_ID)
+        @SerializedName("id")
         public String id;
 
         @SerializedName("type")

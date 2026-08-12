@@ -25,12 +25,10 @@ public final /* synthetic */ class ChangePlaylistActivity$$ExternalSyntheticLamb
         this.f$2 = urlModel;
     }
 
-    @Override // com.google.android.exoplayer2.util.ListenerSet.Event
     public final void invoke(Object obj) {
         ((AnalyticsListener) obj).onMediaItemTransition((AnalyticsListener.EventTime) this.f$0, (MediaItem) this.f$2, this.f$1);
     }
 
-    @Override // com.ouropro.player.dlgfragment.ConnectDlgFragment.SelectList
     public final void onSelect(int i) {
         ((ChangePlaylistActivity) this.f$0).lambda$showConnectDlgFragment$1(this.f$1, (AppInfoModel.UrlModel) this.f$2, i);
     }

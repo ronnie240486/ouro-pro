@@ -116,7 +116,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             this.recycler_category.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_category.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.CategoryActivity.1
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -133,16 +132,13 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             this.recycler_category.setHasFixedSize(true);
         }
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.CategoryActivity.2
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 CategoryActivity.this.searchCategoryModel(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });
@@ -248,7 +244,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         int i = AnonymousClass7.$SwitchMap$com$flextv$livestore$apps$HomeType[LTVApp.homeType.ordinal()];
         if (i == 1) {
             this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, arrayList, 0, true, this.preferenceHelper.getSharedPreferenceISM3U(), true, new Function3<CategoryModel, Integer, Boolean, Unit>() { // from class: com.ouropro.player.activities.CategoryActivity.3
-                @Override // kotlin.jvm.functions.Function3
                 public Unit invoke(CategoryModel categoryModel2, Integer num, Boolean bool) {
                     if (!bool.booleanValue()) {
                         CategoryActivity.this.pre_category_pos = num.intValue();
@@ -267,7 +262,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             }));
         } else if (i != 2) {
             this.recycler_category.setAdapter(new RecyclerLiveCategoryAdapter(this, arrayList, this.preferenceHelper.getSharedPreferenceISM3U(), true, this.category_position, new Function3<CategoryModel, Integer, Boolean, Unit>() { // from class: com.ouropro.player.activities.CategoryActivity.5
-                @Override // kotlin.jvm.functions.Function3
                 public Unit invoke(CategoryModel categoryModel2, Integer num, Boolean bool) {
                     if (!bool.booleanValue()) {
                         CategoryActivity.this.pre_category_pos = num.intValue();
@@ -294,7 +288,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             }));
         } else {
             this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, arrayList, 0, true, this.preferenceHelper.getSharedPreferenceISM3U(), false, new Function3<CategoryModel, Integer, Boolean, Unit>() { // from class: com.ouropro.player.activities.CategoryActivity.4
-                @Override // kotlin.jvm.functions.Function3
                 public Unit invoke(CategoryModel categoryModel2, Integer num, Boolean bool) {
                     if (!bool.booleanValue()) {
                         CategoryActivity.this.pre_category_pos = num.intValue();
@@ -322,14 +315,13 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             List<CategoryModel> list = LTVApp.vod_categories_filter;
             this.categoryModels = list;
             final int i4 = 0;
-            this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, list, i, true, this.preferenceHelper.getSharedPreferenceISM3U(), true, new Function3(this) { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
+            this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, list, i, true, this.preferenceHelper.getSharedPreferenceISM3U(), true, new Function3() { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
                 public final /* synthetic */ CategoryActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = CategoryActivity.this;
                 }
 
-                @Override // kotlin.jvm.functions.Function3
                 public final Object invoke(Object obj, Object obj2, Object obj3) {
                     switch (i4) {
                         case 0:
@@ -348,14 +340,13 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             Constants.getSeriesGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleSeriesCategories(), this);
             List<CategoryModel> list2 = LTVApp.series_categories_filter;
             this.categoryModels = list2;
-            this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, list2, i, true, this.preferenceHelper.getSharedPreferenceISM3U(), false, new Function3(this) { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
+            this.recycler_category.setAdapter(new RecyclerVodCategoryAdapter(this, list2, i, true, this.preferenceHelper.getSharedPreferenceISM3U(), false, new Function3() { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
                 public final /* synthetic */ CategoryActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = CategoryActivity.this;
                 }
 
-                @Override // kotlin.jvm.functions.Function3
                 public final Object invoke(Object obj, Object obj2, Object obj3) {
                     switch (i3) {
                         case 0:
@@ -372,14 +363,13 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         Constants.getLiveGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleLiveCategories(), this);
         List<CategoryModel> list3 = LTVApp.live_categories_filter;
         this.categoryModels = list3;
-        this.recycler_category.setAdapter(new RecyclerLiveCategoryAdapter(this, list3, this.preferenceHelper.getSharedPreferenceISM3U(), true, i, new Function3(this) { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
+        this.recycler_category.setAdapter(new RecyclerLiveCategoryAdapter(this, list3, this.preferenceHelper.getSharedPreferenceISM3U(), true, i, new Function3() { // from class: com.ouropro.player.activities.CategoryActivity$$ExternalSyntheticLambda0
             public final /* synthetic */ CategoryActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = CategoryActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i5) {
                     case 0:
@@ -434,7 +424,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.CategoryActivity.6
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 int i = AnonymousClass7.$SwitchMap$com$flextv$livestore$apps$HomeType[LTVApp.homeType.ordinal()];
                 if (i == 1) {
@@ -462,13 +451,11 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
                 }
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 CategoryActivity categoryActivity = CategoryActivity.this;
                 Toast.makeText(categoryActivity, categoryActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 CategoryActivity categoryActivity = CategoryActivity.this;
                 Toast.makeText(categoryActivity, categoryActivity.wordModels.getPut_pin_code(), 0).show();
@@ -477,7 +464,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         this.lockDlgFragment.show(supportFragmentManager, "fragment_lock");
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -505,7 +491,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.txt_home /* 2131428282 */:
@@ -532,7 +517,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_category);

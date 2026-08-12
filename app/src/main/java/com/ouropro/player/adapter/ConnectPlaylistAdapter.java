@@ -14,7 +14,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class ConnectPlaylistAdapter extends RecyclerView.Adapter<ConnectListViewHolder> {
+public class ConnectPlaylistAdapter extends RecyclerView.Adapter<ConnectPlaylistAdapter.ConnectListViewHolder> {
     public Function3<SideMenu, Integer, Boolean, Unit> clickListenerFunction;
     public List<SideMenu> data;
 
@@ -37,18 +37,15 @@ public class ConnectPlaylistAdapter extends RecyclerView.Adapter<ConnectListView
         this.clickListenerFunction.invoke(this.data.get(i), Integer.valueOf(i), Boolean.TRUE);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         return this.data.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull ConnectListViewHolder connectListViewHolder, int i) {
         connectListViewHolder.txt_name.setText(this.data.get(i).getName());
         connectListViewHolder.itemView.setOnClickListener(new SeasonRecyclerAdapter$$ExternalSyntheticLambda0(this, i, 1));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public ConnectListViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new ConnectListViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_connect, viewGroup, false));

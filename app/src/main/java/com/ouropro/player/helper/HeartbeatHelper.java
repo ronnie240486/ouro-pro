@@ -12,7 +12,6 @@ public class HeartbeatHelper {
         }
         final String str4 = "{\"mac\":\"" + str + "\",\"content\":\"" + str2 + "\"}";
         new Thread(new Runnable() { // from class: com.ouropro.player.helper.HeartbeatHelper.1
-            @Override // java.lang.Runnable
             public void run() {
                 try {
                     HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(str3).openConnection();

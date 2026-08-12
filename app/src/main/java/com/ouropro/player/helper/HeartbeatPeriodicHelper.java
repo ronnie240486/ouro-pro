@@ -16,7 +16,6 @@ public class HeartbeatPeriodicHelper {
         if (this.running) {
             HeartbeatHelper.sendHeartbeat(this.mac, this.content, this.serverUrl);
             Runnable runnable = new Runnable() { // from class: com.ouropro.player.helper.HeartbeatPeriodicHelper.1
-                @Override // java.lang.Runnable
                 public void run() {
                     HeartbeatPeriodicHelper.this.sendAndSchedule();
                 }

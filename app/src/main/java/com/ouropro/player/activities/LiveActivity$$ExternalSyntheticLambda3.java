@@ -26,17 +26,14 @@ public final /* synthetic */ class LiveActivity$$ExternalSyntheticLambda3 implem
         this.f$1 = obj2;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:
                 ((LiveActivity) this.f$0).lambda$epgTimer$3((String) this.f$1);
                 break;
             case 1:
-                ((ViewTransition) this.f$0).lambda$applyTransition$0((View[]) this.f$1);
                 break;
             case 2:
-                ((ResourcesCompat.FontCallback) this.f$0).lambda$callbackSuccessAsync$0((Typeface) this.f$1);
                 break;
             case 3:
                 ((LiveChannelActivity) this.f$0).lambda$epgTimer$2((String) this.f$1);
@@ -48,22 +45,16 @@ public final /* synthetic */ class LiveActivity$$ExternalSyntheticLambda3 implem
                 ((LiveMobileActivity) this.f$0).lambda$epgTimer$3((String) this.f$1);
                 break;
             case 6:
-                ((AudioRendererEventListener.EventDispatcher) this.f$0).lambda$decoderReleased$5((String) this.f$1);
                 break;
             case 7:
-                ((NetworkTypeObserver) this.f$0).lambda$register$0((NetworkTypeObserver.Listener) this.f$1);
                 break;
             case 8:
-                ((VideoRendererEventListener.EventDispatcher) this.f$0).lambda$decoderReleased$7((String) this.f$1);
                 break;
             case 9:
-                ((VideoRendererEventListener.EventDispatcher) this.f$0).lambda$videoSizeChanged$5((VideoSize) this.f$1);
                 break;
             case 10:
-                ((VideoRendererEventListener.EventDispatcher) this.f$0).lambda$videoCodecError$9((Exception) this.f$1);
                 break;
             default:
-                ((SphericalGLSurfaceView) this.f$0).lambda$onSurfaceTextureAvailable$1((SurfaceTexture) this.f$1);
                 break;
         }
     }

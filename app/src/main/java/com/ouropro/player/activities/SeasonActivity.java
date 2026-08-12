@@ -181,14 +181,12 @@ public class SeasonActivity extends AppCompatActivity {
 
     private void getSeriesInfo() {
         RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_series_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.series_id).enqueue(new Callback<InfoSerie>() { // from class: com.ouropro.player.activities.SeasonActivity.1
-            @Override // retrofit2.Callback
             public void onFailure(@NonNull Call<InfoSerie> call, @NonNull Throwable th) {
                 SeasonActivity.this.image_back.setFocusable(true);
                 SeasonActivity.this.image_back.requestFocus();
                 SeasonActivity.this.getSomeSeriesInfo();
             }
 
-            @Override // retrofit2.Callback
             public void onResponse(@NonNull Call<InfoSerie> call, @NonNull Response<InfoSerie> response) {
                 if (response.body() != null) {
                     SeasonActivity seasonActivity = SeasonActivity.this;
@@ -224,7 +222,6 @@ public class SeasonActivity extends AppCompatActivity {
             this.season_list.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.season_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SeasonActivity.3
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -241,7 +238,6 @@ public class SeasonActivity extends AppCompatActivity {
             this.episode_list.setPreserveFocusAfterLayout(true);
             final View[] viewArr2 = {null};
             this.episode_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SeasonActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr3 = viewArr2;
@@ -432,7 +428,6 @@ public class SeasonActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             switch (keyEvent.getKeyCode()) {
@@ -480,7 +475,6 @@ public class SeasonActivity extends AppCompatActivity {
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_season);
@@ -499,14 +493,13 @@ public class SeasonActivity extends AppCompatActivity {
         this.series_id = this.currentSeries.getSeries_id();
         this.txt_name.setText(this.series_name);
         final int i = 0;
-        SeasonRecyclerAdapter seasonRecyclerAdapter = new SeasonRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
+        SeasonRecyclerAdapter seasonRecyclerAdapter = new SeasonRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
             public final /* synthetic */ SeasonActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeasonActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i) {
                     case 0:
@@ -519,14 +512,13 @@ public class SeasonActivity extends AppCompatActivity {
         this.seasonAdapter = seasonRecyclerAdapter;
         this.season_list.setAdapter(seasonRecyclerAdapter);
         final int i2 = 1;
-        EpisodeRecyclerAdapter episodeRecyclerAdapter = new EpisodeRecyclerAdapter(this, new ArrayList(), this.series_name, this.season_name, new Function3(this) { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
+        EpisodeRecyclerAdapter episodeRecyclerAdapter = new EpisodeRecyclerAdapter(this, new ArrayList(), this.series_name, this.season_name, new Function3() { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
             public final /* synthetic */ SeasonActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeasonActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i2) {
                     case 0:

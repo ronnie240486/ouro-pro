@@ -53,13 +53,11 @@ public class AudioTrackDlgFragment extends DialogFragment {
         return audioTrackDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_audio_track, viewGroup, false);
         this.wordModels = GetSharedInfo.getWordModel(this.context);

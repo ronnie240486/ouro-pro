@@ -37,7 +37,6 @@ public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
     }
 
     /* JADX INFO: Access modifiers changed from: protected */
-    @Override // android.os.AsyncTask
     public Bitmap doInBackground(String... params) {
         if (params == null || params.length == 0 || params[0] == null || params[0].isEmpty()) {
             Log.e(TAG, "URL da imagem está vazia ou nula.");
@@ -74,15 +73,15 @@ public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
                     Log.e(TAG, "Erro ao fechar o InputStream", e2);
                 }
             }
-            if (0 != 0) {
+            if (connection != null) {
                 connection.disconnect();
             }
         }
+        return null;
     }
 
     /* JADX INFO: Access modifiers changed from: protected */
     /* JADX WARN: Can't rename method to resolve collision */
-    @Override // android.os.AsyncTask
     public void onPostExecute(Bitmap bitmap) {
         if (bitmap == null) {
             Log.e(TAG, "Falha ao carregar a imagem final.");

@@ -149,7 +149,6 @@ public class CatchUpActivity extends AppCompatActivity {
         this.progressBar.setVisibility(0);
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_full_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
-                @Override // retrofit2.Callback
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
                     CatchUpActivity.this.progressBar.setVisibility(8);
                     CatchUpActivity catchUpActivity = CatchUpActivity.this;
@@ -159,7 +158,6 @@ public class CatchUpActivity extends AppCompatActivity {
                     CatchUpActivity.this.image_back.requestFocus();
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
                     if (response.body() != null && response.body().getEpg_listings().size() != 0) {
                         CatchUpActivity.this.catchUpEpgList = response.body().getEpg_listings();
@@ -207,7 +205,6 @@ public class CatchUpActivity extends AppCompatActivity {
         this.date_list.setPreserveFocusAfterLayout(true);
         final View[] viewArr = {null};
         this.date_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.CatchUpActivity.2
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr2 = viewArr;
@@ -224,7 +221,6 @@ public class CatchUpActivity extends AppCompatActivity {
         this.epg_list.setLoop(false);
         final View[] viewArr2 = {null};
         this.epg_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.CatchUpActivity.3
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr3 = viewArr2;
@@ -285,7 +281,6 @@ public class CatchUpActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         List<CatchUpEpg> list;
         if (keyEvent.getAction() == 0) {
@@ -322,7 +317,6 @@ public class CatchUpActivity extends AppCompatActivity {
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_catch_up);
@@ -343,14 +337,13 @@ public class CatchUpActivity extends AppCompatActivity {
             Glide.with((FragmentActivity) this).load(Integer.valueOf(R.drawable.home_logo)).error(R.drawable.home_logo).into(this.channel_image);
         }
         final int i = 0;
-        DateRecyclerAdapter dateRecyclerAdapter = new DateRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
+        DateRecyclerAdapter dateRecyclerAdapter = new DateRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
             public final /* synthetic */ CatchUpActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = CatchUpActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i) {
                     case 0:
@@ -363,14 +356,13 @@ public class CatchUpActivity extends AppCompatActivity {
         this.dateAdapter = dateRecyclerAdapter;
         this.date_list.setAdapter(dateRecyclerAdapter);
         final int i2 = 1;
-        ProgramRecyclerAdapter programRecyclerAdapter = new ProgramRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
+        ProgramRecyclerAdapter programRecyclerAdapter = new ProgramRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
             public final /* synthetic */ CatchUpActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = CatchUpActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i2) {
                     case 0:

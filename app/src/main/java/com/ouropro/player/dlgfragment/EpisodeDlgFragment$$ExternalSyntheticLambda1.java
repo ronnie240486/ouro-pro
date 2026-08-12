@@ -15,7 +15,6 @@ public final /* synthetic */ class EpisodeDlgFragment$$ExternalSyntheticLambda1 
         this.f$0 = dialogFragment;
     }
 
-    @Override // kotlin.jvm.functions.Function2
     public final Object invoke(Object obj, Object obj2) {
         switch (this.$r8$classId) {
             case 0:

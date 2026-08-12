@@ -9,14 +9,12 @@ import org.json.JSONException;
 public class FetchChannelsTask extends NetworkTask<Void, Void, List<EPGChannel>> {
     private LoadChannelsCommand command;
 
-    @Override // com.ouropro.player.net.NetworkTask
     public final List<EPGChannel> doNetworkAction() throws JSONException, IOException {
         LoadChannelsCommand loadChannelsCommand = new LoadChannelsCommand();
         this.command = loadChannelsCommand;
         return loadChannelsCommand.execute();
     }
 
-    @Override // com.ouropro.player.net.NetworkTask, android.os.AsyncTask
     public final void onPreExecute() {
     }
 }

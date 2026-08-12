@@ -44,7 +44,6 @@ public class GetDataRequest {
         Volley.newRequestQueue(this.context);
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(str, jSONObject, new GetDataRequest$$ExternalSyntheticLambda0(this), new GetDataRequest$$ExternalSyntheticLambda0(this)) { // from class: com.ouropro.player.remote.GetDataRequest.1
-                @Override // com.android.volley.Request
                 public Map<String, String> getHeaders() {
                     HashMap map = new HashMap();
                     map.put(HttpHeaders.USER_AGENT, "smart-tv");

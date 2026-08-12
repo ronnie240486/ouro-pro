@@ -28,14 +28,12 @@ public class CustomSpinner extends AppCompatSpinner {
         return this.mOpenInitiated;
     }
 
-    @Override // android.view.View
     public void onWindowFocusChanged(boolean z) {
         if (hasBeenFocused() && z) {
             performCloseEvent();
         }
     }
 
-    @Override // androidx.appcompat.widget.AppCompatSpinner, android.widget.Spinner, android.view.View
     public boolean performClick() {
         this.mOpenInitiated = false;
         OnSpinnerEventsListener onSpinnerEventsListener = this.listener;

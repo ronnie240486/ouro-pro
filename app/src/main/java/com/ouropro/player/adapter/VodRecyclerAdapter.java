@@ -18,7 +18,7 @@ import com.ouropro.player.utils.ImageLoaderJava;
 import io.realm.RealmResults;
 
 /* JADX INFO: loaded from: classes.dex */
-public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, VodViewHolder> {
+public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, VodRecyclerAdapter.VodViewHolder> {
     public Context context;
     public boolean is_grid;
     public ItemClickListener mItemClickListener;
@@ -106,7 +106,6 @@ public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, Vod
         notifyItemChanged(this.selected_pos);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull VodViewHolder vodViewHolder, int i) {
         MovieModel item = getItem(i);
@@ -142,7 +141,6 @@ public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, Vod
         this.mItemClickListener.onFocusPosition(i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public VodViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return this.is_grid ? new VodViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_vod_grid, viewGroup, false)) : new VodViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_vod, viewGroup, false));

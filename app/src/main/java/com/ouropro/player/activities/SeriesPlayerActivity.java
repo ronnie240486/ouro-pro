@@ -135,7 +135,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
     public int audio_position = 0;
     public Handler handler = new Handler();
     private final Runnable mUpdateTimeTask = new Runnable() { // from class: com.ouropro.player.activities.SeriesPlayerActivity.4
-        @Override // java.lang.Runnable
         public void run() {
             try {
                 ExoPlayer exoPlayer = SeriesPlayerActivity.this.player;
@@ -163,92 +162,57 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         private PlayerEventListener() {
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioAttributesChanged(AudioAttributes audioAttributes) {
-            Player.Listener.CC.$default$onAudioAttributesChanged(this, audioAttributes);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioSessionIdChanged(int i) {
-            Player.Listener.CC.$default$onAudioSessionIdChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAvailableCommandsChanged(Player.Commands commands) {
-            Player.Listener.CC.$default$onAvailableCommandsChanged(this, commands);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(CueGroup cueGroup) {
-            Player.Listener.CC.$default$onCues(this, cueGroup);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(List list) {
-            Player.Listener.CC.$default$onCues(this, list);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceInfoChanged(DeviceInfo deviceInfo) {
-            Player.Listener.CC.$default$onDeviceInfoChanged(this, deviceInfo);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceVolumeChanged(int i, boolean z) {
-            Player.Listener.CC.$default$onDeviceVolumeChanged(this, i, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onEvents(Player player, Player.Events events) {
-            Player.Listener.CC.$default$onEvents(this, player, events);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsPlayingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsPlayingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(long j) {
-            Player.Listener.CC.$default$onMaxSeekToPreviousPositionChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaItemTransition(MediaItem mediaItem, int i) {
-            Player.Listener.CC.$default$onMediaItemTransition(this, mediaItem, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onMediaMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMetadata(Metadata metadata) {
-            Player.Listener.CC.$default$onMetadata(this, metadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayWhenReadyChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayWhenReadyChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-            Player.Listener.CC.$default$onPlaybackParametersChanged(this, playbackParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlaybackStateChanged(int i) {
             if (i == 4) {
                 SeriesPlayerActivity.this.releasePlayer();
@@ -269,12 +233,9 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackSuppressionReasonChanged(int i) {
-            Player.Listener.CC.$default$onPlaybackSuppressionReasonChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlayerError(@NonNull PlaybackException playbackException) {
             if (playbackException.errorCode == 1002) {
                 SeriesPlayerActivity.this.image_forward.setVisibility(8);
@@ -299,94 +260,58 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerErrorChanged(PlaybackException playbackException) {
-            Player.Listener.CC.$default$onPlayerErrorChanged(this, playbackException);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerStateChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayerStateChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onPlaylistMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, positionInfo, positionInfo2, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRenderedFirstFrame() {
-            Player.Listener.CC.$default$onRenderedFirstFrame(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRepeatModeChanged(int i) {
-            Player.Listener.CC.$default$onRepeatModeChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekBackIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekBackIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekForwardIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekForwardIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekProcessed() {
-            Player.Listener.CC.$default$onSeekProcessed(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onShuffleModeEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onShuffleModeEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSkipSilenceEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onSkipSilenceEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSurfaceSizeChanged(int i, int i2) {
-            Player.Listener.CC.$default$onSurfaceSizeChanged(this, i, i2);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTimelineChanged(Timeline timeline, int i) {
-            Player.Listener.CC.$default$onTimelineChanged(this, timeline, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTrackSelectionParametersChanged(TrackSelectionParameters trackSelectionParameters) {
-            Player.Listener.CC.$default$onTrackSelectionParametersChanged(this, trackSelectionParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTracksChanged(Tracks tracks) {
-            Player.Listener.CC.$default$onTracksChanged(this, tracks);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVideoSizeChanged(VideoSize videoSize) {
-            Player.Listener.CC.$default$onVideoSizeChanged(this, videoSize);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVolumeChanged(float f) {
-            Player.Listener.CC.$default$onVolumeChanged(this, f);
         }
     }
 
@@ -841,7 +766,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getStop_playback(), this.wordModels.getPlayback_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.SeriesPlayerActivity.2
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesPlayerActivity seriesPlayerActivity = SeriesPlayerActivity.this;
                 seriesPlayerActivity.handler.removeCallbacks(seriesPlayerActivity.hideInfoTicker);
@@ -850,7 +774,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                 SeriesPlayerActivity.this.btn_play.requestFocus();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesPlayerActivity.this.exitDlgFragment.dismiss();
                 SeriesPlayerActivity.this.releasePlayer();
@@ -889,7 +812,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         PlayErrorDlgFragment playErrorDlgFragmentNewInstance = PlayErrorDlgFragment.newInstance(this.wordModels.getPlay_back_error(), this.wordModels.getPlay_back_error_description(), false);
         this.errorDlgFragment = playErrorDlgFragmentNewInstance;
         playErrorDlgFragmentNewInstance.setOkButtonClickListener(new PlayErrorDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.SeriesPlayerActivity.3
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesPlayerActivity seriesPlayerActivity = SeriesPlayerActivity.this;
                 if (seriesPlayerActivity.episode_position < seriesPlayerActivity.episodeModels.size() - 1) {
@@ -901,7 +823,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                 }
             }
 
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesPlayerActivity.this.finish();
             }
@@ -920,7 +841,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getResume(), this.wordModels.getResume_plyaback_from_ast_position(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.resumeDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.SeriesPlayerActivity.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesPlayerActivity.this.ly_control.setVisibility(0);
                 SeriesPlayerActivity seriesPlayerActivity = SeriesPlayerActivity.this;
@@ -932,7 +852,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                 SeriesPlayerActivity.this.btn_play.requestFocus();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesPlayerActivity.this.resumeDlgFragment.dismiss();
                 SeriesPlayerActivity.this.ly_control.setVisibility(0);
@@ -959,7 +878,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // com.ouropro.player.remote.GetSubtitleLinkRequest.OnGetLinkModelListener
     public void OnGetLinkModelResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             Toast.makeText(getApplicationContext(), this.wordModels.getNo_subtitle(), 1).show();
@@ -973,7 +891,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // com.ouropro.player.remote.GetSubtitleDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             Toast.makeText(getApplicationContext(), this.wordModels.getNo_subtitle(), 1).show();
@@ -996,7 +913,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
     /* JADX WARN: Code duplicated, block: B:76:0x0124  */
     /* JADX WARN: Code duplicated, block: B:78:0x012c  */
     /* JADX WARN: Code duplicated, block: B:79:0x0135  */
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -1082,7 +998,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                         seekToRewind();
                         this.image_rewind.setVisibility(0);
                         break;
-                        break;
                     case 22:
                         if (this.ly_control.getVisibility() != 0 && this.btn_next.hasFocus()) {
                             return true;
@@ -1094,7 +1009,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                             seekToForward();
                             this.image_forward.setVisibility(0);
                         }
-                        break;
                         break;
                     case 23:
                         if (this.ly_control.getVisibility() == 8) {
@@ -1120,7 +1034,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_audio /* 2131427462 */:
@@ -1179,7 +1092,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_series_player);
@@ -1210,7 +1122,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         playEpisode(this.episode_position);
     }
 
-    @Override // android.view.View.OnFocusChangeListener
     public void onFocusChange(View view, boolean z) {
         if (z) {
             this.handler.removeCallbacks(this.hideInfoTicker);
@@ -1218,7 +1129,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onPause() {
         super.onPause();
         if (Util.SDK_INT <= 23) {
@@ -1230,7 +1140,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onProgressChanged(SeekBar seekBar, int i, boolean z) {
         if (this.player == null || !z) {
             return;
@@ -1244,11 +1153,9 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         textView.setText(sbM.toString());
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStartTrackingTouch(SeekBar seekBar) {
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onStop() {
         super.onStop();
         if (Util.SDK_INT > 23) {
@@ -1260,7 +1167,6 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStopTrackingTouch(SeekBar seekBar) {
         if (this.player == null || seekBar.getId() != R.id.seekBar) {
             return;

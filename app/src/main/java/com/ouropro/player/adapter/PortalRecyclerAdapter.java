@@ -89,7 +89,6 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<AppInfoModel.UrlModel> list = this.channels;
         if (list == null) {
@@ -98,26 +97,23 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         return list.size() + 1;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemViewType(int i) {
         return i == this.channels.size() ? 0 : 1;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder viewHolder, final int i) {
         int itemViewType = viewHolder.getItemViewType();
         final int i2 = 0;
         if (itemViewType == 0) {
             AddViewHolder addViewHolder = (AddViewHolder) viewHolder;
             addViewHolder.txt_name.setText(this.wordModels.getAdd_playlist());
-            addViewHolder.itemView.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda0
+            addViewHolder.itemView.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda0
                 public final /* synthetic */ PortalRecyclerAdapter f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = PortalRecyclerAdapter.this;
                 }
 
-                @Override // android.view.View.OnClickListener
                 public final void onClick(View view) {
                     switch (i2) {
                         case 0:
@@ -129,14 +125,13 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     }
                 }
             });
-            addViewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener(this) { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda1
+            addViewHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda1
                 public final /* synthetic */ PortalRecyclerAdapter f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = PortalRecyclerAdapter.this;
                 }
 
-                @Override // android.view.View.OnFocusChangeListener
                 public final void onFocusChange(View view, boolean z) {
                     switch (i2) {
                         case 0:
@@ -166,14 +161,13 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         } else {
             playlistHolder.txt_connected.setVisibility(8);
         }
-        playlistHolder.itemView.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda0
+        playlistHolder.itemView.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda0
             public final /* synthetic */ PortalRecyclerAdapter f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PortalRecyclerAdapter.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i3) {
                     case 0:
@@ -185,14 +179,13 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 }
             }
         });
-        playlistHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener(this) { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda1
+        playlistHolder.itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() { // from class: com.ouropro.player.adapter.PortalRecyclerAdapter$$ExternalSyntheticLambda1
             public final /* synthetic */ PortalRecyclerAdapter f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = PortalRecyclerAdapter.this;
             }
 
-            @Override // android.view.View.OnFocusChangeListener
             public final void onFocusChange(View view, boolean z) {
                 switch (i3) {
                     case 0:
@@ -206,7 +199,6 @@ public class PortalRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         });
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return i == 0 ? new AddViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.portal_item_add, viewGroup, false)) : new PlaylistHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.portal_item, viewGroup, false));

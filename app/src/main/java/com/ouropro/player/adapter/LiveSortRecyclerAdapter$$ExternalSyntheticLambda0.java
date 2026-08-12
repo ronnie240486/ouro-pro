@@ -14,7 +14,6 @@ public final /* synthetic */ class LiveSortRecyclerAdapter$$ExternalSyntheticLam
         this.f$0 = viewHolder;
     }
 
-    @Override // android.view.View.OnFocusChangeListener
     public final void onFocusChange(View view, boolean z) {
         switch (this.$r8$classId) {
             case 0:

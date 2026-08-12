@@ -117,7 +117,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
     public boolean is_system_setting = false;
     public Handler handler = new Handler();
     private final Runnable mUpdateTimeTask = new Runnable() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer.4
-        @Override // java.lang.Runnable
         public void run() {
             try {
                 ExoPlayer exoPlayer = SeriesMobilePlayer.this.player;
@@ -145,92 +144,57 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         private PlayerEventListener() {
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioAttributesChanged(AudioAttributes audioAttributes) {
-            Player.Listener.CC.$default$onAudioAttributesChanged(this, audioAttributes);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioSessionIdChanged(int i) {
-            Player.Listener.CC.$default$onAudioSessionIdChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAvailableCommandsChanged(Player.Commands commands) {
-            Player.Listener.CC.$default$onAvailableCommandsChanged(this, commands);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(CueGroup cueGroup) {
-            Player.Listener.CC.$default$onCues(this, cueGroup);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(List list) {
-            Player.Listener.CC.$default$onCues(this, list);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceInfoChanged(DeviceInfo deviceInfo) {
-            Player.Listener.CC.$default$onDeviceInfoChanged(this, deviceInfo);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceVolumeChanged(int i, boolean z) {
-            Player.Listener.CC.$default$onDeviceVolumeChanged(this, i, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onEvents(Player player, Player.Events events) {
-            Player.Listener.CC.$default$onEvents(this, player, events);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsPlayingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsPlayingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(long j) {
-            Player.Listener.CC.$default$onMaxSeekToPreviousPositionChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaItemTransition(MediaItem mediaItem, int i) {
-            Player.Listener.CC.$default$onMediaItemTransition(this, mediaItem, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onMediaMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMetadata(Metadata metadata) {
-            Player.Listener.CC.$default$onMetadata(this, metadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayWhenReadyChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayWhenReadyChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-            Player.Listener.CC.$default$onPlaybackParametersChanged(this, playbackParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlaybackStateChanged(int i) {
             if (i == 4) {
                 SeriesMobilePlayer.this.releasePlayer();
@@ -244,12 +208,9 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackSuppressionReasonChanged(int i) {
-            Player.Listener.CC.$default$onPlaybackSuppressionReasonChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlayerError(@NonNull PlaybackException playbackException) {
             if (playbackException.errorCode == 1002) {
                 SeriesMobilePlayer.this.releasePlayer();
@@ -272,94 +233,58 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerErrorChanged(PlaybackException playbackException) {
-            Player.Listener.CC.$default$onPlayerErrorChanged(this, playbackException);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerStateChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayerStateChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onPlaylistMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, positionInfo, positionInfo2, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRenderedFirstFrame() {
-            Player.Listener.CC.$default$onRenderedFirstFrame(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRepeatModeChanged(int i) {
-            Player.Listener.CC.$default$onRepeatModeChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekBackIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekBackIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekForwardIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekForwardIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekProcessed() {
-            Player.Listener.CC.$default$onSeekProcessed(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onShuffleModeEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onShuffleModeEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSkipSilenceEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onSkipSilenceEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSurfaceSizeChanged(int i, int i2) {
-            Player.Listener.CC.$default$onSurfaceSizeChanged(this, i, i2);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTimelineChanged(Timeline timeline, int i) {
-            Player.Listener.CC.$default$onTimelineChanged(this, timeline, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTrackSelectionParametersChanged(TrackSelectionParameters trackSelectionParameters) {
-            Player.Listener.CC.$default$onTrackSelectionParametersChanged(this, trackSelectionParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTracksChanged(Tracks tracks) {
-            Player.Listener.CC.$default$onTracksChanged(this, tracks);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVideoSizeChanged(VideoSize videoSize) {
-            Player.Listener.CC.$default$onVideoSizeChanged(this, videoSize);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVolumeChanged(float f) {
-            Player.Listener.CC.$default$onVolumeChanged(this, f);
         }
     }
 
@@ -420,14 +345,13 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         this.btn_audio.setOnClickListener(this);
         this.btn_down.setOnClickListener(this);
         this.btn_resolution.setOnClickListener(this);
-        findViewById(R.id.view_click).setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer$$ExternalSyntheticLambda0
+        findViewById(R.id.view_click).setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer$$ExternalSyntheticLambda0
             public final /* synthetic */ SeriesMobilePlayer f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeriesMobilePlayer.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i) {
                     case 0:
@@ -440,14 +364,13 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
             }
         });
         final int i2 = 1;
-        this.playerView.getVideoSurfaceView().setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer$$ExternalSyntheticLambda0
+        this.playerView.getVideoSurfaceView().setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer$$ExternalSyntheticLambda0
             public final /* synthetic */ SeriesMobilePlayer f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeriesMobilePlayer.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i2) {
                     case 0:
@@ -667,7 +590,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         EpisodeDlgFragment episodeDlgFragmentNewInstance = EpisodeDlgFragment.newInstance(this.episodeModels, this.season_pos, this.episode_position);
         this.episodeDlgFragment = episodeDlgFragmentNewInstance;
         episodeDlgFragmentNewInstance.setOnEpisodeItemListener(new EpisodeDlgFragment.OnEpisodeItemListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer.5
-            @Override // com.ouropro.player.dlgfragment.EpisodeDlgFragment.OnEpisodeItemListener
             public void OnEpisodeSelected(EpisodeModel episodeModel, int i) {
                 SeriesMobilePlayer.this.episodeDlgFragment.dismiss();
                 SeriesMobilePlayer seriesMobilePlayer = SeriesMobilePlayer.this;
@@ -679,7 +601,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
                 }
             }
 
-            @Override // com.ouropro.player.dlgfragment.EpisodeDlgFragment.OnEpisodeItemListener
             public void OnSeeAllEpisodes() {
                 SeriesMobilePlayer.this.releasePlayer();
                 SeriesMobilePlayer.this.finish();
@@ -699,7 +620,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getStop_playback(), this.wordModels.getPlayback_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer.2
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesMobilePlayer seriesMobilePlayer = SeriesMobilePlayer.this;
                 seriesMobilePlayer.handler.removeCallbacks(seriesMobilePlayer.hideInfoTicker);
@@ -708,7 +628,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
                 SeriesMobilePlayer.this.btn_play.requestFocus();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesMobilePlayer.this.exitDlgFragment.dismiss();
                 SeriesMobilePlayer.this.releasePlayer();
@@ -730,7 +649,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         PlayErrorDlgFragment playErrorDlgFragmentNewInstance = PlayErrorDlgFragment.newInstance(this.wordModels.getPlay_back_error(), this.wordModels.getPlay_back_error_description(), false);
         this.errorDlgFragment = playErrorDlgFragmentNewInstance;
         playErrorDlgFragmentNewInstance.setOkButtonClickListener(new PlayErrorDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer.3
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesMobilePlayer seriesMobilePlayer = SeriesMobilePlayer.this;
                 if (seriesMobilePlayer.episode_position < seriesMobilePlayer.episodeModels.size() - 1) {
@@ -742,7 +660,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
                 }
             }
 
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesMobilePlayer.this.finish();
             }
@@ -761,7 +678,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getResume(), this.wordModels.getResume_plyaback_from_ast_position(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.resumeDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.mobile.SeriesMobilePlayer.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 SeriesMobilePlayer.this.ly_control.setVisibility(0);
                 SeriesMobilePlayer seriesMobilePlayer = SeriesMobilePlayer.this;
@@ -772,7 +688,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
                 SeriesMobilePlayer.this.btn_play.requestFocus();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 SeriesMobilePlayer.this.resumeDlgFragment.dismiss();
                 SeriesMobilePlayer.this.ly_control.setVisibility(0);
@@ -808,7 +723,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         trackSelectionDialogBuilder.build().show();
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0 && keyEvent.getKeyCode() == 4) {
             return true;
@@ -816,7 +730,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_audio /* 2131427462 */:
@@ -867,7 +780,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_series_mobile_player);
@@ -892,7 +804,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         playEpisode(this.episode_position);
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onPause() {
         super.onPause();
         if (Util.SDK_INT <= 23) {
@@ -904,7 +815,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onProgressChanged(SeekBar seekBar, int i, boolean z) {
         int id = seekBar.getId();
         if (id != R.id.bright_seekbar) {
@@ -950,11 +860,9 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStartTrackingTouch(SeekBar seekBar) {
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onStop() {
         super.onStop();
         if (Util.SDK_INT > 23) {
@@ -966,7 +874,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStopTrackingTouch(SeekBar seekBar) {
         if (this.player == null || seekBar.getId() != R.id.seekBar) {
             return;
@@ -980,7 +887,6 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         textView.setText(sbM.toString());
     }
 
-    @Override // android.app.Activity
     public final void onUserLeaveHint() {
         super.onUserLeaveHint();
         releasePlayer();

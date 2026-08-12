@@ -100,7 +100,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             MovieActivity.this.preferenceHelper.setSharedPreferenceVodFavNames(RealmController.with().getFavMovieNames());
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onFavClick(MovieModel movieModel, int i) {
             List<String> list = Constants.xxx_vod_categories;
             MovieActivity movieActivity = MovieActivity.this;
@@ -110,12 +109,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             RealmController.with().addToFavMovie(movieModel.getName(), true, new MovieActivity$1$$ExternalSyntheticLambda0(this, i, 1));
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onFocusPosition(int i) {
             MovieActivity.this.pre_movie_pos = i;
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onItemClick(MovieModel movieModel, int i) {
             MovieActivity movieActivity = MovieActivity.this;
             if (movieActivity.category_pos <= 1 && movieActivity.checkAdultMovie(movieModel.getCategory_name().toLowerCase(), movieModel.getCategory_id())) {
@@ -139,7 +136,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             MovieActivity.this.startActivity(intent);
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onUnFavClick(MovieModel movieModel, int i) {
             RealmController.with().addToFavMovie(movieModel.getName(), false, new MovieActivity$1$$ExternalSyntheticLambda0(this, i, 0));
         }
@@ -222,7 +218,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             this.recycler_category.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_category.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -244,7 +239,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             this.recycler_movie.setPreserveFocusAfterLayout(true);
             final View[] viewArr2 = {null};
             this.recycler_movie.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.5
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr3 = viewArr2;
@@ -380,7 +374,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.MovieActivity.6
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 movieActivity.category_pos = i;
@@ -393,13 +386,11 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 MovieActivity.this.recycler_movie.setSelectedPosition(0);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPut_pin_code(), 0).show();
@@ -419,34 +410,31 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         }
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
-        lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener(i, movieModel) { // from class: com.ouropro.player.activities.MovieActivity.7
-            public final /* synthetic */ MovieModel val$movieModel;
+        lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.MovieActivity.7
+            public final /* synthetic */ MovieModel movieModelValue;
 
             {
-                this.val$movieModel = movieModel;
+                this.movieModelValue = movieModel;
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 Objects.requireNonNull(MovieActivity.this);
                 Intent intent = new Intent(MovieActivity.this, (Class<?>) MovieInfoActivity.class);
-                intent.putExtra("name", this.val$movieModel.getName());
-                intent.putExtra("stream_id", this.val$movieModel.getStream_id());
+                intent.putExtra("name", this.movieModelValue.getName());
+                intent.putExtra("stream_id", this.movieModelValue.getStream_id());
                 if (MovieActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                    intent.putExtra("category_name", this.val$movieModel.getCategory_name());
+                    intent.putExtra("category_name", this.movieModelValue.getCategory_name());
                 } else {
-                    intent.putExtra("category_name", MovieActivity.this.getMovieCategoryName(this.val$movieModel.getCategory_id()));
+                    intent.putExtra("category_name", MovieActivity.this.getMovieCategoryName(this.movieModelValue.getCategory_id()));
                 }
                 MovieActivity.this.startActivity(intent);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPut_pin_code(), 0).show();
@@ -455,7 +443,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.lockDlgFragment.show(supportFragmentManager, "fragment_lock");
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         int i;
         if (keyEvent.getAction() == 0) {
@@ -565,7 +552,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_back /* 2131427888 */:
@@ -592,7 +578,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_movie);
@@ -616,7 +601,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.sort_spinner.setAdapter((SpinnerAdapter) new SortSpinnerAdapter(this, this.sortLists));
         this.sort_spinner.setSelection(this.sort_pos);
         this.sort_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.2
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
                 MovieActivity movieActivity = MovieActivity.this;
                 if (movieActivity.sort_pos != i) {
@@ -630,12 +614,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
 
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.MovieActivity.3
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().isEmpty()) {
                     return;
@@ -643,11 +625,9 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 MovieActivity.this.searchModels(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });

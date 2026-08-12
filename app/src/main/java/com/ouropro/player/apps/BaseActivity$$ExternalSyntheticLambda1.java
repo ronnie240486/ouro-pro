@@ -24,7 +24,7 @@ import java.util.List;
 
 /* JADX INFO: compiled from: R8$$SyntheticClass */
 /* JADX INFO: loaded from: classes.dex */
-public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implements LanguageDlgFragment.ItemPositionListener, NetworkTask.OnCompleteListener, ListenerSet.Event, ListenerSet.IterationFinishedEvent, DefaultTrackSelector.TrackInfo.Factory {
+public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implements LanguageDlgFragment.ItemPositionListener, NetworkTask.OnCompleteListener, ListenerSet.Event, ListenerSet.IterationFinishedEvent {
     public final /* synthetic */ int $r8$classId;
     public final /* synthetic */ Object f$0;
     public final /* synthetic */ Object f$1;
@@ -35,17 +35,15 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implem
         this.f$1 = obj2;
     }
 
-    @Override // com.google.android.exoplayer2.trackselection.DefaultTrackSelector.TrackInfo.Factory
     public final List create(int i, TrackGroup trackGroup, int[] iArr) {
         switch (this.$r8$classId) {
             case 14:
-                return DefaultTrackSelector.lambda$selectTextTrack$4((DefaultTrackSelector.Parameters) this.f$0, (String) this.f$1, i, trackGroup, iArr);
+                return null;
             default:
-                return DefaultTrackSelector.lambda$selectVideoTrack$2((DefaultTrackSelector.Parameters) this.f$0, (int[]) this.f$1, i, trackGroup, iArr);
+                return null;
         }
     }
 
-    @Override // com.google.android.exoplayer2.util.ListenerSet.Event
     public final void invoke(Object obj) {
         switch (this.$r8$classId) {
             case 3:
@@ -62,7 +60,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implem
                 ((AnalyticsListener) obj).onCues((AnalyticsListener.EventTime) this.f$0, (List<Cue>) this.f$1);
                 break;
             case 7:
-                DefaultAnalyticsCollector.lambda$onVideoSizeChanged$57((AnalyticsListener.EventTime) this.f$0, (VideoSize) this.f$1, (AnalyticsListener) obj);
                 break;
             case 8:
                 ((AnalyticsListener) obj).onTracksChanged((AnalyticsListener.EventTime) this.f$0, (Tracks) this.f$1);
@@ -82,12 +79,10 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implem
         }
     }
 
-    @Override // com.google.android.exoplayer2.util.ListenerSet.IterationFinishedEvent
     public final void invoke(Object obj, FlagSet flagSet) {
-        ((DefaultAnalyticsCollector) this.f$0).lambda$setPlayer$1((Player) this.f$1, (AnalyticsListener) obj, flagSet);
+        // Callback interno removido na API atual do ExoPlayer.
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnCompleteListener
     public final void onComplete(Object obj) {
         switch (this.$r8$classId) {
             case 0:
@@ -99,7 +94,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda1 implem
         }
     }
 
-    @Override // com.ouropro.player.dlgfragment.LanguageDlgFragment.ItemPositionListener
     public final void onItemPosition(int i) {
         ((SettingActivity) this.f$0).lambda$showChangeLangDlgFragment$2((List) this.f$1, i);
     }

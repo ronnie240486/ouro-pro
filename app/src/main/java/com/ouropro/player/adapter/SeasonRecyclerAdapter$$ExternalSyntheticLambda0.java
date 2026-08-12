@@ -16,7 +16,6 @@ public final /* synthetic */ class SeasonRecyclerAdapter$$ExternalSyntheticLambd
         this.f$1 = i;
     }
 
-    @Override // android.view.View.OnClickListener
     public final void onClick(View view) {
         switch (this.$r8$classId) {
             case 0:

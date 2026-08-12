@@ -13,17 +13,14 @@ public final /* synthetic */ class SeasonActivity$$ExternalSyntheticLambda0 impl
         this.f$0 = seasonActivity;
     }
 
-    @Override // com.android.volley.Response.ErrorListener
     public final void onErrorResponse(VolleyError volleyError) {
         this.f$0.lambda$getSomeSeriesInfo$4(volleyError);
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         this.f$0.lambda$onCreate$1();
     }
 
-    @Override // com.android.volley.Response.Listener
     public final void onResponse(Object obj) {
         this.f$0.lambda$getSomeSeriesInfo$3((String) obj);
     }

@@ -24,7 +24,6 @@ public class WebViewWrapper implements WebViewWrapperInterface {
         this.mWebView.addJavascriptInterface(new JavaScriptInterface(callJavaResultInterface), JsEvaluator.JS_NAMESPACE);
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.WebViewWrapperInterface
     public void destroy() {
         WebView webView = this.mWebView;
         if (webView != null) {
@@ -39,12 +38,10 @@ public class WebViewWrapper implements WebViewWrapperInterface {
         }
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.WebViewWrapperInterface
     public WebView getWebView() {
         return this.mWebView;
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.WebViewWrapperInterface
     public void loadJavaScript(String str) {
         try {
             String strEncodeToString = Base64.encodeToString(("<script>" + str + "</script>").getBytes("UTF-8"), 0);

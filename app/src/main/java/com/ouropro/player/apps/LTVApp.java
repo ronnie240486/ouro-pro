@@ -81,7 +81,6 @@ public class LTVApp extends MultiDexApplication {
         version_name = packageInfo.versionName;
     }
 
-    @Override // android.app.Application
     public void onCreate() {
         super.onCreate();
         EncryptedApiCaller.callEncryptedMoviesApi(this);

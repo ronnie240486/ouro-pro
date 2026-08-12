@@ -18,7 +18,7 @@ import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
 
 /* JADX INFO: loaded from: classes.dex */
-public class MovieCreditRecyclerAdapter extends RecyclerView.Adapter<VodViewHolder> {
+public class MovieCreditRecyclerAdapter extends RecyclerView.Adapter<MovieCreditRecyclerAdapter.VodViewHolder> {
     public Context context;
     public ItemClickListener mItemClickListener;
     public List<MovieCreditModel> models;
@@ -77,7 +77,6 @@ public class MovieCreditRecyclerAdapter extends RecyclerView.Adapter<VodViewHold
         this.mItemClickListener.onFocusPosition(movieCreditModel, i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<MovieCreditModel> list = this.models;
         if (list == null) {
@@ -102,7 +101,6 @@ public class MovieCreditRecyclerAdapter extends RecyclerView.Adapter<VodViewHold
         notifyItemChanged(this.selected_pos);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull VodViewHolder vodViewHolder, int i) {
         MovieCreditModel movieCreditModel = this.models.get(i);
@@ -126,7 +124,6 @@ public class MovieCreditRecyclerAdapter extends RecyclerView.Adapter<VodViewHold
         this.mItemClickListener.onFocusPosition(movieCreditModel, i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public VodViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new VodViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_vod_credit, viewGroup, false));

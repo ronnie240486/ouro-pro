@@ -22,7 +22,6 @@ public final /* synthetic */ class VodRecyclerAdapter$$ExternalSyntheticLambda2 
         this.f$2 = i;
     }
 
-    @Override // android.view.View.OnLongClickListener
     public final boolean onLongClick(View view) {
         switch (this.$r8$classId) {
             case 0:

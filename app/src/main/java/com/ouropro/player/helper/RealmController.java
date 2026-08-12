@@ -127,7 +127,6 @@ public class RealmController {
     public void addPositionToMovies(final String str, final String str2, final boolean z, final long j, final int i, RealmChangeItemListener realmChangeItemListener) {
         Realm realm = this.realm;
         Realm.Transaction transaction = new Realm.Transaction() { // from class: com.ouropro.player.helper.RealmController$$ExternalSyntheticLambda4
-            @Override // io.realm.Realm.Transaction
             public final void execute(Realm realm2) {
                 RealmController.lambda$addPositionToMovies$3(str, z, j, i, str2, realm2);
             }
@@ -168,7 +167,6 @@ public class RealmController {
     public void addToRecentSeries(final String str, final boolean z, final int i, final int i2, RealmChangeItemListener realmChangeItemListener) {
         Realm realm = this.realm;
         Realm.Transaction transaction = new Realm.Transaction() { // from class: com.ouropro.player.helper.RealmController$$ExternalSyntheticLambda3
-            @Override // io.realm.Realm.Transaction
             public final void execute(Realm realm2) {
                 RealmController.lambda$addToRecentSeries$5(str, z, i, i2, realm2);
             }

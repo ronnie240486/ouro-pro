@@ -176,7 +176,6 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         startActivity(intent3);
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             switch (keyEvent.getKeyCode()) {
@@ -207,7 +206,6 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_back /* 2131427463 */:
@@ -241,7 +239,6 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         String string;
         super.onCreate(bundle);

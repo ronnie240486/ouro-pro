@@ -16,7 +16,7 @@ A base contém o pacote principal `com.ouropro.player`, 279 arquivos Java recupe
 | EPG/catch-up, favoritos e histórico | Recuperados |
 | Reprodução ExoPlayer/FFmpeg | Recuperada, sujeita à validação em dispositivo |
 | Recursos visuais e assets | Copiados para `app/src/main/res` e `app/src/main/assets` |
-| Build Android reprodutível | Estrutura Gradle criada; requer SDK Android local |
+| Build Android reprodutível | `assembleDebug` validado com Android SDK 35 e JDK 17 |
 
 ## Melhorias aplicadas
 
@@ -41,7 +41,9 @@ improvements/            Backlog de melhorias planejadas
 
 ## Build
 
-É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew assembleDebug` para uma primeira compilação de depuração. Esta sandbox não possuía Gradle nem Android SDK instalados no momento da reconstrução; por isso, a validação automática de compilação ainda está pendente.
+É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
+
+O instalador gerado é `artifacts/OuroPro6.4-voz-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, e contém as classes `VoiceCommand`, `VoiceChannelMatcher` e `VoiceCommandController` dentro do multidex. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

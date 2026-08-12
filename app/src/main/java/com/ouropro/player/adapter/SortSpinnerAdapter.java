@@ -19,7 +19,6 @@ public class SortSpinnerAdapter extends BaseAdapter {
         this.names = list;
     }
 
-    @Override // android.widget.Adapter
     public int getCount() {
         List<String> list = this.names;
         if (list == null) {
@@ -28,17 +27,14 @@ public class SortSpinnerAdapter extends BaseAdapter {
         return list.size();
     }
 
-    @Override // android.widget.Adapter
     public Object getItem(int i) {
         return this.names.get(i);
     }
 
-    @Override // android.widget.Adapter
     public long getItemId(int i) {
         return i;
     }
 
-    @Override // android.widget.Adapter
     public View getView(int i, View view, ViewGroup viewGroup) {
         View viewInflate = LayoutInflater.from(this.context).inflate(R.layout.item_sort, viewGroup, false);
         ((TextView) viewInflate.findViewById(R.id.txt_name)).setText(this.names.get(i));

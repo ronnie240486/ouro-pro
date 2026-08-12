@@ -14,7 +14,6 @@ public final /* synthetic */ class SeriesInfoActivity$$ExternalSyntheticLambda0 
         this.f$0 = seriesInfoActivity;
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         switch (this.$r8$classId) {
             case 1:
@@ -26,7 +25,6 @@ public final /* synthetic */ class SeriesInfoActivity$$ExternalSyntheticLambda0 
         }
     }
 
-    @Override // com.android.volley.Response.Listener
     public final void onResponse(Object obj) {
         this.f$0.lambda$getSeriesInfo$0((String) obj);
     }

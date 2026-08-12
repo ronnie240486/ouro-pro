@@ -14,7 +14,6 @@ public final /* synthetic */ class BaseActivity$5$$ExternalSyntheticLambda0 impl
         this.f$0 = response;
     }
 
-    @Override // io.realm.Realm.Transaction
     public final void execute(Realm realm) {
         switch (this.$r8$classId) {
             case 0:

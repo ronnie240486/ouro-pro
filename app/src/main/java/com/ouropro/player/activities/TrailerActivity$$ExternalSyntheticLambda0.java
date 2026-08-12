@@ -11,7 +11,6 @@ public final /* synthetic */ class TrailerActivity$$ExternalSyntheticLambda0 imp
         this.f$0 = trailerActivity;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:

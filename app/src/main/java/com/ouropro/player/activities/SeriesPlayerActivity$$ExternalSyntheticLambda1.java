@@ -11,7 +11,6 @@ public final /* synthetic */ class SeriesPlayerActivity$$ExternalSyntheticLambda
         this.f$0 = seriesPlayerActivity;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:

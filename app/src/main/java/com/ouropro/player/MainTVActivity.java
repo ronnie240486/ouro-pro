@@ -229,13 +229,11 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i);
         this.descriptionDlgFragment = descriptionDlgFragmentNewInstance;
         descriptionDlgFragmentNewInstance.setButtonClickListener(new DescriptionDlgFragment.ButtonClickListener() { // from class: com.ouropro.player.MainTVActivity.2
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onCancelClick() {
                 MainTVActivity.this.descriptionDlgFragment.dismiss();
                 MainTVActivity.this.finishApp();
             }
 
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onContinueClick() {
                 MainTVActivity.this.descriptionDlgFragment.dismiss();
                 if (i == -1) {
@@ -259,11 +257,9 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.MainTVActivity.3
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 List<ActivityManager.AppTask> appTasks;
                 System.exit(0);
@@ -278,7 +274,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         this.exitDlgFragment.show(supportFragmentManager, "fragment_exit");
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             checkLocalStorageAccount();
@@ -331,7 +326,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseTVActivity
     public final void doNextTask(boolean z) {
         if (z) {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
@@ -344,7 +338,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         finish();
     }
 
-    @Override // com.ouropro.player.apps.BaseTVActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_main_tv);
@@ -360,7 +353,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
     }
 
-    @Override // android.app.Activity, android.view.KeyEvent.Callback
     public boolean onKeyDown(int i, KeyEvent keyEvent) {
         if (keyEvent.getAction() != 0 || i != 4) {
             return super.onKeyDown(i, keyEvent);
@@ -376,7 +368,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         return true;
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, android.app.Activity
     public void onRequestPermissionsResult(int i, @NonNull String[] strArr, @NonNull int[] iArr) {
         getMacAddress();
         super.onRequestPermissionsResult(i, strArr, iArr);

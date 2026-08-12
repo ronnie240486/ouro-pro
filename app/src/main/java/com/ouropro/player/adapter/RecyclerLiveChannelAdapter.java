@@ -19,7 +19,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function4;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerLiveChannelAdapter extends RecyclerView.Adapter<LiveChannelViewHolder> {
+public class RecyclerLiveChannelAdapter extends RecyclerView.Adapter<RecyclerLiveChannelAdapter.LiveChannelViewHolder> {
     public Function4<EPGChannel, Integer, Boolean, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<EPGChannel> epgChannels;
@@ -80,7 +80,6 @@ public class RecyclerLiveChannelAdapter extends RecyclerView.Adapter<LiveChannel
         return true;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<EPGChannel> list = this.epgChannels;
         if (list == null) {
@@ -100,7 +99,6 @@ public class RecyclerLiveChannelAdapter extends RecyclerView.Adapter<LiveChannel
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull LiveChannelViewHolder liveChannelViewHolder, @SuppressLint({"RecyclerView"}) int i) {
         EPGChannel ePGChannel = this.epgChannels.get(i);
         liveChannelViewHolder.txt_name.setText(ePGChannel.getName());
@@ -126,7 +124,6 @@ public class RecyclerLiveChannelAdapter extends RecyclerView.Adapter<LiveChannel
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveChannelViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new LiveChannelViewHolder(Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_live_channel, viewGroup, false));

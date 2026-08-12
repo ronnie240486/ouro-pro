@@ -58,7 +58,6 @@ public class ConnectDlgFragment extends DialogFragment {
         return connectDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
@@ -66,7 +65,6 @@ public class ConnectDlgFragment extends DialogFragment {
 
     /* JADX WARN: Type inference failed for: r6v4, types: [java.util.ArrayList, java.util.List<com.ouropro.player.apps.SideMenu>] */
     /* JADX WARN: Type inference failed for: r6v5, types: [java.util.ArrayList, java.util.List<com.ouropro.player.apps.SideMenu>] */
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_connect, viewGroup);
         this.wordModels = GetSharedInfo.getWordModel(this.context);
@@ -89,7 +87,6 @@ public class ConnectDlgFragment extends DialogFragment {
         return viewInflate;
     }
 
-    @Override // androidx.fragment.app.Fragment
     public void onViewCreated(View view, @Nullable Bundle bundle) {
         super.onViewCreated(view, bundle);
     }

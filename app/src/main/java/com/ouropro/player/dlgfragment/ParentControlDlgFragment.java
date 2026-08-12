@@ -45,14 +45,13 @@ public class ParentControlDlgFragment extends DialogFragment {
         this.btn_ok = (Button) view.findViewById(R.id.btn_ok);
         this.btn_cancel = (Button) view.findViewById(R.id.btn_cancel);
         final int i = 0;
-        this.btn_ok.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment$$ExternalSyntheticLambda0
+        this.btn_ok.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ ParentControlDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = ParentControlDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i) {
                     case 0:
@@ -65,14 +64,13 @@ public class ParentControlDlgFragment extends DialogFragment {
             }
         });
         final int i2 = 1;
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ ParentControlDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = ParentControlDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view2) {
                 switch (i2) {
                     case 0:
@@ -138,13 +136,11 @@ public class ParentControlDlgFragment extends DialogFragment {
         dismiss();
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_parent, viewGroup, false);
         initView(viewInflate);
@@ -161,7 +157,6 @@ public class ParentControlDlgFragment extends DialogFragment {
         this.btn_ok.setText(this.wordModels.getOk());
         this.btn_cancel.setText(this.wordModels.getCancel());
         this.et_password.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment.1
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().length() != 4 || editable.toString().equalsIgnoreCase(ParentControlDlgFragment.this.pin_code)) {
                     return;
@@ -169,16 +164,13 @@ public class ParentControlDlgFragment extends DialogFragment {
                 ParentControlDlgFragment.this.et_password.setError("Password is incorrect!");
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });
         this.et_confirm_password.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.dlgfragment.ParentControlDlgFragment.2
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().length() != 4 || editable.toString().equalsIgnoreCase(ParentControlDlgFragment.this.et_new_password.getText().toString())) {
                     return;
@@ -186,11 +178,9 @@ public class ParentControlDlgFragment extends DialogFragment {
                 ParentControlDlgFragment.this.et_confirm_password.setError("Confirm password is not matched!");
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });

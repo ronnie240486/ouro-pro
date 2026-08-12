@@ -13,12 +13,10 @@ public final /* synthetic */ class RealmController$$ExternalSyntheticLambda0 imp
         this.f$0 = str;
     }
 
-    @Override // io.realm.Realm.Transaction
     public final void execute(Realm realm) {
         RealmController.lambda$addToRecentChannels$1(this.f$0, realm);
     }
 
-    @Override // androidx.constraintlayout.core.state.Interpolator
     public final float getInterpolation(float f) {
         return Transition.lambda$getInterpolator$0(this.f$0, f);
     }

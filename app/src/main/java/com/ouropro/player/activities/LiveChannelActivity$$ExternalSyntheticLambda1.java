@@ -11,7 +11,6 @@ public final /* synthetic */ class LiveChannelActivity$$ExternalSyntheticLambda1
         this.f$0 = liveChannelActivity;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:

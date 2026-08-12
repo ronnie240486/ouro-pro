@@ -48,19 +48,16 @@ public class JsEvaluator implements CallJavaResultInterface, JsEvaluatorInterfac
         return String.format("%s.returnResultToJava(eval('try{%s}catch(e){\"%s\"+e}'));", JS_NAMESPACE, escapeCarriageReturn(escapeNewLines(escapeClosingScript(escapeSingleQuotes(escapeSlash(str))))), JS_ERROR_PREFIX);
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.JsEvaluatorInterface
     public void callFunction(String str, JsCallback jsCallback, String str2, Object... objArr) {
         StringBuilder sbM13m = Insets$$ExternalSyntheticOutline0.m13m(str, "; ");
         sbM13m.append(JsFunctionCallFormatter.toString(str2, objArr));
         evaluate(sbM13m.toString(), jsCallback);
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.JsEvaluatorInterface
     public void destroy() {
         getWebViewWrapper().destroy();
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.JsEvaluatorInterface
     public void evaluate(String str) {
         evaluate(str, null);
     }
@@ -70,7 +67,6 @@ public class JsEvaluator implements CallJavaResultInterface, JsEvaluatorInterfac
         return this.callback.get();
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.JsEvaluatorInterface
     public WebView getWebView() {
         return getWebViewWrapper().getWebView();
     }
@@ -82,14 +78,12 @@ public class JsEvaluator implements CallJavaResultInterface, JsEvaluatorInterfac
         return this.mWebViewWrapper;
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.CallJavaResultInterface
     public void jsCallFinished(final String str) {
         final JsCallback andSet = this.callback.getAndSet(null);
         if (andSet == null) {
             return;
         }
         this.mHandler.post(new Runnable() { // from class: com.evgenii.jsevaluator.JsEvaluator.1
-            @Override // java.lang.Runnable
             public void run() {
                 String str2 = str;
                 if (str2 == null || !str2.startsWith(JsEvaluator.JS_ERROR_PREFIX)) {
@@ -111,7 +105,6 @@ public class JsEvaluator implements CallJavaResultInterface, JsEvaluatorInterfac
         this.mWebViewWrapper = webViewWrapperInterface;
     }
 
-    @Override // com.evgenii.jsevaluator.interfaces.JsEvaluatorInterface
     public void evaluate(String str, JsCallback jsCallback) {
         String jsForEval = getJsForEval(str);
         this.callback.set(jsCallback);

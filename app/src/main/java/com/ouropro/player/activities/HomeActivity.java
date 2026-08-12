@@ -203,11 +203,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.HomeActivity.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 HomeActivity.this.finishAffinity();
                 System.exit(0);
@@ -234,7 +232,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         Toast.makeText(this, this.wordModels.getPlaylist_is_loading(), 0).show();
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() != 0 || keyEvent.getKeyCode() != 4) {
             return super.dispatchKeyEvent(keyEvent);
@@ -243,7 +240,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         return true;
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progressBar.setVisibility(8);
@@ -255,7 +251,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_account /* 2131427885 */:
@@ -321,7 +316,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(dashtheme.mNewDashtheme());

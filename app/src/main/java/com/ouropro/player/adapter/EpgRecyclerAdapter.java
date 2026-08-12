@@ -13,7 +13,7 @@ import com.ouropro.player.utils.Utils;
 import java.util.List;
 
 /* JADX INFO: loaded from: classes.dex */
-public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgViewHolder> {
+public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgRecyclerAdapter.EpgViewHolder> {
     public Context context;
     public List<CatchUpEpg> epgList;
 
@@ -33,7 +33,6 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgViewHolder> {
         this.epgList = list;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CatchUpEpg> list = this.epgList;
         if (list == null) {
@@ -47,7 +46,6 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgViewHolder> {
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull EpgViewHolder epgViewHolder, int i) {
         CatchUpEpg catchUpEpg = this.epgList.get(i);
         epgViewHolder.txt_name.setText(Utils.decode64String(catchUpEpg.getTitle()));
@@ -65,7 +63,6 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgViewHolder> {
         epgViewHolder.itemView.requestFocus();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public EpgViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new EpgViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_epg, viewGroup, false));

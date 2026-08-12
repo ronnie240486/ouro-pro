@@ -16,7 +16,6 @@ public final /* synthetic */ class LiveActivity$$ExternalSyntheticLambda0 implem
         this.f$1 = i;
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         switch (this.$r8$classId) {
             case 0:

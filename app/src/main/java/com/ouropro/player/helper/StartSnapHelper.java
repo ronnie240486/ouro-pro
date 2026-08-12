@@ -51,12 +51,10 @@ public class StartSnapHelper extends LinearSnapHelper {
         return this.mVerticalHelper;
     }
 
-    @Override // androidx.recyclerview.widget.SnapHelper
     public void attachToRecyclerView(@Nullable RecyclerView recyclerView) throws IllegalStateException {
         super.attachToRecyclerView(recyclerView);
     }
 
-    @Override // androidx.recyclerview.widget.LinearSnapHelper, androidx.recyclerview.widget.SnapHelper
     public int[] calculateDistanceToFinalSnap(@NonNull RecyclerView.LayoutManager layoutManager, @NonNull View view) {
         int[] iArr = new int[2];
         if (layoutManager.canScrollHorizontally()) {
@@ -72,7 +70,6 @@ public class StartSnapHelper extends LinearSnapHelper {
         return iArr;
     }
 
-    @Override // androidx.recyclerview.widget.LinearSnapHelper, androidx.recyclerview.widget.SnapHelper
     public View findSnapView(RecyclerView.LayoutManager layoutManager) {
         if (layoutManager instanceof LinearLayoutManager) {
             return layoutManager.canScrollHorizontally() ? getStartView(layoutManager, getHorizontalHelper(layoutManager)) : getStartView(layoutManager, getVerticalHelper(layoutManager));
