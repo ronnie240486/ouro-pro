@@ -212,9 +212,19 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
     }
 
+    private void setLoaderVisibility(int visibility) {
+        if (this.image_loader != null) {
+            this.image_loader.setVisibility(visibility);
+        }
+    }
+
+    private boolean isLoaderVisible() {
+        return this.image_loader != null && this.image_loader.getVisibility() == 0;
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void loadingData() {
-        this.image_loader.setVisibility(0);
+        setLoaderVisibility(0);
         this.playlist_position = GetSharedInfo.getPlaylistPosition(this);
         try {
             try {
@@ -245,7 +255,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     }
 
     private void showDescriptionDlgFragment(String str, String str2, final int i) {
-        this.image_loader.setVisibility(8);
+        setLoaderVisibility(8);
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
         Fragment fragmentFindFragmentByTag = supportFragmentManager.findFragmentByTag("fragment_description");
@@ -355,7 +365,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         if (keyEvent.getAction() != 0 || keyEvent.getKeyCode() != 4) {
             return super.dispatchKeyEvent(keyEvent);
         }
-        if (this.image_loader.getVisibility() == 0) {
+        if (isLoaderVisible()) {
             setStop(true);
             startActivity(new Intent(this, (Class<?>) ChangePlaylistActivity.class));
             finish();
@@ -371,7 +381,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
             startActivity(new Intent(this, (Class<?>) HomeActivity.class));
         } else {
-            this.image_loader.setVisibility(8);
+            setLoaderVisibility(8);
             Toast.makeText(this, "" + this.wordModels.getPlaylist_is_not_working(), 0).show();
             startActivity(new Intent(this, (Class<?>) ChangePlaylistActivity.class));
         }

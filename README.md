@@ -43,7 +43,7 @@ improvements/            Backlog de melhorias planejadas
 
 É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
 
-O instalador gerado é `artifacts/OuroPro6.4-voz-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, e contém as classes `VoiceCommand`, `VoiceChannelMatcher` e `VoiceCommandController` dentro do multidex. A assinatura é de debug e serve para teste, não para distribuição comercial.
+O instalador corrigido é `artifacts/OuroPro6.4-voz-crashfix-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, contém as classes `VoiceCommand`, `VoiceChannelMatcher` e `VoiceCommandController` dentro do multidex e protege os acessos opcionais ao loader da MainActivity. A versão `OuroPro6.4-voz-debug.apk` anterior não deve ser usada. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 
