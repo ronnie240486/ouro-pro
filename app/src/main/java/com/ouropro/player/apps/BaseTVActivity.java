@@ -745,7 +745,7 @@ public class BaseTVActivity extends FragmentActivity {
         if (streamURL.contains("movie/") || streamURL.contains("=movie") || streamURL.contains("==movie") || streamURL.contains("vod/") || streamURL.contains("video/")) {
             return 1;
         }
-        return M3USeriesNaming.isSeriesItem(m3UItem) ? 2 : 0;
+        return streamURL.contains("series/") ? 2 : 0;
     }
 
     private void getMovieCategoryModels(List<MovieModel> list) {

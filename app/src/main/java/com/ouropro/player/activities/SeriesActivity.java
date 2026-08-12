@@ -680,8 +680,8 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.sortLists = GetSharedInfo.getVodSortLists(this.wordModels);
         Constants.getSeriesGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleSeriesCategories(), this);
         this.categoryModels = LTVApp.series_categories_filter;
-        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
-            this.categoryModels = fallbackSeriesCategories();
+        if (this.categoryModels == null) {
+            this.categoryModels = new ArrayList<>();
         }
         this.category_pos = getAvailableCategoryPosition();
         this.sort_pos = this.preferenceHelper.getSharedPreferenceSeriesOrder();
@@ -734,7 +734,6 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
         setupVoiceButton();
-        recoverSeriesIfEmpty();
         String voiceQuery = getIntent().getStringExtra("voice_query");
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
             openSeriesByVoice(voiceQuery);

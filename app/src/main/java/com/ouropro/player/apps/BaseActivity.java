@@ -752,7 +752,7 @@ public class BaseActivity extends AppCompatActivity {
         if (streamURL.contains("movie/") || streamURL.contains("=movie") || streamURL.contains("==movie") || streamURL.contains("movies/") || streamURL.contains("vod/") || streamURL.contains("video/")) {
             return 1;
         }
-        return M3USeriesNaming.isSeriesItem(m3UItem) ? 2 : 0;
+        return streamURL.contains("series/") ? 2 : 0;
     }
 
     private void getMovieCategoryModels(List<MovieModel> list) {
@@ -909,43 +909,49 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void getSeriesFromEpisodes(List<EpisodeModel> list) {
-        if (list == null || list.isEmpty()) {
-            if (!this.is_stop) {
-                doNextTask(true);
+        List<String> favoriteNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
+        List<ResumeSeriesModel> recentSeries = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
+        this.episodeModelHashMap = new HashMap<>();
+        if (list != null) {
+            for (EpisodeModel episode : list) {
+                addEpisodeToSeries(episode);
             }
-            return;
         }
-        final List<String> favoriteNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
-        final List<ResumeSeriesModel> recentSeries = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
-        new Thread(() -> {
-            final List<SeriesModel> rebuiltSeries = M3USeriesRebuilder.build(list);
-            runOnUiThread(() -> this.realm.executeTransactionAsync(realm -> {
-                realm.insertOrUpdate(rebuiltSeries);
-                for (String favoriteName : favoriteNames) {
-                    SeriesModel favorite = (SeriesModel) Insets$$ExternalSyntheticOutline0.m(realm, SeriesModel.class, "name", favoriteName);
-                    if (favorite != null) {
-                        favorite.setIs_favorite(true);
-                    }
+        ArrayList<SeriesModel> seriesModels = new ArrayList<>();
+        for (String name : new TreeSet<>(this.episodeModelHashMap.keySet())) {
+            List<EpisodeModel> episodes = this.episodeModelHashMap.get(name);
+            if (name == null || episodes == null || episodes.isEmpty()) {
+                continue;
+            }
+            SeriesModel series = new SeriesModel();
+            series.setName(name);
+            series.setCategory_name(episodes.get(0).getCategory_name());
+            series.setStream_icon(episodes.get(0).getStream_icon());
+            seriesModels.add(series);
+        }
+        this.realm.executeTransaction(realm -> {
+            realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
+            realm.insertOrUpdate(seriesModels);
+        });
+        for (String favoriteName : favoriteNames) {
+            this.realm.executeTransaction(realm -> {
+                SeriesModel favorite = (SeriesModel) Insets$$ExternalSyntheticOutline0.m(realm, SeriesModel.class, "name", favoriteName);
+                if (favorite != null) {
+                    favorite.setIs_favorite(true);
                 }
-                for (ResumeSeriesModel recent : recentSeries) {
-                    SeriesModel item = realm.where(SeriesModel.class).equalTo("name", recent.getName()).findFirst();
-                    if (item != null) {
-                        item.setIs_recent(true);
-                        item.setSeason_pos(recent.getSeason_pos());
-                        item.setEpisode_pos(recent.getEpisode_pos());
-                    }
+            });
+        }
+        for (ResumeSeriesModel recent : recentSeries) {
+            this.realm.executeTransaction(realm -> {
+                SeriesModel item = realm.where(SeriesModel.class).equalTo("name", recent.getName()).findFirst();
+                if (item != null) {
+                    item.setIs_recent(true);
+                    item.setSeason_pos(recent.getSeason_pos());
+                    item.setEpisode_pos(recent.getEpisode_pos());
                 }
-            }, () -> {
-                getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE).edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
-                if (!this.is_stop) {
-                    getSeriesCategoryModels(rebuiltSeries);
-                }
-            }, error -> {
-                if (!this.is_stop) {
-                    getSeriesCategoryModels(rebuiltSeries);
-                }
-            }));
-        }, "ouro-m3u-series-aggregate").start();
+            });
+        }
+        getSeriesCategoryModels(seriesModels);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
