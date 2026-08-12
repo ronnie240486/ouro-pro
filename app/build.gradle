@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
-    id 'io.realm.android'
 }
+
+apply plugin: 'realm-android'
 
 android {
     namespace 'com.ouropro.player'
