@@ -16,11 +16,11 @@ Os cards de séries usam exatamente o mesmo `item_vod`/`item_vod_grid` do catál
 
 | Item | Valor |
 |---|---|
-| APK | `OuroPro6.4-expiry-channel-fix-debug.apk` |
+| APK | `OuroPro6.4-account-expiry-original-flow-debug.apk` |
 | Pacote | `com.ouropro.player.debug` |
 | Build | `BUILD SUCCESSFUL` |
 | Testes | Testes de parser M3U, voz e projeto aprovados |
 | Assinatura | Debug v1/v2 verificada |
-| SHA-256 | `cf827772cfbb2ac183181b1254dd84c4f94ec938e19da415d52ee3b969cf5286` |
+| SHA-256 | `f0405d1902c18e6eeff4a5bbf576c993235be64b09f71338beb95e7022eca42f` |
 
-> A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor. Para listas M3U, a Home exibe uma mensagem explícita quando a fonte não informa data de expiração; não usa mais `Undefined`. Para respostas Xtream, usa `LoginModel.exp_date` quando disponível.
+> A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor. Para listas M3U Plus com credenciais na URL, o app consulta o `player_api.php` correspondente em segundo plano e salva `LoginModel.exp_date` sem bloquear o catálogo. Para a conta analisada, a resposta sanitizada retornou expiração em `27/08/2026`; se o servidor não fornecer esse campo, a Home exibe uma mensagem explícita em vez de `Undefined`.

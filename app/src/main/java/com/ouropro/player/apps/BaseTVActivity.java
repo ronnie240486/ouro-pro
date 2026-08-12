@@ -1301,6 +1301,31 @@ public class BaseTVActivity extends FragmentActivity {
         this.realm = Realm.getInstance(realmConfigurationBuild);
     }
 
+    private void fetchM3UAccountMetadata(String playlistUrl) {
+        final com.ouropro.player.improvements.M3UAccountEndpoint.Credentials credentials = com.ouropro.player.improvements.M3UAccountEndpoint.fromPlaylistUrl(playlistUrl);
+        if (credentials == null) {
+            return;
+        }
+        try {
+            RetroClass.getAPIService(credentials.getBaseUrl(), true).authentication(credentials.getUsername(), credentials.getPassword()).enqueue(new Callback<LoginResponse>() {
+                @Override
+                public void onFailure(@NonNull Call<LoginResponse> call, @NonNull Throwable throwable) {
+                }
+
+                @Override
+                public void onResponse(@NonNull Call<LoginResponse> call, @NonNull Response<LoginResponse> response) {
+                    if (response.body() == null || response.body().getUser_info() == null) {
+                        return;
+                    }
+                    preferenceHelper.setSharedPreferenceLoginModel(response.body().getUser_info());
+                    preferenceHelper.setSharedPreferenceUsername(credentials.getUsername());
+                    preferenceHelper.setSharedPreferencePassword(credentials.getPassword());
+                }
+            });
+        } catch (Exception ignored) {
+        }
+    }
+
     public void reloadM3UData(String str, WordModels wordModels) {
         this.wordModels = wordModels;
         this.preferenceHelper = new PreferenceHelper(this);
@@ -1318,6 +1343,7 @@ public class BaseTVActivity extends FragmentActivity {
         if (this.is_stop) {
             return;
         }
+        fetchM3UAccountMetadata(strTrim);
         fetchM3UItems(strTrim);
     }
 
