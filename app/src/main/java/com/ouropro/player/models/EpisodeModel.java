@@ -55,6 +55,8 @@ public class EpisodeModel extends RealmObject implements Serializable {
             }
             episodeModel.setSeries_name(seriesName);
             episodeModel.setSeason_name(M3USeriesNaming.seasonName(title));
+            episodeModel.setSeason(M3USeriesNaming.seasonNumber(title));
+            episodeModel.setEpisode_num(String.valueOf(M3USeriesNaming.episodeNumber(title)));
             episodeModel.setUrl(m3UItem.getStreamURL());
             if (!TextUtils.isEmpty(m3UItem.getLogoURL())) {
                 episodeModel.setStream_icon(m3UItem.getLogoURL());

@@ -12,6 +12,8 @@ import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ouropro.player.R;
 import com.ouropro.player.models.SeriesModel;
+import com.ouropro.player.models.EpisodeModel;
+import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
 import kotlin.Unit;
@@ -86,7 +88,14 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<RecyclerSeri
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, int i) {
         SeriesModel seriesModel = this.models.get(i);
         liveHomeViewHolder.txt_name.setText(seriesModel.getName());
-        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, liveHomeViewHolder.image_movie, seriesModel.getStream_icon(), R.drawable.default_series, liveHomeViewHolder.image_logo);
+        String cover = seriesModel.getStream_icon();
+        if (cover == null || cover.trim().isEmpty()) {
+            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(seriesModel.getName());
+            if (firstEpisode != null) {
+                cover = firstEpisode.getStream_icon();
+            }
+        }
+        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, liveHomeViewHolder.image_movie, cover, R.drawable.default_series, liveHomeViewHolder.image_logo);
         liveHomeViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, seriesModel, i, liveHomeViewHolder, 8));
         liveHomeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, seriesModel, i, 11));
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, seriesModel, i, 2));

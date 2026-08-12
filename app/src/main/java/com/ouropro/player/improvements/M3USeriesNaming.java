@@ -66,15 +66,53 @@ public final class M3USeriesNaming {
     }
 
     public static String seasonName(String title) {
+        String base = seriesName(title);
+        int season = seasonNumber(title);
+        return season > 0 ? base + String.format(Locale.ROOT, " S%02d", season) : base;
+    }
+
+    public static int seasonNumber(String title) {
         if (title == null) {
-            return "";
+            return 0;
         }
         Matcher matcher = SEASON_EPISODE.matcher(title);
         if (matcher.find()) {
-            String token = matcher.group().trim().replaceAll("^[^A-Za-z0-9]+|[^A-Za-z0-9]+$", "");
-            return seriesName(title) + " " + token;
+            String value = matcher.group(1) != null ? matcher.group(1) : matcher.group(3);
+            if (value != null) {
+                return parse(value);
+            }
         }
-        return seriesName(title);
+        Matcher xMatcher = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\(])(\\d{1,2})\\s*[x×]\\s*\\d{1,3}(?:$|[\\s._\\-\\]\\)])").matcher(title);
+        if (xMatcher.find()) {
+            return parse(xMatcher.group(1));
+        }
+        return 0;
+    }
+
+    public static int episodeNumber(String title) {
+        if (title == null) {
+            return 0;
+        }
+        Matcher matcher = SEASON_EPISODE.matcher(title);
+        if (matcher.find()) {
+            String value = matcher.group(2) != null ? matcher.group(2) : matcher.group(4);
+            if (value == null) {
+                value = matcher.group(5);
+            }
+            if (value != null) {
+                return parse(value);
+            }
+        }
+        Matcher xMatcher = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\(])\\d{1,2}\\s*[x×]\\s*(\\d{1,3})(?:$|[\\s._\\-\\]\\)])").matcher(title);
+        return xMatcher.find() ? parse(xMatcher.group(1)) : 0;
+    }
+
+    private static int parse(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception ignored) {
+            return 0;
+        }
     }
 
     private static String lower(String value) {

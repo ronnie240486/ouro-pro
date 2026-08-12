@@ -30,6 +30,15 @@ public class M3USeriesNamingTest {
     }
 
     @Test
+    public void extractsSeasonAndEpisodeNumbers() {
+        assertEquals(1, M3USeriesNaming.seasonNumber("The Office S01E02"));
+        assertEquals(2, M3USeriesNaming.episodeNumber("The Office S01E02"));
+        assertEquals(2, M3USeriesNaming.seasonNumber("The Office 2x10"));
+        assertEquals(10, M3USeriesNaming.episodeNumber("The Office 2x10"));
+        assertEquals("The Office S02", M3USeriesNaming.seasonName("The Office Temporada 2 Episódio 10"));
+    }
+
+    @Test
     public void recognizesSeriesGroupWithoutUrlMarker() {
         assertTrue(M3USeriesNaming.isSeriesItem(item("The Office - Pilot", "Séries | Comédia", "https://cdn.example/stream/4")));
         assertFalse(M3USeriesNaming.isSeriesItem(item("Filme Ação", "Filmes", "https://cdn.example/movie/5.mp4")));

@@ -11,6 +11,7 @@ import com.ouropro.player.models.ResumeModel;
 import com.ouropro.player.models.ResumeSeriesModel;
 import com.ouropro.player.models.Season;
 import com.ouropro.player.models.SeriesModel;
+import com.ouropro.player.improvements.M3USeriesNaming;
 import io.realm.Case;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -18,6 +19,8 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import io.realm.Sort;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,23 +46,59 @@ public class RealmController {
 
     private static List<Season> getSeasonFromEpisodes(List<EpisodeModel> list) {
         episodeModelHashMap = new HashMap<>();
+        if (list == null) {
+            return new ArrayList<>();
+        }
         Iterator<EpisodeModel> it = list.iterator();
         while (it.hasNext()) {
             addEpisodeToSeason(it.next());
         }
-        TreeSet<String> treeSet = new TreeSet(episodeModelHashMap.keySet());
-        ArrayList arrayList = new ArrayList();
-        for (String str : treeSet) {
-            List<EpisodeModel> list2 = episodeModelHashMap.get(str);
-            if (list2 != null && list2.size() > 0) {
-                Season season = new Season();
-                season.setName(str);
-                season.setCategory_name(list2.get(0).getCategory_name());
-                season.setEpisodeModels(list2);
-                arrayList.add(season);
+        ArrayList<Season> seasons = new ArrayList<>();
+        for (String seasonName : episodeModelHashMap.keySet()) {
+            List<EpisodeModel> episodes = episodeModelHashMap.get(seasonName);
+            if (episodes == null || episodes.isEmpty()) {
+                continue;
             }
+            Collections.sort(episodes, new Comparator<EpisodeModel>() {
+                public int compare(EpisodeModel left, EpisodeModel right) {
+                    int leftNumber = episodeNumber(left);
+                    int rightNumber = episodeNumber(right);
+                    if (leftNumber != rightNumber) {
+                        return Integer.compare(leftNumber, rightNumber);
+                    }
+                    String leftTitle = left.getTitle() == null ? "" : left.getTitle();
+                    String rightTitle = right.getTitle() == null ? "" : right.getTitle();
+                    return leftTitle.compareToIgnoreCase(rightTitle);
+                }
+            });
+            Season season = new Season();
+            season.setName(seasonName);
+            season.setCategory_name(episodes.get(0).getCategory_name());
+            season.setEpisodeModels(episodes);
+            seasons.add(season);
         }
-        return arrayList;
+        Collections.sort(seasons, new Comparator<Season>() {
+            public int compare(Season left, Season right) {
+                int leftNumber = M3USeriesNaming.seasonNumber(left.getName());
+                int rightNumber = M3USeriesNaming.seasonNumber(right.getName());
+                if (leftNumber > 0 && rightNumber > 0 && leftNumber != rightNumber) {
+                    return Integer.compare(leftNumber, rightNumber);
+                }
+                return left.getName().compareToIgnoreCase(right.getName());
+            }
+        });
+        return seasons;
+    }
+
+    private static int episodeNumber(EpisodeModel episode) {
+        try {
+            int number = Integer.parseInt(episode.getEpisode_num());
+            if (number > 0) {
+                return number;
+            }
+        } catch (Exception ignored) {
+        }
+        return M3USeriesNaming.episodeNumber(episode.getTitle());
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -193,6 +232,10 @@ public class RealmController {
 
     public List<EpisodeModel> getEpisodesBySeason(String str, String str2) {
         return new ArrayList(this.realm.where(EpisodeModel.class).equalTo("series_name", str).equalTo("season_name", str2).findAll());
+    }
+
+    public EpisodeModel getFirstEpisodeBySeriesName(String str) {
+        return (EpisodeModel) this.realm.where(EpisodeModel.class).equalTo("series_name", str).findFirst();
     }
 
     public List<String> getFavChannelNames() {

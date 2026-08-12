@@ -13,6 +13,7 @@ import com.makeramen.roundedimageview.RoundedImageView;
 import com.ouropro.player.R;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.EpisodeModel;
+import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
 import kotlin.Unit;
@@ -87,7 +88,20 @@ public class EpisodeHorizontalRecyclerAdapter extends RecyclerView.Adapter<Episo
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull EpisodeViewHolder episodeViewHolder, int i) {
         EpisodeModel episodeModel = this.models.get(i);
-        episodeViewHolder.txt_name.setText(String.format("S%d .E%d", Integer.valueOf(this.season_pos + 1), Integer.valueOf(i + 1)));
+        int seasonNumber = M3USeriesNaming.seasonNumber(episodeModel.getSeason_name());
+        if (seasonNumber <= 0) {
+            seasonNumber = this.season_pos + 1;
+        }
+        int episodeNumber;
+        try {
+            episodeNumber = Integer.parseInt(episodeModel.getEpisode_num());
+        } catch (Exception ignored) {
+            episodeNumber = M3USeriesNaming.episodeNumber(episodeModel.getTitle());
+        }
+        if (episodeNumber <= 0) {
+            episodeNumber = i + 1;
+        }
+        episodeViewHolder.txt_name.setText(String.format("S%d .E%d", Integer.valueOf(seasonNumber), Integer.valueOf(episodeNumber)));
         String stream_icon = (new PreferenceHelper(this.context).getSharedPreferenceISM3U() || episodeModel.getInfo() == null) ? episodeModel.getStream_icon() : episodeModel.getInfo().getMovie_image();
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, episodeViewHolder.image_episode, stream_icon, R.drawable.episode_icon, episodeViewHolder.image_logo);
         episodeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, episodeModel, i, 3));

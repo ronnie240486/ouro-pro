@@ -19,6 +19,7 @@ import com.ouropro.player.models.ResumeSeriesModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.M3USeriesNaming;
+import com.ouropro.player.improvements.M3USeriesRebuilder;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -45,6 +46,8 @@ import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class BaseActivity extends AppCompatActivity {
+    private static final int M3U_SERIES_SCHEMA_VERSION = 2;
+    private static final String M3U_MIGRATION_PREFS = "ouropro_migrations";
     public static boolean busy;
     private HashMap<String, String> categoryHashMap;
     private HashMap<String, List<EpisodeModel>> episodeModelHashMap;
@@ -618,8 +621,7 @@ public class BaseActivity extends AppCompatActivity {
     private void getEpisodeModels() {
         RealmResults realmResultsFindAll = this.realm.where(EpisodeModel.class).findAll();
         if (realmResultsFindAll.size() != 0) {
-            boolean m3uNeedsRebuild = this.preferenceHelper.getSharedPreferenceISM3U()
-                    && this.realm.where(SeriesModel.class).count() < 100;
+            boolean m3uNeedsRebuild = needsM3USeriesRebuild();
             if (!m3uNeedsRebuild && System.currentTimeMillis() / 1000 <= (((long) this.preferenceHelper.getSharedPreferenceUpdatePeriod()) * Constants.date_mils) + this.preferenceHelper.getSharedPreferenceLastPlaylistDate()) {
                 if (this.is_stop) {
                     return;
@@ -913,46 +915,37 @@ public class BaseActivity extends AppCompatActivity {
             }
             return;
         }
-        int i;
-        List<EpisodeModel> list2;
-        List<String> sharedPreferenceSeriesFavNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
-        List<ResumeSeriesModel> sharedPreferenceRecentSeriesNames = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
-        this.episodeModelHashMap = new HashMap<>();
-        Iterator<EpisodeModel> it = list.iterator();
-        while (it.hasNext()) {
-            addEpisodeToSeries(it.next());
-        }
-        ArrayList arrayList = new ArrayList();
-        this.episodeModelHashMap.keySet();
-        Iterator it2 = new TreeSet(this.episodeModelHashMap.keySet()).iterator();
-        while (true) {
-            i = 0;
-            if (!it2.hasNext()) {
-                break;
-            }
-            String str = (String) it2.next();
-            if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
-                SeriesModel seriesModel = new SeriesModel();
-                seriesModel.setName(str);
-                seriesModel.setCategory_name(list2.get(0).getCategory_name());
-                seriesModel.setStream_icon(list2.get(0).getStream_icon());
-                arrayList.add(seriesModel);
-            }
-        }
-        this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(arrayList, 2));
-        if (sharedPreferenceSeriesFavNames.size() > 0) {
-            Iterator<String> it3 = sharedPreferenceSeriesFavNames.iterator();
-            while (it3.hasNext()) {
-                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda7(it3.next(), 13));
-            }
-        }
-        if (sharedPreferenceRecentSeriesNames.size() > 0) {
-            Iterator<ResumeSeriesModel> it4 = sharedPreferenceRecentSeriesNames.iterator();
-            while (it4.hasNext()) {
-                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda6(it4.next(), i));
-            }
-        }
-        getSeriesCategoryModels(arrayList);
+        final List<String> favoriteNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
+        final List<ResumeSeriesModel> recentSeries = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
+        new Thread(() -> {
+            final List<SeriesModel> rebuiltSeries = M3USeriesRebuilder.build(list);
+            runOnUiThread(() -> this.realm.executeTransactionAsync(realm -> {
+                realm.insertOrUpdate(rebuiltSeries);
+                for (String favoriteName : favoriteNames) {
+                    SeriesModel favorite = (SeriesModel) Insets$$ExternalSyntheticOutline0.m(realm, SeriesModel.class, "name", favoriteName);
+                    if (favorite != null) {
+                        favorite.setIs_favorite(true);
+                    }
+                }
+                for (ResumeSeriesModel recent : recentSeries) {
+                    SeriesModel item = realm.where(SeriesModel.class).equalTo("name", recent.getName()).findFirst();
+                    if (item != null) {
+                        item.setIs_recent(true);
+                        item.setSeason_pos(recent.getSeason_pos());
+                        item.setEpisode_pos(recent.getEpisode_pos());
+                    }
+                }
+            }, () -> {
+                getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE).edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
+                if (!this.is_stop) {
+                    getSeriesCategoryModels(rebuiltSeries);
+                }
+            }, error -> {
+                if (!this.is_stop) {
+                    getSeriesCategoryModels(rebuiltSeries);
+                }
+            }));
+        }, "ouro-m3u-series-aggregate").start();
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -1248,15 +1241,20 @@ public class BaseActivity extends AppCompatActivity {
         busy = z;
     }
 
+    private boolean needsM3USeriesRebuild() {
+        return this.preferenceHelper.getSharedPreferenceISM3U()
+                && (this.realm.where(SeriesModel.class).count() < 100
+                || getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE).getInt("series_schema", 0) < M3U_SERIES_SCHEMA_VERSION);
+    }
+
     public void refreshM3USeriesInBackground() {
         try {
-            if (!this.preferenceHelper.getSharedPreferenceISM3U()
-                    || this.realm.where(SeriesModel.class).count() >= 100
+            if (!needsM3USeriesRebuild()
                     || this.model.getM3USeriesItems() == null
                     || this.model.getM3USeriesItems().isEmpty()) {
                 return;
             }
-            runOnUiThread(this::getEpisodeModels);
+            getEpisodeModels();
         } catch (Exception unused) {
         }
     }
