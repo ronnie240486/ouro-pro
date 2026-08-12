@@ -72,8 +72,10 @@ public class BaseTVActivity extends FragmentActivity {
 
         /* JADX INFO: Access modifiers changed from: private */
         public static /* synthetic */ void lambda$onResponse$0(Response response, Realm realm) {
-            realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
-            realm.insertOrUpdate((Collection<? extends RealmModel>) response.body());
+            Object body = response.body();
+            if (body instanceof Collection && !((Collection) body).isEmpty()) {
+                realm.insertOrUpdate((Collection<? extends RealmModel>) body);
+            }
         }
 
         /* JADX INFO: Access modifiers changed from: private */
@@ -413,8 +415,10 @@ public class BaseTVActivity extends FragmentActivity {
 
         /* JADX INFO: Access modifiers changed from: private */
         public static /* synthetic */ void lambda$onResponse$0(Response response, Realm realm) {
-            realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
-            realm.insertOrUpdate((Collection<? extends RealmModel>) response.body());
+            Object body = response.body();
+            if (body instanceof Collection && !((Collection) body).isEmpty()) {
+                realm.insertOrUpdate((Collection<? extends RealmModel>) body);
+            }
         }
 
         /* JADX INFO: Access modifiers changed from: private */
@@ -895,6 +899,12 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private void getSeriesFromEpisodes(List<EpisodeModel> list) {
+        if (list == null || list.isEmpty()) {
+            if (!this.is_stop) {
+                doNextTask(true);
+            }
+            return;
+        }
         List<EpisodeModel> list2;
         List<String> sharedPreferenceSeriesFavNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
         List<ResumeSeriesModel> sharedPreferenceRecentSeriesNames = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
@@ -1094,8 +1104,10 @@ public class BaseTVActivity extends FragmentActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getEpisodeModels$15(List list, Realm realm) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
         realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
-        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
         realm.insertOrUpdate(list);
     }
 
@@ -1173,7 +1185,9 @@ public class BaseTVActivity extends FragmentActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getSeriesFromEpisodes$18(List list, Realm realm) {
-        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
+        if (list == null || list.isEmpty()) {
+            return;
+        }
         realm.insertOrUpdate(list);
     }
 

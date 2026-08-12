@@ -85,6 +85,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
@@ -175,7 +176,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public TextView txt_subtitle;
     public TextView txt_vod;
     public WordModels wordModels;
-    private Button voiceButton;
+    private ImageButton voiceButton;
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 904;
     public int category_pos = 0;
@@ -1963,6 +1964,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_channel.requestFocus();
         this.recycler_channel.setSelectedPosition(this.channel_pos);
         this.recycler_channel.scrollToPosition(this.channel_pos);
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            openVoiceChannel(voiceQuery);
+        }
     }
 
     private int voiceDp(int value) {
@@ -1973,35 +1978,29 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (this.main_lay == null) {
             return;
         }
-        this.voiceButton = new Button(this);
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz", view -> requestVoicePermissionAndStart());
         this.voiceButton.setId(View.generateViewId());
-        this.voiceButton.setText("Voz");
-        this.voiceButton.setAllCaps(false);
-        this.voiceButton.setContentDescription("Comando de voz");
-        this.voiceButton.setOnClickListener(view -> requestVoicePermissionAndStart());
         ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(voiceDp(116), voiceDp(52));
         params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
         params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
         params.setMarginEnd(voiceDp(24));
         params.bottomMargin = voiceDp(24);
         this.main_lay.addView(this.voiceButton, params);
+        this.voiceButton.bringToFront();
         if (!VoiceCommandController.isAvailable(this)) {
             this.voiceButton.setVisibility(View.GONE);
             return;
         }
         this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
             public void onVoiceCommand(VoiceCommand command) {
-                voiceButton.setText("Voz");
                 handleVoiceCommand(command);
             }
 
             public void onVoiceState(String state) {
-                voiceButton.setText("Ouvindo");
                 Toast.makeText(LiveActivity.this, state, Toast.LENGTH_SHORT).show();
             }
 
             public void onVoiceError(String message) {
-                voiceButton.setText("Voz");
                 Toast.makeText(LiveActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
@@ -2055,6 +2054,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 Toast.makeText(this, "Canais filtrados por: " + command.getQuery(), Toast.LENGTH_SHORT).show();
                 return;
             case OPEN_CHANNEL:
+            case OPEN_TITLE:
                 openVoiceChannel(command.getQuery());
                 return;
             default:

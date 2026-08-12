@@ -1,9 +1,15 @@
 package com.ouropro.player.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +33,15 @@ import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.dlgfragment.NoConnectionDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
+import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.VoiceChannelMatcher;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceCommandController;
+import com.ouropro.player.improvements.VoiceMediaMatcher;
+import com.ouropro.player.models.EPGChannel;
+import com.ouropro.player.models.MovieModel;
+import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LoginModel;
 import com.ouropro.player.models.WordModels;
@@ -68,6 +83,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public TextView txt_time;
     public TextView txt_version;
     public WordModels wordModels = new WordModels();
+    private ImageButton microphoneButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 906;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new HomeActivity$$ExternalSyntheticLambda0(this));
 
     private void changeStringsInApp() {
@@ -251,6 +269,144 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void setupMicrophoneButton() {
+        FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
+        if (content == null) {
+            return;
+        }
+        this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        params.setMargins(0, 0, 24, 24);
+        content.addView(this.microphoneButton, params);
+        this.microphoneButton.bringToFront();
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.microphoneButton.setVisibility(View.GONE);
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleHomeVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                Toast.makeText(HomeActivity.this, state, Toast.LENGTH_SHORT).show();
+            }
+
+            public void onVoiceError(String message) {
+                Toast.makeText(HomeActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    private void handleHomeVoiceCommand(VoiceCommand command) {
+        if (command == null) {
+            return;
+        }
+        switch (command.getAction()) {
+            case OPEN_MOVIES:
+                startActivity(new Intent(this, MovieActivity.class));
+                return;
+            case OPEN_SERIES:
+                startActivity(new Intent(this, SeriesActivity.class));
+                return;
+            case OPEN_LIVE:
+                startActivity(new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class));
+                return;
+            case OPEN_SETTINGS:
+                startActivity(new Intent(this, SettingActivity.class));
+                return;
+            case OPEN_MOVIE_ITEM:
+            case SEARCH_MOVIE:
+                openGlobalVoiceTitle(command.getQuery(), "movie");
+                return;
+            case OPEN_SERIES_ITEM:
+            case SEARCH_SERIES:
+                openGlobalVoiceTitle(command.getQuery(), "series");
+                return;
+            case OPEN_CHANNEL:
+            case SEARCH_CHANNEL:
+                openGlobalVoiceTitle(command.getQuery(), "channel");
+                return;
+            case OPEN_TITLE:
+                openGlobalVoiceTitle(command.getQuery(), null);
+                return;
+            default:
+                Toast.makeText(this, "Diga o nome do canal, filme ou série", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGlobalVoiceTitle(String query, String preferredType) {
+        MovieModel movie = null;
+        SeriesModel series = null;
+        EPGChannel channel = null;
+        if (preferredType == null || "movie".equals(preferredType)) {
+            movie = VoiceMediaMatcher.findUniqueMovie(RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
+        }
+        if (preferredType == null || "series".equals(preferredType)) {
+            series = VoiceMediaMatcher.findUniqueSeries(RealmController.with().getSeriesByKey(query), query);
+        }
+        if (preferredType == null || "channel".equals(preferredType)) {
+            channel = VoiceChannelMatcher.findUniqueMatch(RealmController.with().getLiveChannelsByKey(query, true), query);
+        }
+        int matches = (movie == null ? 0 : 1) + (series == null ? 0 : 1) + (channel == null ? 0 : 1);
+        if (matches != 1) {
+            Toast.makeText(this, "Não encontrei um único resultado para: " + query, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (movie != null) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+        } else if (series != null) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
+    }
+
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_account /* 2131427885 */:
@@ -322,6 +478,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         Utils.FullScreenCall(this);
         this.preferenceHelper = new PreferenceHelper(this);
         initView();
+        setupMicrophoneButton();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
         LTVApp.instance.versionCheck();

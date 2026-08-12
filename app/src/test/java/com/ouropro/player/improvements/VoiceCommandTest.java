@@ -61,7 +61,14 @@ public class VoiceCommandTest {
     }
 
     @Test
-    public void rejectsUnknownCommands() {
-        assertEquals(VoiceCommand.Action.UNKNOWN, VoiceCommand.parse("aumentar volume").getAction());
+    public void treatsUntypedPhraseAsTitle() {
+        VoiceCommand command = VoiceCommand.parse("Esqueceram de Mim");
+        assertEquals(VoiceCommand.Action.OPEN_TITLE, command.getAction());
+        assertEquals("esqueceram de mim", command.getQuery());
+    }
+
+    @Test
+    public void rejectsEmptyCommands() {
+        assertEquals(VoiceCommand.Action.UNKNOWN, VoiceCommand.parse("").getAction());
     }
 }

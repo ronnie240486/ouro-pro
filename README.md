@@ -24,7 +24,9 @@ A camada de rede agora rejeita endpoints sem host válido, evita usuário e senh
 
 As preferências passaram a ser abertas por `SecurePreferenceStore`, usando Android Keystore por meio de `EncryptedSharedPreferences`. Isso protege usuário, senha, URL do servidor, MAC, tokens locais, favoritos e histórico em repouso quando o provider criptográfico está disponível. Também foi formalizado o contrato de playlist com os campos `playlist_url` e `playlist_name`, acompanhado de teste unitário para impedir a regressão para `url` e `name`.
 
-A primeira camada de **comando de voz** foi adicionada à `LiveActivity`. Ela reconhece frases em português do Brasil para abrir um canal por nome ou número, pesquisar canais, navegar para o próximo/anterior, pausar ou retomar o player e abrir filmes, séries ou configurações. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no botão, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
+O **comando de voz** agora usa um ícone de microfone na tela principal, nos canais mobile/TV, filmes e séries. Ele aceita títulos sem prefixo obrigatório, como “Esqueceram de Mim”, e frases como “abrir Space HD”. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no microfone, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
+
+A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm nem substituem as categorias por uma lista vazia. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md) para o diagnóstico completo.
 
 ## Estrutura
 
@@ -43,7 +45,7 @@ improvements/            Backlog de melhorias planejadas
 
 É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
 
-O instalador final é `artifacts/OuroPro6.4-voice-media-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, usa `versionName=6.4` para compatibilidade com a tela de configurações, contém `VoiceCommand`, `VoiceMediaMatcher` e `VoiceCommandController` no multidex e oferece voz para canais, filmes e séries. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
+O instalador desta correção é `artifacts/OuroPro6.4-series-safe-mic-debug.apk`. Ele mantém o pacote funcional do aplicativo atual, `com.ouropro.player`, com o sufixo de debug `com.ouropro.player.debug`, usa `versionName=6.4` para compatibilidade com a tela de configurações, contém o microfone na tela principal, canais, filmes e séries e protege a sincronização do Realm contra respostas vazias. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

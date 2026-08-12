@@ -11,7 +11,7 @@ import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -35,6 +35,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.models.CategoryModel;
@@ -73,7 +74,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
     public TextView txt_search;
     public TextView txt_series;
     public WordModels wordModels;
-    private Button voiceButton;
+    private ImageButton voiceButton;
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 911;
     public List<String> sortLists = new ArrayList();
@@ -384,11 +385,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         if (content == null) {
             return;
         }
-        this.voiceButton = new Button(this);
-        this.voiceButton.setText("Voz");
-        this.voiceButton.setAllCaps(false);
-        this.voiceButton.setContentDescription("Comando de voz para séries");
-        this.voiceButton.setOnClickListener(view -> requestVoicePermissionAndStart());
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz para séries", view -> requestVoicePermissionAndStart());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -405,15 +402,10 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             }
 
             public void onVoiceState(String state) {
-                if (voiceButton != null) {
-                    voiceButton.setText(state.startsWith("Ouvindo") ? "Ouvindo..." : "Voz");
-                }
+                Toast.makeText(SeriesActivity.this, state, Toast.LENGTH_SHORT).show();
             }
 
             public void onVoiceError(String message) {
-                if (voiceButton != null) {
-                    voiceButton.setText("Voz");
-                }
                 Toast.makeText(SeriesActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
@@ -434,6 +426,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         switch (command.getAction()) {
             case OPEN_SERIES_ITEM:
             case SEARCH_SERIES:
+            case OPEN_TITLE:
                 openSeriesByVoice(command.getQuery());
                 break;
             case OPEN_MOVIES:
@@ -455,6 +448,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
 
     private void openSeriesByVoice(String query) {
         SeriesModel series = VoiceMediaMatcher.findUniqueSeries(this.seriesModels, query);
+        if (series == null) {
+            series = VoiceMediaMatcher.findUniqueSeries(RealmController.with().getSeriesByKey(query), query);
+        }
         if (series == null) {
             Toast.makeText(this, "Série não encontrada ou nome ambíguo", Toast.LENGTH_SHORT).show();
             return;
@@ -582,5 +578,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
         setupVoiceButton();
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            openSeriesByVoice(voiceQuery);
+        }
     }
 }

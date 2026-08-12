@@ -1,7 +1,9 @@
 package com.ouropro.player.activities.mobile;
 
+import android.Manifest;
 import android.app.PictureInPictureParams;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -77,6 +79,7 @@ import com.ouropro.player.activities.MovieActivity;
 import com.ouropro.player.activities.SearchActivity;
 import com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda0;
 import com.ouropro.player.activities.SeriesActivity;
+import com.ouropro.player.activities.SettingActivity;
 import com.ouropro.player.adapter.EpgRecyclerAdapter;
 import com.ouropro.player.adapter.RecyclerLiveCategoryAdapter;
 import com.ouropro.player.adapter.RecyclerLiveChannelAdapter;
@@ -86,6 +89,10 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.VoiceChannelMatcher;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -165,6 +172,9 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     public int volumeLevel;
     public SeekBar volume_seekbar;
     public WordModels wordModels;
+    private ImageButton voiceButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 905;
     public int category_pos = 0;
     public int channel_pos = 0;
     public int pre_channel_pos = 0;
@@ -411,6 +421,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
 
     private void initView() {
         this.main_lay = (ConstraintLayout) findViewById(R.id.fullContainer);
+        setupVoiceButton();
         StyledPlayerView styledPlayerView = (StyledPlayerView) findViewById(R.id.player_view);
         this.playerView = styledPlayerView;
         styledPlayerView.setResizeMode(3);
@@ -1466,9 +1477,164 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             showFavImageIcon(((EPGChannel) this.epgChannels.get(this.channel_pos)).is_favorite());
             changeChannelInfo(this.channel_pos);
         }
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            openVoiceChannel(voiceQuery);
+        }
+    }
+
+    private int voiceDp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private void setupVoiceButton() {
+        if (this.main_lay == null) {
+            return;
+        }
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz", view -> requestVoicePermissionAndStart());
+        this.voiceButton.setId(View.generateViewId());
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(voiceDp(56), voiceDp(56));
+        params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        params.setMarginEnd(voiceDp(20));
+        params.bottomMargin = voiceDp(20);
+        this.main_lay.addView(this.voiceButton, params);
+        this.voiceButton.bringToFront();
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.voiceButton.setVisibility(View.GONE);
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                Toast.makeText(LiveMobileActivity.this, state, Toast.LENGTH_SHORT).show();
+            }
+
+            public void onVoiceError(String message) {
+                Toast.makeText(LiveMobileActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    private void handleVoiceCommand(VoiceCommand command) {
+        if (command == null) {
+            return;
+        }
+        switch (command.getAction()) {
+            case OPEN_MOVIES:
+                goToVodActivity();
+                return;
+            case OPEN_SERIES:
+                goToSeriesActivity();
+                return;
+            case OPEN_SETTINGS:
+                startActivity(new Intent(this, SettingActivity.class));
+                return;
+            case SEARCH_CHANNEL:
+                if (this.et_search != null) {
+                    this.et_search.setText(command.getQuery());
+                }
+                return;
+            case OPEN_CHANNEL:
+            case OPEN_TITLE:
+                openVoiceChannel(command.getQuery());
+                return;
+            case NEXT_CHANNEL:
+                playNextChannel();
+                return;
+            case PREVIOUS_CHANNEL:
+                playPreviousChannel();
+                return;
+            case PLAY:
+                if (this.player != null) {
+                    this.player.setPlayWhenReady(true);
+                }
+                return;
+            case PAUSE:
+                if (this.player != null) {
+                    this.player.setPlayWhenReady(false);
+                }
+                return;
+            default:
+                Toast.makeText(this, "Diga o nome do canal", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openVoiceChannel(String query) {
+        if (this.epgChannels == null || this.epgChannels.isEmpty()) {
+            Toast.makeText(this, "Nenhum canal carregado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
+        if (channel == null) {
+            Toast.makeText(this, "Canal não encontrado ou nome ambíguo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        int index = -1;
+        for (int i = 0; i < this.epgChannels.size(); i++) {
+            EPGChannel item = this.epgChannels.get(i);
+            if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            return;
+        }
+        if (isAdultChannel(channel.getCategory_id(), channel.getCategory_name())) {
+            showChannelLockDlgFragment(channel, index, 1);
+            return;
+        }
+        this.channel_pos = index;
+        this.pre_channel_pos = index;
+        this.is_full = true;
+        setFull();
+        playSelectedChannel(channel);
+        this.stream_id = channel.getStream_id();
+        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
+            showEpgInfo(null);
+        } else {
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(channel.getStream_id());
+        }
+        this.channel_name = channel.getName();
+        this.txt_name.setText(this.channel_name);
+        changeChannelInfo(index);
+        this.recycler_channel.scrollToPosition(index);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            requestVoicePermissionAndStart();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
     }
 
     public void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
         super.onPause();
         if (Util.SDK_INT <= 23) {
             StyledPlayerView styledPlayerView = this.playerView;

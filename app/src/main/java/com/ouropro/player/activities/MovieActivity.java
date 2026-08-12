@@ -15,7 +15,7 @@ import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -48,6 +48,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.models.CategoryModel;
@@ -86,7 +87,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
     public TextView txt_search;
     public TextView txt_series;
     public VodRecyclerAdapter vodAdapter;
-    private Button voiceButton;
+    private ImageButton voiceButton;
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 910;
     public WordModels wordModels;
@@ -570,11 +571,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         if (content == null) {
             return;
         }
-        this.voiceButton = new Button(this);
-        this.voiceButton.setText("Voz");
-        this.voiceButton.setAllCaps(false);
-        this.voiceButton.setContentDescription("Comando de voz para filmes");
-        this.voiceButton.setOnClickListener(view -> requestVoicePermissionAndStart());
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz para filmes", view -> requestVoicePermissionAndStart());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -591,15 +588,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             }
 
             public void onVoiceState(String state) {
-                if (voiceButton != null) {
-                    voiceButton.setText(state.startsWith("Ouvindo") ? "Ouvindo..." : "Voz");
-                }
+                Toast.makeText(MovieActivity.this, state, Toast.LENGTH_SHORT).show();
             }
 
             public void onVoiceError(String message) {
-                if (voiceButton != null) {
-                    voiceButton.setText("Voz");
-                }
                 Toast.makeText(MovieActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
@@ -620,6 +612,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         switch (command.getAction()) {
             case OPEN_MOVIE_ITEM:
             case SEARCH_MOVIE:
+            case OPEN_TITLE:
                 openMovieByVoice(command.getQuery());
                 break;
             case OPEN_SERIES:
@@ -641,6 +634,9 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
 
     private void openMovieByVoice(String query) {
         MovieModel movie = VoiceMediaMatcher.findUniqueMovie(this.movieModels, query);
+        if (movie == null) {
+            movie = VoiceMediaMatcher.findUniqueMovie(RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
+        }
         if (movie == null) {
             Toast.makeText(this, "Filme não encontrado ou nome ambíguo", Toast.LENGTH_SHORT).show();
             return;
@@ -766,5 +762,9 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
         setupVoiceButton();
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            openMovieByVoice(voiceQuery);
+        }
     }
 }
