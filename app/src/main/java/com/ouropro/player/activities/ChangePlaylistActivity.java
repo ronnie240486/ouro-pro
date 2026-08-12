@@ -270,15 +270,20 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
 
     private void loadingData(AppInfoModel.UrlModel urlModel) {
         this.progress_bar.setVisibility(0);
-        if (urlModel.getUrl().contains("username")) {
+        String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
+        String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
+        if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
+            this.preferenceHelper.setSharedPreferenceISM3U(true);
+            reloadM3UData(playlistUrl, this.wordModels);
+        } else if (playlistUrl.contains("username")) {
             this.preferenceHelper.setSharedPreferenceISM3U(false);
-            goToLogin(urlModel.getUrl(), this.wordModels);
-        } else if (GetSharedInfo.checkXUILink(urlModel.getUrl())) {
+            goToLogin(playlistUrl, this.wordModels);
+        } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
             this.preferenceHelper.setSharedPreferenceISM3U(false);
             goToXUILogin(urlModel.getUrl(), this.wordModels);
         } else {
             this.preferenceHelper.setSharedPreferenceISM3U(true);
-            reloadM3UData(urlModel.getUrl(), this.wordModels);
+            reloadM3UData(playlistUrl, this.wordModels);
         }
     }
 

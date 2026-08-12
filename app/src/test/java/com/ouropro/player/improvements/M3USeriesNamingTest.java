@@ -30,6 +30,12 @@ public class M3USeriesNamingTest {
     }
 
     @Test
+    public void preservesOriginalCardTitleSeparators() {
+        assertEquals("La Casa_de_Papel", M3USeriesNaming.seriesName("La Casa_de_Papel S01E01"));
+        assertEquals("The.Walking.Dead", M3USeriesNaming.seriesName("The.Walking.Dead S02E03"));
+    }
+
+    @Test
     public void extractsSeasonAndEpisodeNumbers() {
         assertEquals(1, M3USeriesNaming.seasonNumber("The Office S01E02"));
         assertEquals(2, M3USeriesNaming.episodeNumber("The Office S01E02"));

@@ -10,6 +10,8 @@ import iptv.m3u.parser.M3UItem;
 public final class M3USeriesNaming {
     private static final Pattern SEASON_EPISODE = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\(])(?:(?:s|t)\\s*0*(\\d{1,2})\\s*(?:e|ep|x)\\s*0*(\\d{1,3})|(?:season|temporada)\\s*0*(\\d{1,2})\\s*(?:episode|epis[oó]dio|ep)\\s*0*(\\d{1,3})|(?:episode|epis[oó]dio|ep)\\s*0*(\\d{1,3}))(?:$|[\\s._\\-\\]\\)])");
     private static final Pattern X_EPISODE = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\(])\\d{1,2}\\s*[x×]\\s*\\d{1,3}(?:$|[\\s._\\-\\]\\)])");
+    /** Mantém o texto exatamente como vinha no APK original antes de S01/S02... */
+    private static final Pattern LEGACY_SEASON_TOKEN = Pattern.compile("(?i)\\bS\\s*0*\\d{1,2}(?=E\\s*0*\\d{1,3}\\b|\\b)");
 
     private M3USeriesNaming() {
     }
@@ -36,6 +38,15 @@ public final class M3USeriesNaming {
     public static String seriesName(String title) {
         if (title == null) {
             return "";
+        }
+        // O APK original usava title.split("S01"), portanto não devemos trocar
+        // pontos, sublinhados ou outros separadores que fazem parte do título.
+        Matcher legacyMatcher = LEGACY_SEASON_TOKEN.matcher(title);
+        if (legacyMatcher.find()) {
+            String legacyName = title.substring(0, legacyMatcher.start()).trim();
+            if (!legacyName.isEmpty()) {
+                return legacyName;
+            }
         }
         String normalized = title.replace('_', ' ').replace('.', ' ').replaceAll("\\s+", " ").trim();
         Matcher matcher = SEASON_EPISODE.matcher(normalized);
