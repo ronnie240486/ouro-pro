@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout android:paddingTop="@dimen/_2sdp" android:paddingBottom="@dimen/_2sdp" android:focusable="false" android:clickable="false" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView android:textSize="@dimen/_8sdp" android:textColor="@color/white" android:id="@id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10:00 - 11:00" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+    <TextView android:textSize="@dimen/_8sdp" android:textColor="@color/white" android:id="@id/txt_name" android:layout_width="0.0sp" android:layout_height="wrap_content" android:singleLine="true" android:layout_marginStart="@dimen/_5sdp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toEndOf="@id/txt_time" app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,1 @@
+/home/ubuntu/upload/OuroPro6.4.apk: Android package (APK), with classes.dex

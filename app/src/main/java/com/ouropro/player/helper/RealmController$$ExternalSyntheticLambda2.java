@@ -1,0 +1,32 @@
+package com.ouropro.player.helper;
+
+import io.realm.Realm;
+
+/* JADX INFO: compiled from: R8$$SyntheticClass */
+/* JADX INFO: loaded from: classes.dex */
+public final /* synthetic */ class RealmController$$ExternalSyntheticLambda2 implements Realm.Transaction {
+    public final /* synthetic */ int $r8$classId;
+    public final /* synthetic */ String f$0;
+    public final /* synthetic */ boolean f$1;
+
+    public /* synthetic */ RealmController$$ExternalSyntheticLambda2(String str, boolean z, int i) {
+        this.$r8$classId = i;
+        this.f$0 = str;
+        this.f$1 = z;
+    }
+
+    @Override // io.realm.Realm.Transaction
+    public final void execute(Realm realm) {
+        switch (this.$r8$classId) {
+            case 0:
+                RealmController.lambda$addToFavChannels$0(this.f$0, this.f$1, realm);
+                break;
+            case 1:
+                RealmController.lambda$addToFavMovie$2(this.f$0, this.f$1, realm);
+                break;
+            default:
+                RealmController.lambda$addToFavSeries$4(this.f$0, this.f$1, realm);
+                break;
+        }
+    }
+}

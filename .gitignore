@@ -1,0 +1,37 @@
+# Android/Gradle
+.gradle/
+local.properties
+build/
+*/build/
+.cxx/
+.externalNativeBuild/
+.idea/
+*.iml
+captures/
+
+# Artefatos de distribuição e assinatura
+*.apk
+*.aab
+*.apks
+*.keystore
+*.jks
+*.pem
+*.p12
+
+# Segredos e dados locais
+.env
+.env.*
+secrets/
+credentials/
+
+# Logs e temporários
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Diretórios de engenharia reversa locais
+apk-extracted/
+decompiled-apk/
+jadx-sources/
+tools/
