@@ -141,14 +141,25 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (RealmController.with().realm.where(SeriesModel.class).count() >= 100) {
             return;
         }
-        final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
-        final String username = this.preferenceHelper.getSharedPreferenceUsername();
-        final String password = this.preferenceHelper.getSharedPreferencePassword();
-        if (server == null || server.trim().isEmpty() || username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+        final String configuredServer = this.preferenceHelper.getSharedPreferenceServerUrl();
+        String username = this.preferenceHelper.getSharedPreferenceUsername();
+        String password = this.preferenceHelper.getSharedPreferencePassword();
+        if (configuredServer == null || configuredServer.trim().isEmpty()) {
+            return;
+        }
+        String server = configuredServer;
+        com.ouropro.player.improvements.M3UAccountEndpoint.Credentials playlistCredentials = com.ouropro.player.improvements.M3UAccountEndpoint.fromPlaylistUrl(configuredServer);
+        if (playlistCredentials != null) {
+            server = playlistCredentials.getBaseUrl();
+            username = playlistCredentials.getUsername();
+            password = playlistCredentials.getPassword();
+        }
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             return;
         }
         boolean allowLegacyCleartext = server.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
-        SeriesCatalogLoader.load(RetroClass.getAPIService(server, allowLegacyCleartext), username, password, new SeriesCatalogLoader.Listener() {
+        try {
+            SeriesCatalogLoader.load(RetroClass.getAPIService(server, allowLegacyCleartext), username, password, new SeriesCatalogLoader.Listener() {
             @Override
             public void onComplete(List<SeriesModel> models, List<CategoryModel> categories) {
                 saveSeriesBackground(models);
@@ -157,11 +168,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 }
             }
 
-            @Override
-            public void onFailure(String message) {
-                // A Home não deve bloquear nem substituir o catálogo local por uma resposta parcial.
-            }
-        });
+                @Override
+                public void onFailure(String message) {
+                    // A Home não deve bloquear nem substituir o catálogo local por uma resposta parcial.
+                }
+            });
+        } catch (IllegalArgumentException ignored) {
+            // Uma URL M3U malformada não pode derrubar a Home.
+        }
     }
 
     private void changeStringsInApp() {
