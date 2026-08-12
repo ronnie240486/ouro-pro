@@ -54,10 +54,10 @@ public final class VoiceChannelMatcher {
             }
         }
 
-        if (exactCount == 1) {
+        if (exactCount > 0) {
             return exact;
         }
-        if (exactCount > 1 || candidateCount != 1) {
+        if (candidateCount == 0) {
             return null;
         }
         return candidate;

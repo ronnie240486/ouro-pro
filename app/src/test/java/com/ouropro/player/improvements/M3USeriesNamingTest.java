@@ -43,4 +43,23 @@ public class M3USeriesNamingTest {
         assertTrue(M3USeriesNaming.isSeriesItem(item("The Office - Pilot", "Séries | Comédia", "https://cdn.example/stream/4")));
         assertFalse(M3USeriesNaming.isSeriesItem(item("Filme Ação", "Filmes", "https://cdn.example/movie/5.mp4")));
     }
+
+    @Test
+    public void doesNotClassifyMixedMovieSeriesBroadcastGroupAsSeries() {
+        assertFalse(M3USeriesNaming.isSeriesItem(item("Space HD", "FILMES E SERIES", "https://cdn.example/45271.ts")));
+        assertFalse(M3USeriesNaming.isSeriesItem(item("TNT Series HD", "FILMES E SERIES", "https://cdn.example/45298.ts")));
+    }
+
+    @Test
+    public void preservesRealSeriesGroupsWithoutEpisodeMarker() {
+        assertTrue(M3USeriesNaming.isSeriesItem(item("Arafta (Unidos pelo Destino)", "NOVELAS TURCAS LEGENDADAS", "https://cdn.example/series/1.mp4")));
+        assertTrue(M3USeriesNaming.isSeriesItem(item("The Walking Dead", "24H SERIES", "https://cdn.example/series/2.mp4")));
+    }
+
+    @Test
+    public void recognizesProviderGroupsWithEpisodeMarkers() {
+        assertTrue(M3USeriesNaming.isSeriesItem(item("Reacher S04E03", "AMAZON PRIME VIDEO", "https://cdn.example/3.mp4")));
+        assertTrue(M3USeriesNaming.isSeriesItem(item("O Urso S05E08", "STAR+", "https://cdn.example/4.mp4")));
+        assertTrue(M3USeriesNaming.isSeriesItem(item("Silo S03E06", "APPLE TV+", "https://cdn.example/5.mp4")));
+    }
 }

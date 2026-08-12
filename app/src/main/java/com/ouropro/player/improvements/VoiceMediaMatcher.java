@@ -22,7 +22,11 @@ public final class VoiceMediaMatcher {
             if (model == null || model.getName() == null) {
                 continue;
             }
-            int score = score(VoiceCommand.normalize(model.getName()), normalizedQuery);
+            String normalizedTitle = VoiceCommand.normalize(model.getName());
+            if (normalizedTitle.equals(normalizedQuery)) {
+                return model;
+            }
+            int score = score(normalizedTitle, normalizedQuery);
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
@@ -31,7 +35,7 @@ public final class VoiceMediaMatcher {
                 tied = true;
             }
         }
-        return bestScore == 0 || tied ? null : best;
+        return bestScore == 0 ? null : best;
     }
 
     public static SeriesModel findUniqueSeries(RealmResults<SeriesModel> models, String query) {
@@ -46,7 +50,11 @@ public final class VoiceMediaMatcher {
             if (model == null || model.getName() == null) {
                 continue;
             }
-            int score = score(VoiceCommand.normalize(model.getName()), normalizedQuery);
+            String normalizedTitle = VoiceCommand.normalize(model.getName());
+            if (normalizedTitle.equals(normalizedQuery)) {
+                return model;
+            }
+            int score = score(normalizedTitle, normalizedQuery);
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
@@ -55,7 +63,7 @@ public final class VoiceMediaMatcher {
                 tied = true;
             }
         }
-        return bestScore == 0 || tied ? null : best;
+        return bestScore == 0 ? null : best;
     }
 
     private static int score(String title, String query) {

@@ -45,7 +45,7 @@ improvements/            Backlog de melhorias planejadas
 
 É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
 
-O instalador desta correção é `artifacts/OuroPro6.4-series-cards-order-debug.apk`. Ele preserva a abertura rápida, importa séries M3U por marcadores de episódio e grupo, recupera capas pelo primeiro episódio, organiza temporadas/capítulos numericamente e executa a migração uma única vez. Filmes e comando de voz continuam preservados. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
+O instalador desta correção é `artifacts/OuroPro6.4-m3u-plus-voice-fix-debug.apk`. Ele preserva a abertura rápida, classifica a M3U Plus real sem misturar o grupo de canais `FILMES E SERIES`, reconhece provedores como Netflix/HBO/Disney+/Amazon, recupera capas pelo primeiro episódio, organiza temporadas/capítulos numericamente e executa a migração uma única vez. O comando de voz abre diretamente canais, filmes e séries. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

@@ -72,6 +72,16 @@ public class VoiceCommandTest {
     }
 
     @Test
+    public void parsesNaturalMediaPrefixes() {
+        assertEquals(VoiceCommand.Action.OPEN_CHANNEL, VoiceCommand.parse("canal Space HD").getAction());
+        assertEquals("space hd", VoiceCommand.parse("canal Space HD").getQuery());
+        assertEquals(VoiceCommand.Action.OPEN_MOVIE_ITEM, VoiceCommand.parse("filme De Volta para o Futuro").getAction());
+        assertEquals("de volta para o futuro", VoiceCommand.parse("filme De Volta para o Futuro").getQuery());
+        assertEquals(VoiceCommand.Action.OPEN_SERIES_ITEM, VoiceCommand.parse("série The Walking Dead").getAction());
+        assertEquals("the walking dead", VoiceCommand.parse("série The Walking Dead").getQuery());
+    }
+
+    @Test
     public void treatsUntypedPhraseAsTitle() {
         VoiceCommand command = VoiceCommand.parse("Esqueceram de Mim");
         assertEquals(VoiceCommand.Action.OPEN_TITLE, command.getAction());

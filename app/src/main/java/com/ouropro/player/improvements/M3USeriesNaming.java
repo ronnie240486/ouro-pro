@@ -20,14 +20,29 @@ public final class M3USeriesNaming {
         }
         String url = lower(item.getStreamURL());
         String group = lower(item.getGroupTitle());
+        String type = lower(item.getType());
         String title = item.getChannelName() == null ? "" : item.getChannelName();
-        if (url.contains("/series/") || url.contains("/series?") || url.contains("=series")) {
+        boolean explicitSeriesUrl = url.contains("/series/") || url.contains("/series?") || url.contains("=series");
+        boolean explicitEpisode = hasEpisodeMarker(title);
+        boolean mixedOrMovieGroup = (group.contains("filmes") && group.contains("series"))
+                || group.contains("filme") || group.contains("movie") || group.contains("cinema") || group.contains("vod");
+        if (explicitSeriesUrl || explicitEpisode) {
             return true;
         }
-        if (group.contains("series") || group.contains("série") || group.contains("season") || group.contains("temporada") || group.contains("episode") || group.contains("episódio") || group.contains("anime") || group.contains("novela")) {
+        if (mixedOrMovieGroup) {
+            return false;
+        }
+        if (type.contains("series") || type.contains("episode")) {
             return true;
         }
-        return hasEpisodeMarker(title);
+        return group.contains("series") || group.contains("série") || group.contains("season")
+                || group.contains("temporada") || group.contains("episode") || group.contains("episódio")
+                || group.contains("anime") || group.contains("novela") || group.contains("dorama")
+                || group.contains("desenho") || group.contains("reality") || group.contains("show")
+                || group.contains("netflix") || group.contains("hbo") || group.contains("amazon")
+                || group.contains("disney") || group.contains("star+") || group.contains("paramount")
+                || group.contains("apple tv") || group.contains("globo play") || group.contains("reelshort")
+                || group.contains("tokusatsu") || group.contains("24h");
     }
 
     public static boolean hasEpisodeMarker(String title) {
@@ -62,6 +77,7 @@ public final class M3USeriesNaming {
             result = normalized;
         }
         result = result.replaceAll("^[\\s\\-–—|:]+|[\\s\\-–—|:]+$", "").trim();
+        result = result.replaceFirst("(?i)^24h\\s+", "").trim();
         return result.isEmpty() ? normalized : result;
     }
 

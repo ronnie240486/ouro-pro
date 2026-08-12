@@ -442,12 +442,16 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             return;
         }
         if (movie != null) {
-            Intent intent = new Intent(this, MovieActivity.class);
-            intent.putExtra("voice_query", query);
+            Intent intent = new Intent(this, MovieInfoActivity.class);
+            intent.putExtra("name", movie.getName());
+            intent.putExtra("stream_id", movie.getStream_id());
+            intent.putExtra("category_name", movie.getCategory_name());
             startActivity(intent);
         } else if (series != null) {
-            Intent intent = new Intent(this, SeriesActivity.class);
-            intent.putExtra("voice_query", query);
+            Intent intent = new Intent(this, SeriesInfoActivity.class);
+            intent.putExtra("series_id", series.getSeries_id());
+            intent.putExtra("name", series.getName());
+            intent.putExtra("category_name", series.getCategory_name());
             startActivity(intent);
         } else {
             Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);

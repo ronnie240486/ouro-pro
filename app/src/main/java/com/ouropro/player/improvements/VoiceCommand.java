@@ -69,7 +69,7 @@ public final class VoiceCommand {
         String query = removePrefix(normalized,
                 "abrir filme ", "abrir o filme ", "assistir filme ", "assistir o filme ",
                 "ver filme ", "ver o filme ", "buscar filme ", "buscar o filme ",
-                "pesquisar filme ", "pesquisar o filme ");
+                "pesquisar filme ", "pesquisar o filme ", "filme ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_MOVIE : Action.OPEN_MOVIE_ITEM;
@@ -79,7 +79,7 @@ public final class VoiceCommand {
         query = removePrefix(normalized,
                 "abrir serie ", "abrir a serie ", "assistir serie ", "assistir a serie ",
                 "ver serie ", "ver a serie ", "buscar serie ", "buscar a serie ",
-                "pesquisar serie ", "pesquisar a serie ");
+                "pesquisar serie ", "pesquisar a serie ", "serie ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_SERIES : Action.OPEN_SERIES_ITEM;
@@ -89,7 +89,7 @@ public final class VoiceCommand {
         query = removePrefix(normalized,
                 "abrir canal ", "abrir o canal ", "assistir canal ", "assistir o canal ",
                 "ver canal ", "ver o canal ", "buscar canal ", "buscar o canal ",
-                "pesquisar canal ", "pesquisar o canal ");
+                "pesquisar canal ", "pesquisar o canal ", "canal ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_CHANNEL : Action.OPEN_CHANNEL;
