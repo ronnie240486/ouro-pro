@@ -1248,6 +1248,19 @@ public class BaseActivity extends AppCompatActivity {
         busy = z;
     }
 
+    public void refreshM3USeriesInBackground() {
+        try {
+            if (!this.preferenceHelper.getSharedPreferenceISM3U()
+                    || this.realm.where(SeriesModel.class).count() >= 100
+                    || this.model.getM3USeriesItems() == null
+                    || this.model.getM3USeriesItems().isEmpty()) {
+                return;
+            }
+            runOnUiThread(this::getEpisodeModels);
+        } catch (Exception unused) {
+        }
+    }
+
     public void doNextTask(boolean z) {
     }
 

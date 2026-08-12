@@ -564,5 +564,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         textView.setText(sbM.toString());
         this.ly_live.requestFocus();
         refreshSeriesInBackground();
+        refreshM3USeriesInBackground();
     }
 }

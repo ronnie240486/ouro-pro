@@ -8,7 +8,7 @@ O fluxo de séries era indireto: cada item passava por `EpisodeModel.fromM3UItem
 
 ## Correção
 
-A nova regra compartilhada reconhece séries por URL, grupo M3U e marcadores comuns de temporada/episódio. Ela extrai o nome base da série antes do marcador, preserva `group-title` como categoria e grava o episódio para que o agrupamento gere um `SeriesModel` por série. A classificação foi aplicada ao fluxo mobile e Android TV. Quando a fonte é M3U e o Realm possui menos de 100 séries, o aplicativo força a reimportação dos episódios em vez de reutilizar o cache parcial.
+A nova regra compartilhada reconhece séries por URL, grupo M3U e marcadores comuns de temporada/episódio. Ela extrai o nome base da série antes do marcador, preserva `group-title` como categoria e grava o episódio para que o agrupamento gere um `SeriesModel` por série. A classificação foi aplicada ao fluxo mobile e Android TV. Quando a fonte é M3U e o Realm possui menos de 100 séries, o aplicativo dispara a reimportação dos episódios ao abrir a Home, sem bloquear a tela; em seguida, a tela de Séries também pode solicitar a reconstrução se ainda houver menos de 100 itens.
 
 A abertura rápida do APK anterior foi preservada, assim como o carregamento direto de filmes. Nenhuma rotina de filmes foi alterada pela correção do parser de séries.
 
@@ -23,5 +23,6 @@ Os testes unitários cobrem `S01E01`, `1x03`, `Temporada 1 Episódio 4`, grupos 
 | Build | `BUILD SUCCESSFUL` |
 | Testes | Aprovados |
 | Assinatura | Debug v1/v2 verificada |
+| SHA-256 | `8540bd07bad8181a2cd5b20645583b68c6561881d010b401f64a2293f7288b18` |
 
 > A quantidade final depende do conteúdo real da M3U e dos padrões de nomes usados por ela. O aplicativo agora importa itens de séries que o parser antigo descartava; não inventa episódios nem altera o catálogo de filmes.
