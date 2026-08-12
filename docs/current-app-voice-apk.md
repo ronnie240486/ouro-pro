@@ -2,7 +2,7 @@
 
 ## Resultado
 
-O módulo `app` do projeto OuroPro foi compilado com sucesso usando JDK 17, Android SDK 35 e Gradle Wrapper 8.10.2. Após um crash reportado na inicialização, foi gerado o APK de correção `artifacts/OuroPro6.4-voz-crashfix-debug.apk`.
+O módulo `app` do projeto OuroPro foi compilado com sucesso usando JDK 17, Android SDK 35 e Gradle Wrapper 8.10.2. Após os crashes reportados na inicialização, foi gerado o APK final de correção `artifacts/OuroPro6.4-resource-id-fix-debug.apk`.
 
 O artefato é o **aplicativo atual reconstruído**, não a prévia independente que foi criada anteriormente por engano. O código do comando de voz está no mesmo módulo `app` e é integrado à `LiveActivity`, preservando a rotina existente de busca, controle parental e reprodução.
 
@@ -10,7 +10,7 @@ O artefato é o **aplicativo atual reconstruído**, não a prévia independente 
 
 | Campo | Valor |
 |---|---|
-| Arquivo | `artifacts/OuroPro6.4-voz-crashfix-debug.apk` |
+| Arquivo | `artifacts/OuroPro6.4-resource-id-fix-debug.apk` |
 | Pacote de debug | `com.ouropro.player.debug` |
 | Versão | `6.4-reconstructed-debug` |
 | Version code | `128` |
@@ -18,7 +18,7 @@ O artefato é o **aplicativo atual reconstruído**, não a prévia independente 
 | Target SDK | `34` |
 | Compile SDK | `35` |
 | Assinatura | Debug, esquemas v1 e v2 verificados |
-| SHA-256 | `49b9e20d2ca3aa314b8047e0f16ecbc3acf146850ccb3720a24a18925f97b977` |
+| SHA-256 | `4752fc8f7903f07df7b3ef04dd864eacfdfbf9c42c1935aa2ef576cb93efa54a` |
 
 ## Comando de voz
 
@@ -28,11 +28,11 @@ O matcher recusa correspondências ambíguas, e a abertura de canal reutiliza a 
 
 ## Crash corrigido
 
-O log fornecido mostrou `NullPointerException` em `MainActivity.showDescriptionDlgFragment`, na chamada `GifImageView.setVisibility`, porque `image_loader` estava nulo. A correção criou `setLoaderVisibility` e `isLoaderVisible`, que tratam o GIF como componente opcional quando uma variante de layout não o fornece. Os acessos em carregamento, diálogo de descrição, tecla voltar e falha da playlist agora passam por essa proteção.
+Os logs mostraram dois `NullPointerException` consecutivos em views de inicialização: `image_loader` nulo em `MainActivity.showDescriptionDlgFragment` e `btn_reload` nulo em `DescriptionDlgFragment.initView`. A causa estrutural foi confirmada comparando o APK: o `R.java` recuperado usava IDs antigos, por exemplo `btn_reload=0x7f0b0099`, enquanto o APK empacotava `btn_reload=0x7f0b009c`. A correção remove o `R.java` manual, ativa IDs finais gerados pelo Android Gradle Plugin e mantém guards defensivos no loader. Dessa forma, o código passa a consultar os IDs atuais dos layouts, corrigindo a origem dos NPEs de views.
 
 ## Verificações realizadas
 
-A tarefa `:app:assembleDebug` do APK de correção retornou `BUILD SUCCESSFUL`. O APK anterior não deve mais ser usado. A versão de correção deve ser testada no mesmo dispositivo que produziu o log; nesta sandbox não há um dispositivo Android conectado, portanto não vou afirmar que a execução física foi validada até receber um novo log ou confirmação de abertura.
+A tarefa `:app:clean :app:assembleDebug` do APK final retornou `BUILD SUCCESSFUL`. Os IDs empacotados foram conferidos e a assinatura v1/v2 foi verificada. Os APKs anteriores não devem mais ser usados. A versão final ainda deve ser testada no mesmo dispositivo que produziu os logs; nesta sandbox não há ADB nem dispositivo Android conectado, portanto não vou afirmar que a execução física foi validada até receber confirmação de abertura.
 
 A assinatura é de depuração. O APK foi compilado e inspecionado, mas ainda não foi validado em um dispositivo físico ou em um emulador Android TV nesta sandbox. Também não foi feita uma nova autenticação do usuário no fluxo Xtream nem um teste de reprodução contra uma playlist real.
 
