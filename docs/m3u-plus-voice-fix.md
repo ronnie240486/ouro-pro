@@ -8,7 +8,7 @@ A classificação anterior considerava qualquer grupo contendo a palavra `series
 
 ## Voz
 
-A Home agora resolve correspondências exatas e abre diretamente o detalhe do conteúdo, em vez de navegar apenas para a tela de busca. As frases esperadas incluem “Space HD”, “canal Space HD”, “De Volta para o Futuro”, “filme De Volta para o Futuro”, “The Walking Dead” e “série The Walking Dead”. Correspondências exatas têm prioridade mesmo quando existem cópias em categorias diferentes.
+A Home agora resolve correspondências exatas e abre diretamente o detalhe do conteúdo, em vez de navegar apenas para a tela de busca. As frases esperadas incluem “Space HD”, “canal Space HD”, “De Volta para Futuro”, “filme De Volta para o Futuro”, “The Walking Dead” e “série The Walking Dead”. A busca ignora artigos e preposições comuns, então variações naturais da fala continuam encontrando o mesmo título. Correspondências exatas têm prioridade mesmo quando existem cópias em categorias diferentes.
 
 ## Cards e dados
 
@@ -21,6 +21,6 @@ Os cards de séries usam o mesmo layout compacto de mídia do catálogo de filme
 | Build | `BUILD SUCCESSFUL` |
 | Testes | Testes de parser M3U, voz e projeto aprovados |
 | Assinatura | Debug v1/v2 verificada |
-| SHA-256 | `59780c1376fe7dc067b06667a0aaf86c61f7aaba84ce456a331f56dbc9a94e13` |
+| SHA-256 | `16f883deb59099bd92ec0a0d90225140913ce233d9599d2b5ca047f0db6e8cd3` |
 
 > A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor.

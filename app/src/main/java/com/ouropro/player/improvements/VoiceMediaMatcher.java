@@ -23,10 +23,13 @@ public final class VoiceMediaMatcher {
                 continue;
             }
             String normalizedTitle = VoiceCommand.normalize(model.getName());
-            if (normalizedTitle.equals(normalizedQuery)) {
+            if (normalizedTitle.equals(normalizedQuery) || meaningful(normalizedTitle).equals(meaningful(normalizedQuery))) {
                 return model;
             }
             int score = score(normalizedTitle, normalizedQuery);
+            if (score == 0 && meaningful(normalizedTitle).contains(meaningful(normalizedQuery))) {
+                score = 2;
+            }
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
@@ -51,10 +54,13 @@ public final class VoiceMediaMatcher {
                 continue;
             }
             String normalizedTitle = VoiceCommand.normalize(model.getName());
-            if (normalizedTitle.equals(normalizedQuery)) {
+            if (normalizedTitle.equals(normalizedQuery) || meaningful(normalizedTitle).equals(meaningful(normalizedQuery))) {
                 return model;
             }
             int score = score(normalizedTitle, normalizedQuery);
+            if (score == 0 && meaningful(normalizedTitle).contains(meaningful(normalizedQuery))) {
+                score = 2;
+            }
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
@@ -64,6 +70,11 @@ public final class VoiceMediaMatcher {
             }
         }
         return bestScore == 0 ? null : best;
+    }
+
+    private static String meaningful(String value) {
+        return value.replaceAll("\\b(o|a|os|as|um|uma|uns|umas|de|da|do|das|dos|para|e)\\b", " ")
+                .replaceAll("\\s+", " ").trim();
     }
 
     private static int score(String title, String query) {
