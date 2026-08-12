@@ -1050,15 +1050,47 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$fetchM3UItems$3(List list) {
+    public /* synthetic */ void lambda$fetchM3UItems$3(final List list) {
         if (list.size() == 0) {
             doNextTask(false);
             Toast.makeText(getApplicationContext(), this.wordModels.getUser_incorrect(), 0).show();
-        } else if (!this.is_stop) {
-            prepareData(list);
-            getChannelModels();
+            setBusy(false);
+            return;
         }
-        setBusy(false);
+        if (this.is_stop) {
+            setBusy(false);
+            return;
+        }
+        // A lista pode ter centenas de milhares de itens. O particionamento
+        // não pode ocupar a thread principal no retorno do AsyncTask.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    prepareData(list);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!is_stop) {
+                                getChannelModels();
+                            }
+                            setBusy(false);
+                        }
+                    });
+                } catch (final Exception exception) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!is_stop) {
+                                doNextTask(false);
+                                Toast.makeText(getApplicationContext(), wordModels.getUser_incorrect(), 0).show();
+                            }
+                            setBusy(false);
+                        }
+                    });
+                }
+            }
+        }, "ouropro-m3u-index").start();
     }
 
     /* JADX INFO: Access modifiers changed from: private */

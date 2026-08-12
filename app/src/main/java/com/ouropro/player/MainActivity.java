@@ -257,15 +257,20 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
                 } else {
                     AppInfoModel.UrlModel urlModel = this.appInfoModel.getResult().get(this.playlist_position);
                     this.currentUrlModel = urlModel;
-                    if (urlModel.getUrl().contains("username")) {
+                    String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
+                    String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
+                    if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
+                        this.preferenceHelper.setSharedPreferenceISM3U(true);
+                        reloadM3UData(playlistUrl, this.wordModels);
+                    } else if (playlistUrl.contains("username")) {
                         this.preferenceHelper.setSharedPreferenceISM3U(false);
-                        goToLogin(this.currentUrlModel.getUrl(), this.wordModels);
-                    } else if (GetSharedInfo.checkXUILink(this.currentUrlModel.getUrl())) {
+                        goToLogin(playlistUrl, this.wordModels);
+                    } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
                         this.preferenceHelper.setSharedPreferenceISM3U(false);
                         goToXUILogin(this.currentUrlModel.getUrl(), this.wordModels);
                     } else {
                         this.preferenceHelper.setSharedPreferenceISM3U(true);
-                        reloadM3UData(this.currentUrlModel.getUrl(), this.wordModels);
+                        reloadM3UData(playlistUrl, this.wordModels);
                     }
                 }
             } catch (Exception unused) {
