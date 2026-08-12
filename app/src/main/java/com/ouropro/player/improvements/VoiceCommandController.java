@@ -25,7 +25,7 @@ public final class VoiceCommandController implements RecognitionListener {
     private boolean listening;
 
     public VoiceCommandController(Context context, Listener listener) {
-        this.context = context.getApplicationContext();
+        this.context = context;
         this.listener = listener;
     }
 
@@ -50,7 +50,12 @@ public final class VoiceCommandController implements RecognitionListener {
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
         listening = true;
         listener.onVoiceState("Ouvindo… diga, por exemplo: abrir canal notícias");
-        recognizer.startListening(intent);
+        try {
+            recognizer.startListening(intent);
+        } catch (RuntimeException exception) {
+            listening = false;
+            listener.onVoiceError("Não foi possível iniciar o microfone; tente novamente");
+        }
     }
 
     public void stop() {
