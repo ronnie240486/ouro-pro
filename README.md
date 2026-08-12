@@ -24,6 +24,8 @@ A camada de rede agora rejeita endpoints sem host válido, evita usuário e senh
 
 As preferências passaram a ser abertas por `SecurePreferenceStore`, usando Android Keystore por meio de `EncryptedSharedPreferences`. Isso protege usuário, senha, URL do servidor, MAC, tokens locais, favoritos e histórico em repouso quando o provider criptográfico está disponível. Também foi formalizado o contrato de playlist com os campos `playlist_url` e `playlist_name`, acompanhado de teste unitário para impedir a regressão para `url` e `name`.
 
+A primeira camada de **comando de voz** foi adicionada à `LiveActivity`. Ela reconhece frases em português do Brasil para abrir um canal por nome ou número, pesquisar canais, navegar para o próximo/anterior, pausar ou retomar o player e abrir filmes, séries ou configurações. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no botão, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
+
 ## Estrutura
 
 ```text
