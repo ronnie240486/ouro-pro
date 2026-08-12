@@ -6,7 +6,6 @@ import com.ouropro.player.models.SeriesModel;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /** Agrupa episódios M3U em séries sem tocar no Realm ou na thread da interface. */
@@ -24,7 +23,7 @@ public final class M3USeriesRebuilder {
                 continue;
             }
             String name = episode.getSeries_name().trim();
-            String key = name.toLowerCase(Locale.ROOT);
+            String key = name;
             SeriesModel series = byName.get(key);
             if (series == null) {
                 series = new SeriesModel();

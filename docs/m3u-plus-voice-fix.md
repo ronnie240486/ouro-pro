@@ -12,15 +12,15 @@ A Home agora resolve correspondências exatas e abre diretamente o detalhe do co
 
 ## Cards e dados
 
-Os cards de séries usam o mesmo layout compacto de mídia do catálogo de filmes. Quando `SeriesModel.stream_icon` está vazio, o card usa o logo do primeiro episódio da série. O agrupamento preserva temporada e capítulo, e a migração M3U foi incrementada para reprocessar o catálogo existente uma vez.
+Os cards de séries usam exatamente o mesmo `item_vod`/`item_vod_grid` do catálogo de filmes. O adapter usa diretamente `SeriesModel.stream_icon`, como no APK original, sem substituir a capa pelo logo de um episódio diferente. O agrupamento usa o `series_name` exato do APK original, preserva temporada/capítulo e a migração M3U foi incrementada para reconstruir os registros existentes uma vez.
 
 | Item | Valor |
 |---|---|
-| APK | `OuroPro6.4-m3u-plus-voice-fix-debug.apk` |
+| APK | `OuroPro6.4-original-series-card-debug.apk` |
 | Pacote | `com.ouropro.player.debug` |
 | Build | `BUILD SUCCESSFUL` |
 | Testes | Testes de parser M3U, voz e projeto aprovados |
 | Assinatura | Debug v1/v2 verificada |
-| SHA-256 | `16f883deb59099bd92ec0a0d90225140913ce233d9599d2b5ca047f0db6e8cd3` |
+| SHA-256 | `2ee4f0b6982070ef0c1daf9f90ea678529188a79791780a65d14249ef7df741c` |
 
 > A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor.

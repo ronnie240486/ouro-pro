@@ -46,7 +46,7 @@ import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class BaseActivity extends AppCompatActivity {
-    private static final int M3U_SERIES_SCHEMA_VERSION = 3;
+    private static final int M3U_SERIES_SCHEMA_VERSION = 4;
     private static final String M3U_MIGRATION_PREFS = "ouropro_migrations";
     public static boolean busy;
     private HashMap<String, String> categoryHashMap;

@@ -107,14 +107,7 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         } else {
             vodViewHolder.image_fav.setVisibility(8);
         }
-        String cover = item.getStream_icon();
-        if (cover == null || cover.trim().isEmpty()) {
-            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(item.getName());
-            if (firstEpisode != null) {
-                cover = firstEpisode.getStream_icon();
-            }
-        }
-        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, cover, R.drawable.default_bg, vodViewHolder.image_logo);
+        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, item.getStream_icon(), R.drawable.default_bg, vodViewHolder.image_logo);
         vodViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, i, item, 14));
         vodViewHolder.itemView.setOnFocusChangeListener(new VodRecyclerAdapter$$ExternalSyntheticLambda1(this, vodViewHolder, i, 3));
         vodViewHolder.itemView.setOnLongClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda2(this, item, i, 2));
