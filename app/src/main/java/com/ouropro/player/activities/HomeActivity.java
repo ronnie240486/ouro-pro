@@ -188,8 +188,15 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private String getCurrentPlaylistExpiredDate() {
-        LoginModel sharedPreferenceLoginModel;
-        return (this.preferenceHelper.getSharedPreferenceISM3U() || (sharedPreferenceLoginModel = this.preferenceHelper.getSharedPreferenceLoginModel()) == null) ? "Undefined." : Utils.getDate(sharedPreferenceLoginModel.getExp_date());
+        LoginModel loginModel = this.preferenceHelper.getSharedPreferenceLoginModel();
+        if (loginModel != null && loginModel.getExp_date() != null && loginModel.getExp_date() > 0L) {
+            return Utils.getDate(loginModel.getExp_date());
+        }
+        AppInfoModel appInfo = this.preferenceHelper.getSharedPreferenceAppInfo();
+        if (appInfo != null && appInfo.getExpiredDate() != null && !appInfo.getExpiredDate().trim().isEmpty()) {
+            return appInfo.getExpiredDate();
+        }
+        return this.preferenceHelper.getSharedPreferenceISM3U() ? "Data não informada pela lista M3U" : "Não informado";
     }
 
     private void initView() {

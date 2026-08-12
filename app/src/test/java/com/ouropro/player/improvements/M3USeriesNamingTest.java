@@ -39,8 +39,8 @@ public class M3USeriesNamingTest {
     }
 
     @Test
-    public void recognizesSeriesGroupWithoutUrlMarker() {
-        assertTrue(M3USeriesNaming.isSeriesItem(item("The Office - Pilot", "Séries | Comédia", "https://cdn.example/stream/4")));
+    public void rejectsSeriesGroupWithoutRealSeriesSignal() {
+        assertFalse(M3USeriesNaming.isSeriesItem(item("The Office - Pilot", "Séries | Comédia", "https://cdn.example/stream/4")));
         assertFalse(M3USeriesNaming.isSeriesItem(item("Filme Ação", "Filmes", "https://cdn.example/movie/5.mp4")));
     }
 
@@ -54,6 +54,13 @@ public class M3USeriesNamingTest {
     public void preservesRealSeriesGroupsWithoutEpisodeMarker() {
         assertTrue(M3USeriesNaming.isSeriesItem(item("Arafta (Unidos pelo Destino)", "NOVELAS TURCAS LEGENDADAS", "https://cdn.example/series/1.mp4")));
         assertTrue(M3USeriesNaming.isSeriesItem(item("The Walking Dead", "24H SERIES", "https://cdn.example/series/2.mp4")));
+    }
+
+    @Test
+    public void rejectsProviderChannelNamesWithoutEpisodeMarkers() {
+        assertFalse(M3USeriesNaming.isSeriesItem(item("HBO 2 FHD", "HBO", "https://cdn.example/100.ts")));
+        assertFalse(M3USeriesNaming.isSeriesItem(item("HBO Family", "HBO", "https://cdn.example/101.ts")));
+        assertFalse(M3USeriesNaming.isSeriesItem(item("Space HD", "24H SERIES", "https://cdn.example/102.ts")));
     }
 
     @Test

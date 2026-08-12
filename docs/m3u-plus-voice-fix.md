@@ -12,15 +12,15 @@ A Home agora resolve correspondências exatas e abre diretamente o detalhe do co
 
 ## Cards e dados
 
-Os cards de séries usam exatamente o mesmo `item_vod`/`item_vod_grid` do catálogo de filmes. O adapter usa diretamente `SeriesModel.stream_icon`, como no APK original, sem substituir a capa pelo logo de um episódio diferente. O agrupamento usa o `series_name` exato do APK original, preserva temporada/capítulo e a migração M3U foi incrementada para reconstruir os registros existentes uma vez.
+Os cards de séries usam exatamente o mesmo `item_vod`/`item_vod_grid` do catálogo de filmes. O adapter usa diretamente `SeriesModel.stream_icon`, como no APK original, sem substituir a capa pelo logo de um episódio diferente. O agrupamento usa o `series_name` exato do APK original, preserva temporada/capítulo e a migração M3U foi incrementada para reconstruir os registros existentes uma vez. A classificação foi alinhada ao APK original: somente URL de série ou marcador real de episódio transforma uma entrada em série; canais HBO, Space HD e HBO Family permanecem em Canais.
 
 | Item | Valor |
 |---|---|
-| APK | `OuroPro6.4-original-series-card-debug.apk` |
+| APK | `OuroPro6.4-expiry-channel-fix-debug.apk` |
 | Pacote | `com.ouropro.player.debug` |
 | Build | `BUILD SUCCESSFUL` |
 | Testes | Testes de parser M3U, voz e projeto aprovados |
 | Assinatura | Debug v1/v2 verificada |
-| SHA-256 | `2ee4f0b6982070ef0c1daf9f90ea678529188a79791780a65d14249ef7df741c` |
+| SHA-256 | `cf827772cfbb2ac183181b1254dd84c4f94ec938e19da415d52ee3b969cf5286` |
 
-> A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor.
+> A URL da lista e quaisquer credenciais foram deliberadamente excluídas deste documento e do repositório. Como a credencial foi compartilhada em texto aberto durante o diagnóstico, a senha deve ser trocada no provedor. Para listas M3U, a Home exibe uma mensagem explícita quando a fonte não informa data de expiração; não usa mais `Undefined`. Para respostas Xtream, usa `LoginModel.exp_date` quando disponível.
