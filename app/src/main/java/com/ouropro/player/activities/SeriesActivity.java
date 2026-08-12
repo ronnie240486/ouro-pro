@@ -456,6 +456,47 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    private void persistRecoveredSeries(List<SeriesModel> body) {
+        if (body == null || body.isEmpty()) {
+            return;
+        }
+        RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(body));
+        this.preferenceHelper.setSharedPreferenceSeriesCategory(categoriesFromSeries(body));
+        refreshRecoveredSeries();
+    }
+
+    private void requestSeriesFallback(final List<SeriesModel> firstResponse) {
+        final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String username = this.preferenceHelper.getSharedPreferenceUsername();
+        final String password = this.preferenceHelper.getSharedPreferencePassword();
+        RetroClass.getAPIService(server).get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
+                List<SeriesModel> fallback = response.body();
+                int firstSize = firstResponse == null ? 0 : firstResponse.size();
+                if (!response.isSuccessful() || fallback == null || fallback.size() <= firstSize) {
+                    if (firstSize > 0) {
+                        persistRecoveredSeries(firstResponse);
+                        Toast.makeText(SeriesActivity.this, "O servidor retornou um catálogo parcial de séries", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(SeriesActivity.this, "O servidor não retornou séries", Toast.LENGTH_LONG).show();
+                    }
+                    return;
+                }
+                persistRecoveredSeries(fallback);
+                Toast.makeText(SeriesActivity.this, "Séries carregadas: " + fallback.size(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
+                if (firstResponse != null && !firstResponse.isEmpty()) {
+                    persistRecoveredSeries(firstResponse);
+                }
+                Toast.makeText(SeriesActivity.this, "Não foi possível atualizar o catálogo completo de séries", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void recoverSeriesIfEmpty() {
         if (this.seriesModels != null && !this.seriesModels.isEmpty()) {
             return;
@@ -471,13 +512,15 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
                 List<SeriesModel> body = response.body();
                 if (!response.isSuccessful() || body == null || body.isEmpty()) {
-                    Toast.makeText(SeriesActivity.this, "O servidor não retornou séries; o cache local foi preservado", Toast.LENGTH_LONG).show();
+                    requestSeriesFallback(body);
                     return;
                 }
-                RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(body));
-                preferenceHelper.setSharedPreferenceSeriesCategory(categoriesFromSeries(body));
-                refreshRecoveredSeries();
-                Toast.makeText(SeriesActivity.this, "Séries carregadas", Toast.LENGTH_SHORT).show();
+                if (body.size() < 100) {
+                    requestSeriesFallback(body);
+                    return;
+                }
+                persistRecoveredSeries(body);
+                Toast.makeText(SeriesActivity.this, "Séries carregadas: " + body.size(), Toast.LENGTH_SHORT).show();
             }
 
             @Override

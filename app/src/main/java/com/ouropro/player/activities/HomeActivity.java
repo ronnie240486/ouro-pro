@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
+import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -43,11 +44,20 @@ import com.ouropro.player.models.EPGChannel;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.AppInfoModel;
+import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.LoginModel;
 import com.ouropro.player.models.WordModels;
+import com.ouropro.player.remote.RetroClass;
 import com.ouropro.player.utils.Utils;
 import com.rtx.Themes.dashtheme;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import pl.droidsonroids.gif.GifImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class HomeActivity extends BaseActivity implements View.OnClickListener {
@@ -87,6 +97,92 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 906;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new HomeActivity$$ExternalSyntheticLambda0(this));
+
+    private List<CategoryModel> seriesCategoriesFrom(List<SeriesModel> models) {
+        ArrayList<CategoryModel> categories = new ArrayList<>();
+        categories.add(new CategoryModel(com.ouropro.player.apps.Constants.resume_id, this.wordModels.getRecently_viewed()));
+        categories.add(new CategoryModel(com.ouropro.player.apps.Constants.all_id, this.wordModels.getAll()));
+        categories.add(new CategoryModel(com.ouropro.player.apps.Constants.fav_id, this.wordModels.getFavorite()));
+        Set<String> seen = new HashSet<>();
+        if (models != null) {
+            for (SeriesModel model : models) {
+                if (model == null || model.getCategory_name() == null || model.getCategory_name().trim().isEmpty()) {
+                    continue;
+                }
+                String id = model.getCategory_id();
+                String key = id == null || id.isEmpty() ? model.getCategory_name() : id;
+                if (seen.add(key)) {
+                    categories.add(new CategoryModel(key, model.getCategory_name()));
+                }
+            }
+        }
+        return categories;
+    }
+
+    private void saveSeriesBackground(List<SeriesModel> models) {
+        if (models == null || models.isEmpty()) {
+            return;
+        }
+        RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(models));
+        this.preferenceHelper.setSharedPreferenceSeriesCategory(seriesCategoriesFrom(models));
+    }
+
+    private void refreshSeriesInBackground() {
+        if (RealmController.with().realm.where(SeriesModel.class).count() >= 100) {
+            return;
+        }
+        final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String username = this.preferenceHelper.getSharedPreferenceUsername();
+        final String password = this.preferenceHelper.getSharedPreferencePassword();
+        if (server == null || server.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
+            return;
+        }
+        RetroClass.getAPIService(server).get_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
+                List<SeriesModel> first = response.body();
+                if (!response.isSuccessful() || first == null || first.size() < 100) {
+                    RetroClass.getAPIService(server).get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+                        @Override
+                        public void onResponse(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Response<List<SeriesModel>> fallbackResponse) {
+                            List<SeriesModel> fallback = fallbackResponse.body();
+                            if (fallbackResponse.isSuccessful() && fallback != null && (first == null || fallback.size() > first.size())) {
+                                saveSeriesBackground(fallback);
+                            } else if (first != null && !first.isEmpty()) {
+                                saveSeriesBackground(first);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Throwable throwable) {
+                            if (first != null && !first.isEmpty()) {
+                                saveSeriesBackground(first);
+                            }
+                        }
+                    });
+                    return;
+                }
+                saveSeriesBackground(first);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
+                RetroClass.getAPIService(server).get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Response<List<SeriesModel>> fallbackResponse) {
+                        List<SeriesModel> fallback = fallbackResponse.body();
+                        if (fallbackResponse.isSuccessful() && fallback != null && !fallback.isEmpty()) {
+                            saveSeriesBackground(fallback);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Throwable fallbackError) {
+                    }
+                });
+            }
+        });
+    }
 
     private void changeStringsInApp() {
         WordModels wordModel = GetSharedInfo.getWordModel(this);
@@ -488,5 +584,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         sbM.append(LTVApp.version_name);
         textView.setText(sbM.toString());
         this.ly_live.requestFocus();
+        refreshSeriesInBackground();
     }
 }

@@ -2,9 +2,13 @@
 
 ## Séries vazias
 
-A tela de séries agora detecta quando o catálogo local está vazio ou quando as categorias persistidas não correspondem aos registros disponíveis. Nessa situação, ela consulta novamente `get_series`, grava apenas uma resposta HTTP bem-sucedida e não vazia usando `insertOrUpdate`, reconstrói categorias e atualiza o adapter. Respostas vazias ou falhas preservam o cache existente e não apagam o banco.
+A tela de séries agora detecta quando o catálogo local está vazio ou quando as categorias persistidas não correspondem aos registros disponíveis. Nessa situação, ela consulta `get_series` e, quando a resposta tem menos de 100 itens — como o caso relatado de apenas 2 séries — tenta também `get_second_series`. O aplicativo usa a maior resposta válida, em vez de aceitar uma resposta parcial como catálogo completo.
 
-Essa recuperação não inventa conteúdo: ela depende de a conta autorizada e o servidor retornarem séries. Se o servidor também retornar uma lista vazia, o aplicativo informa a condição sem apagar dados.
+A gravação usa `insertOrUpdate`, reconstrói categorias e atualiza o adapter. Respostas vazias ou falhas preservam o cache existente e não apagam o banco. Essa recuperação não inventa conteúdo: ela depende de a conta autorizada e o servidor retornarem as séries.
+
+## Abertura rápida
+
+A `MainActivity` agora usa cache-first quando já existe uma conta configurada e catálogo local. A Home abre imediatamente sem aguardar a cadeia inteira de sincronização. Em paralelo, a Home inicia uma atualização assíncrona de séries quando o cache tem menos de 100 itens. Isso evita que a tela de loading permaneça bloqueando a navegação enquanto o servidor responde.
 
 ## Voz
 
@@ -18,9 +22,9 @@ O build executou `:app:testDebugUnitTest` e `:app:assembleDebug` com sucesso. Fo
 
 | Campo | Valor |
 |---|---|
-| APK | `OuroPro6.4-series-voice-recovery-debug.apk` |
+| APK | `OuroPro6.4-series-cache-first-debug.apk` |
 | Pacote | `com.ouropro.player.debug` |
-| SHA-256 | `a6eb06fad12aa3f13b5e1633df76b160a721262bc27851e5b3e1eecc34a0ff63` |
+| SHA-256 | `ff4055cb7c30fc112dc5e4880f253673ed8a5a5b423fa3481f2bfaa04f75da0f` |
 | Build | `BUILD SUCCESSFUL` |
 | Assinatura | Debug v1/v2 verificada |
 

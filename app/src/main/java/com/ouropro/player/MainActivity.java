@@ -30,6 +30,9 @@ import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
+import com.ouropro.player.models.EPGChannel;
+import com.ouropro.player.models.MovieModel;
+import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.remote.GetDataRequest;
 import com.ouropro.player.utils.Security;
@@ -187,7 +190,32 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
+        if (hasUsableLocalCatalog()) {
+            openHomeFromCache();
+            return;
+        }
         getUserInfoModel();
+    }
+
+    private boolean hasUsableLocalCatalog() {
+        try {
+            if (this.preferenceHelper.getSharedPreferenceFirstLunch() || this.preferenceHelper.getSharedPreferenceIsPlaylistChanged()) {
+                return false;
+            }
+            if (this.preferenceHelper.getSharedPreferenceServerUrl().trim().isEmpty() || this.preferenceHelper.getSharedPreferenceUsername().trim().isEmpty()) {
+                return false;
+            }
+            return this.realm.where(MovieModel.class).count() > 0
+                    || this.realm.where(EPGChannel.class).count() > 0
+                    || this.realm.where(SeriesModel.class).count() > 0;
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
+    private void openHomeFromCache() {
+        startActivity(new Intent(this, HomeActivity.class));
+        finish();
     }
 
     /* JADX INFO: Access modifiers changed from: private */
