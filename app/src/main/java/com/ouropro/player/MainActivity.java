@@ -199,10 +199,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
 
     private boolean hasUsableLocalCatalog() {
         try {
-            if (this.preferenceHelper.getSharedPreferenceFirstLunch() || this.preferenceHelper.getSharedPreferenceIsPlaylistChanged()) {
-                return false;
-            }
-            if (this.preferenceHelper.getSharedPreferenceServerUrl().trim().isEmpty() || this.preferenceHelper.getSharedPreferenceUsername().trim().isEmpty()) {
+            if (this.preferenceHelper.getSharedPreferenceServerUrl().trim().isEmpty()) {
                 return false;
             }
             return this.realm.where(MovieModel.class).count() > 0

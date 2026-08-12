@@ -39,6 +39,7 @@ import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
+import com.ouropro.player.improvements.SeriesCatalogLoader;
 import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.SubTitleUserModel;
@@ -460,9 +461,20 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         if (body == null || body.isEmpty()) {
             return;
         }
-        RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(body));
-        this.preferenceHelper.setSharedPreferenceSeriesCategory(categoriesFromSeries(body));
-        refreshRecoveredSeries();
+        final ArrayList<SeriesModel> copy = new ArrayList<>(body);
+        final List<CategoryModel> categories = categoriesFromSeries(copy);
+        new Thread(() -> {
+            io.realm.Realm backgroundRealm = io.realm.Realm.getDefaultInstance();
+            try {
+                backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(copy));
+            } finally {
+                backgroundRealm.close();
+            }
+            runOnUiThread(() -> {
+                this.preferenceHelper.setSharedPreferenceSeriesCategory(categories);
+                refreshRecoveredSeries();
+            });
+        }, "ouro-series-persist").start();
     }
 
     private void requestSeriesFallback(final List<SeriesModel> firstResponse) {
@@ -498,7 +510,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void recoverSeriesIfEmpty() {
-        if (this.seriesModels != null && !this.seriesModels.isEmpty()) {
+        if (this.seriesModels != null && this.seriesModels.size() >= 100) {
             return;
         }
         final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
@@ -507,25 +519,16 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         if (server == null || server.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
             return;
         }
-        RetroClass.getAPIService(server).get_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+        SeriesCatalogLoader.load(RetroClass.getAPIService(server), username, password, new SeriesCatalogLoader.Listener() {
             @Override
-            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
-                List<SeriesModel> body = response.body();
-                if (!response.isSuccessful() || body == null || body.isEmpty()) {
-                    requestSeriesFallback(body);
-                    return;
-                }
-                if (body.size() < 100) {
-                    requestSeriesFallback(body);
-                    return;
-                }
-                persistRecoveredSeries(body);
-                Toast.makeText(SeriesActivity.this, "Séries carregadas: " + body.size(), Toast.LENGTH_SHORT).show();
+            public void onComplete(List<SeriesModel> models, List<CategoryModel> categories) {
+                persistRecoveredSeries(models);
+                Toast.makeText(SeriesActivity.this, "Séries carregadas: " + models.size(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
-                Toast.makeText(SeriesActivity.this, "Não foi possível atualizar as séries; tente novamente", Toast.LENGTH_LONG).show();
+            public void onFailure(String message) {
+                Toast.makeText(SeriesActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
     }

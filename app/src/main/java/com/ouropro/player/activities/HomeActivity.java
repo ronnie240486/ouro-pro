@@ -40,6 +40,7 @@ import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
+import com.ouropro.player.improvements.SeriesCatalogLoader;
 import com.ouropro.player.models.EPGChannel;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SeriesModel;
@@ -123,8 +124,17 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (models == null || models.isEmpty()) {
             return;
         }
-        RealmController.with().realm.executeTransaction(realm -> realm.insertOrUpdate(models));
-        this.preferenceHelper.setSharedPreferenceSeriesCategory(seriesCategoriesFrom(models));
+        final ArrayList<SeriesModel> copy = new ArrayList<>(models);
+        final List<CategoryModel> categories = seriesCategoriesFrom(copy);
+        new Thread(() -> {
+            io.realm.Realm backgroundRealm = io.realm.Realm.getDefaultInstance();
+            try {
+                backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(copy));
+            } finally {
+                backgroundRealm.close();
+            }
+            runOnUiThread(() -> this.preferenceHelper.setSharedPreferenceSeriesCategory(categories));
+        }, "ouro-series-persist").start();
     }
 
     private void refreshSeriesInBackground() {
@@ -137,49 +147,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (server == null || server.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
             return;
         }
-        RetroClass.getAPIService(server).get_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
+        SeriesCatalogLoader.load(RetroClass.getAPIService(server), username, password, new SeriesCatalogLoader.Listener() {
             @Override
-            public void onResponse(@NonNull Call<List<SeriesModel>> call, @NonNull Response<List<SeriesModel>> response) {
-                List<SeriesModel> first = response.body();
-                if (!response.isSuccessful() || first == null || first.size() < 100) {
-                    RetroClass.getAPIService(server).get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
-                        @Override
-                        public void onResponse(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Response<List<SeriesModel>> fallbackResponse) {
-                            List<SeriesModel> fallback = fallbackResponse.body();
-                            if (fallbackResponse.isSuccessful() && fallback != null && (first == null || fallback.size() > first.size())) {
-                                saveSeriesBackground(fallback);
-                            } else if (first != null && !first.isEmpty()) {
-                                saveSeriesBackground(first);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Throwable throwable) {
-                            if (first != null && !first.isEmpty()) {
-                                saveSeriesBackground(first);
-                            }
-                        }
-                    });
-                    return;
+            public void onComplete(List<SeriesModel> models, List<CategoryModel> categories) {
+                saveSeriesBackground(models);
+                if (models.size() >= 100) {
+                    Toast.makeText(HomeActivity.this, "Catálogo de séries atualizado: " + models.size(), Toast.LENGTH_SHORT).show();
                 }
-                saveSeriesBackground(first);
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<SeriesModel>> call, @NonNull Throwable throwable) {
-                RetroClass.getAPIService(server).get_second_series(username, password).enqueue(new Callback<List<SeriesModel>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Response<List<SeriesModel>> fallbackResponse) {
-                        List<SeriesModel> fallback = fallbackResponse.body();
-                        if (fallbackResponse.isSuccessful() && fallback != null && !fallback.isEmpty()) {
-                            saveSeriesBackground(fallback);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<List<SeriesModel>> fallbackCall, @NonNull Throwable fallbackError) {
-                    }
-                });
+            public void onFailure(String message) {
+                // A Home não deve bloquear nem substituir o catálogo local por uma resposta parcial.
             }
         });
     }
