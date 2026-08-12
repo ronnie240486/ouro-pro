@@ -144,10 +144,11 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
         final String username = this.preferenceHelper.getSharedPreferenceUsername();
         final String password = this.preferenceHelper.getSharedPreferencePassword();
-        if (server == null || server.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
+        if (server == null || server.trim().isEmpty() || username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             return;
         }
-        SeriesCatalogLoader.load(RetroClass.getAPIService(server), username, password, new SeriesCatalogLoader.Listener() {
+        boolean allowLegacyCleartext = server.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
+        SeriesCatalogLoader.load(RetroClass.getAPIService(server, allowLegacyCleartext), username, password, new SeriesCatalogLoader.Listener() {
             @Override
             public void onComplete(List<SeriesModel> models, List<CategoryModel> categories) {
                 saveSeriesBackground(models);
