@@ -133,7 +133,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             } finally {
                 backgroundRealm.close();
             }
-            runOnUiThread(() -> this.preferenceHelper.setSharedPreferenceSeriesCategory(categories));
         }, "ouro-series-persist").start();
     }
 
