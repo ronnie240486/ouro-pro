@@ -44,6 +44,14 @@ public class GetSharedInfo {
         return arrayList;
     }
 
+    public static List<CategoryModel> getDefaultSeriesCategory() {
+        ArrayList arrayList = new ArrayList();
+        arrayList.add(new CategoryModel(Constants.resume_id, "Recently Viewed"));
+        arrayList.add(new CategoryModel(Constants.all_id, "All"));
+        arrayList.add(new CategoryModel(Constants.fav_id, "Favorite"));
+        return arrayList;
+    }
+
     public static String getDomainFromUrl(String str) {
         try {
             URL url = new URL(str.replaceAll(" ", "").trim());

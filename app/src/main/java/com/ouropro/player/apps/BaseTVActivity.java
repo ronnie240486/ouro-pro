@@ -1259,7 +1259,7 @@ public class BaseTVActivity extends FragmentActivity {
                 this.preferenceHelper.setSharedPreferenceUserId(this.user_id);
                 this.preferenceHelper.setSharedPreferenceLiveCategory(GetSharedInfo.getDefaultLiveCategory());
                 this.preferenceHelper.setSharedPreferenceVodCategory(GetSharedInfo.getDefaultVodCategory());
-                this.preferenceHelper.setSharedPreferenceSeriesCategory(GetSharedInfo.getDefaultLiveCategory());
+                this.preferenceHelper.setSharedPreferenceSeriesCategory(GetSharedInfo.getDefaultSeriesCategory());
             }
             authentication(strReplaceAll);
         } catch (Exception e) {
@@ -1286,7 +1286,7 @@ public class BaseTVActivity extends FragmentActivity {
                 this.preferenceHelper.setSharedPreferenceUserId(this.user_id);
                 this.preferenceHelper.setSharedPreferenceLiveCategory(GetSharedInfo.getDefaultLiveCategory());
                 this.preferenceHelper.setSharedPreferenceVodCategory(GetSharedInfo.getDefaultVodCategory());
-                this.preferenceHelper.setSharedPreferenceSeriesCategory(GetSharedInfo.getDefaultLiveCategory());
+                this.preferenceHelper.setSharedPreferenceSeriesCategory(GetSharedInfo.getDefaultSeriesCategory());
             }
             authentication(strReplaceAll);
         } catch (Exception unused) {
