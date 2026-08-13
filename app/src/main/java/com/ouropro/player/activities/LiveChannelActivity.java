@@ -78,6 +78,7 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -424,14 +425,14 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
     /* JADX INFO: Access modifiers changed from: private */
     public void getShortEpg(String str) {
         try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveChannelActivity.3
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveChannelActivity.3
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
                     LiveChannelActivity.this.showEpgInfo(null);
                 }
 
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
                     if (response.body() == null || response.body().getEpg_listings() == null || response.body().getEpg_listings().size() <= 0) {
-                        LiveChannelActivity.this.showEpgInfo(null);
+                        LiveChannelActivity.this.loadXmlTvEpg(str);
                         return;
                     }
                     LiveChannelActivity.this.showEpgInfo(response.body().getEpg_listings());
@@ -439,14 +440,36 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                 }
             });
         } catch (Exception unused) {
-            showEpgInfo(null);
+            loadXmlTvEpg(str);
         }
     }
 
+    private void loadXmlTvEpg(String streamId) {
+        XmlTvEpgLoader.load(
+                this.preferenceHelper.getSharedPreferenceServerUrl(),
+                this.preferenceHelper.getSharedPreferenceISM3U(),
+                this.preferenceHelper.getSharedPreferenceUsername(),
+                this.preferenceHelper.getSharedPreferencePassword(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId(),
+                this.selectedChannel == null ? this.channel_name : this.selectedChannel.getName(),
+                new XmlTvEpgLoader.Listener() {
+                    @Override
+                    public void onLoaded(List<CatchUpEpg> programs) {
+                        runOnUiThread(() -> {
+                            showEpgInfo(programs);
+                            epgEventList = programs;
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        runOnUiThread(() -> showEpgInfo(null));
+                    }
+                });
+    }
+
     private void goToCatchupActivity() {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), 0).show();
-        } else if (this.selectedChannel != null) {
+        if (this.selectedChannel != null) {
             releaseMediaPlayer();
             LTVApp.channelName = this.selectedChannel.getName();
             this.someActivityResultLauncher.launch(new Intent(this, (Class<?>) CatchUpActivity.class));
@@ -658,12 +681,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             }
             this.channelAdapter.updateData(this.epgChannels, this.channel_pos);
             this.selectedChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -698,12 +717,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             controlFav(ePGChannel, num.intValue());
             showFavImageIcon(ePGChannel.is_favorite());
         } else if (!this.is_full) {
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(ePGChannel.getStream_id());
-            }
+                    this.handler.removeCallbacks(this.epgTicker);
+                    epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -1769,12 +1784,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             }
             playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
             this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.stream_id);
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.stream_id);
             String name = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getName();
             this.channel_name = name;
             this.txt_name.setText(name);

@@ -20,6 +20,7 @@ import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.improvements.M3USeriesRebuilder;
+import com.ouropro.player.improvements.M3UAccountEndpoint;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
@@ -1653,6 +1654,7 @@ public class BaseActivity extends AppCompatActivity {
                     if (response.body() == null || response.body().getUser_info() == null) {
                         return;
                     }
+                    preferenceHelper.setSharedPreferenceServerUrl(credentials.getBaseUrl());
                     preferenceHelper.setSharedPreferenceLoginModel(response.body().getUser_info());
                     preferenceHelper.setSharedPreferenceUsername(credentials.getUsername());
                     preferenceHelper.setSharedPreferencePassword(credentials.getPassword());
@@ -1672,7 +1674,14 @@ public class BaseActivity extends AppCompatActivity {
         setBusy(true);
         String strTrim = str.replaceAll(" ", "").trim();
         this.user_id = Utils.getUserId(strTrim);
-        this.preferenceHelper.setSharedPreferenceServerUrl(strTrim);
+        M3UAccountEndpoint.Credentials m3uCredentials = M3UAccountEndpoint.fromPlaylistUrl(strTrim);
+        if (m3uCredentials != null) {
+            this.preferenceHelper.setSharedPreferenceServerUrl(m3uCredentials.getBaseUrl());
+            this.preferenceHelper.setSharedPreferenceUsername(m3uCredentials.getUsername());
+            this.preferenceHelper.setSharedPreferencePassword(m3uCredentials.getPassword());
+        } else {
+            this.preferenceHelper.setSharedPreferenceServerUrl(strTrim);
+        }
         if (!this.preferenceHelper.getSharedPreferenceUserId().equalsIgnoreCase(this.user_id)) {
             this.realm.executeTransaction(BaseActivity$$ExternalSyntheticLambda0.INSTANCE$11);
             this.preferenceHelper.setSharedPreferenceUserId(this.user_id);

@@ -29,6 +29,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.EpgReminderStore;
+import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CatchupModel;
@@ -157,14 +158,9 @@ public class CatchUpActivity extends AppCompatActivity {
     private void getEpg() {
         this.progressBar.setVisibility(0);
         try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_full_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_full_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
-                    CatchUpActivity.this.progressBar.setVisibility(8);
-                    CatchUpActivity catchUpActivity = CatchUpActivity.this;
-                    Toast.makeText(catchUpActivity, catchUpActivity.wordModels.getNo_epg_avaliable(), 0).show();
-                    CatchUpActivity.this.catchUpEpgList = new ArrayList();
-                    CatchUpActivity.this.image_back.setFocusable(true);
-                    CatchUpActivity.this.image_back.requestFocus();
+                    CatchUpActivity.this.loadXmlTvEpg();
                 }
 
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
@@ -174,19 +170,44 @@ public class CatchUpActivity extends AppCompatActivity {
                         catchUpActivity.getCatchupModels(catchUpActivity.catchUpEpgList);
                         return;
                     }
-                    CatchUpActivity.this.catchUpEpgList = new ArrayList();
-                    CatchUpActivity.this.progressBar.setVisibility(8);
-                    CatchUpActivity catchUpActivity2 = CatchUpActivity.this;
-                    Toast.makeText(catchUpActivity2, catchUpActivity2.wordModels.getNo_epg_avaliable(), 0).show();
+                    CatchUpActivity.this.loadXmlTvEpg();
                 }
             });
         } catch (Exception unused) {
-            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), 0).show();
-            this.progressBar.setVisibility(8);
-            this.catchUpEpgList = new ArrayList();
-            this.image_back.setFocusable(true);
-            this.image_back.requestFocus();
+            loadXmlTvEpg();
         }
+    }
+
+    private void loadXmlTvEpg() {
+        XmlTvEpgLoader.load(
+                this.preferenceHelper.getSharedPreferenceServerUrl(),
+                this.preferenceHelper.getSharedPreferenceISM3U(),
+                this.preferenceHelper.getSharedPreferenceUsername(),
+                this.preferenceHelper.getSharedPreferencePassword(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getName(),
+                new XmlTvEpgLoader.Listener() {
+                    @Override
+                    public void onLoaded(List<CatchUpEpg> programs) {
+                        runOnUiThread(() -> {
+                            if (programs == null || programs.isEmpty()) {
+                                progressBar.setVisibility(8);
+                                Toast.makeText(CatchUpActivity.this, wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            catchUpEpgList = programs;
+                            getCatchupModels(programs);
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        runOnUiThread(() -> {
+                            progressBar.setVisibility(8);
+                            Toast.makeText(CatchUpActivity.this, wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
     }
 
     private void goToLivePage() {
