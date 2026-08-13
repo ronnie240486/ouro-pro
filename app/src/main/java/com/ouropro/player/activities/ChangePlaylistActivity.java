@@ -18,6 +18,7 @@ import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.exoplayer2.metadata.icy.IcyHeaders;
+import com.google.gson.Gson;
 import com.ouropro.player.R;
 import com.ouropro.player.adapter.PortalRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
@@ -38,7 +39,9 @@ import com.ouropro.player.view.LiveVerticalGridView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import kotlin.Unit;
 import org.json.JSONObject;
 import pl.droidsonroids.gif.GifImageView;
@@ -137,6 +140,57 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             }
         });
         exitDlgFragmentNewInstance.show(supportFragmentManager, "fragment_delete");
+    }
+
+    private void refreshPlaylistsFromPanel() {
+        try {
+            String deviceType = GetSharedInfo.isTVDevice(this) ? "tv" : "mobile";
+            String requestData = Security.getStringData(
+                    Utils.getDeviceId(this), LTVApp.version_name, false, deviceType).trim();
+            GetDataRequest request = new GetDataRequest(this, 1000);
+            request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
+            request.setOnGetResponseListener(this);
+        } catch (Exception ignored) {
+            // A falha de atualização não pode esconder o cache local já exibido.
+        }
+    }
+
+    private void applyPanelAppInfo(AppInfoModel remoteInfo) {
+        if (remoteInfo == null || remoteInfo.getResult() == null || remoteInfo.getResult().isEmpty()) {
+            return;
+        }
+        List<AppInfoModel.UrlModel> merged = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (AppInfoModel.UrlModel model : remoteInfo.getResult()) {
+            addPlaylistIfValid(merged, seen, model);
+        }
+        if (this.urlModelList != null) {
+            for (AppInfoModel.UrlModel model : this.urlModelList) {
+                addPlaylistIfValid(merged, seen, model);
+            }
+        }
+        this.appInfoModel = remoteInfo;
+        this.appInfoModel.setResult(merged);
+        this.urlModelList = merged;
+        this.preferenceHelper.setSharedPreferenceAppInfo(this.appInfoModel);
+        Utils.saveToFile(this.appInfoModel);
+        if (this.portalAdapter != null) {
+            this.portalAdapter.setData(this.urlModelList);
+            if (!this.urlModelList.isEmpty()) {
+                this.playlist_position = Math.min(this.playlist_position, this.urlModelList.size() - 1);
+                this.recycler_playlist.setSelectedPosition(this.playlist_position);
+            }
+        }
+    }
+
+    private void addPlaylistIfValid(List<AppInfoModel.UrlModel> target, Set<String> seen, AppInfoModel.UrlModel model) {
+        if (model == null || model.getUrl() == null || model.getUrl().trim().isEmpty()) {
+            return;
+        }
+        String key = model.getUrl().trim().toLowerCase(java.util.Locale.ROOT);
+        if (seen.add(key)) {
+            target.add(model);
+        }
     }
 
     private void initView() {
@@ -366,6 +420,17 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
 
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject != null) {
+            if (i == 1000 && jSONObject.has("data")) {
+                try {
+                    AppInfoModel remoteInfo = (AppInfoModel) new Gson().fromJson(
+                            new JSONObject(Security.getDecodedString(jSONObject.getString("data"))).toString(),
+                            AppInfoModel.class);
+                    applyPanelAppInfo(remoteInfo);
+                } catch (Exception ignored) {
+                    // Mantém as playlists locais caso o retorno esteja incompleto.
+                }
+                return;
+            }
             if (i == 2000) {
                 try {
                     AppInfoModel.UrlModel urlModel = this.selectedModel;
@@ -486,6 +551,7 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         this.btn_pay.setFocusable(false);
         this.recycler_playlist.setAdapter(this.portalAdapter);
         this.recycler_playlist.requestFocus();
+        refreshPlaylistsFromPanel();
         this.recycler_playlist.setSelectedPosition(this.playlist_position);
     }
 }

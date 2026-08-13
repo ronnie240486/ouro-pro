@@ -95,7 +95,11 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
         if (time - new Date().getTime() >= 604800000 || appInfoModel.isIs_google_pay()) {
             if (appInfoModel.getResult().size() > 0) {
-                loadingData();
+                if (hasUsableLocalCatalog()) {
+                    loadingData();
+                } else {
+                    openHomeForBackgroundSync(appInfoModel);
+                }
                 return;
             }
             this.subscription = "";
@@ -244,6 +248,27 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         return this.image_loader != null && this.image_loader.getVisibility() == 0;
     }
 
+    private void openHomeForBackgroundSync(AppInfoModel info) {
+        if (info == null || info.getResult() == null || info.getResult().isEmpty()) {
+            startActivity(new Intent(this, ChangePlaylistActivity.class));
+            finish();
+            return;
+        }
+        int position = GetSharedInfo.getPlaylistPosition(this);
+        if (position < 0 || position >= info.getResult().size()) {
+            position = 0;
+        }
+        String playlistUrl = info.getResult().get(position).getUrl();
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            loadingData();
+            return;
+        }
+        Intent home = new Intent(this, HomeActivity.class);
+        home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
+        startActivity(home);
+        finish();
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void loadingData() {
         setLoaderVisibility(0);
@@ -300,6 +325,8 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             public void onContinueClick() {
                 if (i == -1) {
                     MainActivity.this.getUserInfoModel();
+                } else if (i > 0 && !MainActivity.this.hasUsableLocalCatalog()) {
+                    MainActivity.this.openHomeForBackgroundSync(MainActivity.this.appInfoModel);
                 } else {
                     MainActivity.this.loadingData();
                 }

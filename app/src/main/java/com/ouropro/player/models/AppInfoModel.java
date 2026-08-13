@@ -44,7 +44,7 @@ public class AppInfoModel implements Serializable {
     @SerializedName("price")
     private String price;
 
-    @SerializedName("urls")
+    @SerializedName(value = "urls", alternate = {"playlists", "lists", "playlist"})
     private List<UrlModel> result;
 
     @SerializedName("mac_registered")
@@ -58,13 +58,13 @@ public class AppInfoModel implements Serializable {
         @SerializedName("is_protected")
         private String is_protected;
 
-        @SerializedName("name")
+        @SerializedName(value = "name", alternate = {"playlist_name", "title"})
         private String name;
 
         @SerializedName("type")
         private String type;
 
-        @SerializedName(ImagesContract.URL)
+        @SerializedName(value = "url", alternate = {"playlist_url", "stream_url"})
         private String url;
 
         public String getId() {

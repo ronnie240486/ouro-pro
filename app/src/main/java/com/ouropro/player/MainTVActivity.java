@@ -89,7 +89,13 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
         if (time - new Date().getTime() >= 604800000 || appInfoModel.isIs_google_pay()) {
             if (appInfoModel.getResult().size() > 0) {
-                loadingData();
+                if (this.realm.where(com.ouropro.player.models.MovieModel.class).count() > 0
+                        || this.realm.where(com.ouropro.player.models.EPGChannel.class).count() > 0
+                        || this.realm.where(com.ouropro.player.models.SeriesModel.class).count() > 0) {
+                    loadingData();
+                } else {
+                    openHomeForBackgroundSync(appInfoModel);
+                }
                 return;
             }
             this.subscription = "";
@@ -186,6 +192,27 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         getUserInfoModel();
     }
 
+    private void openHomeForBackgroundSync(AppInfoModel info) {
+        if (info == null || info.getResult() == null || info.getResult().isEmpty()) {
+            startActivity(new Intent(this, ChangePlaylistActivity.class));
+            finish();
+            return;
+        }
+        int position = GetSharedInfo.getPlaylistPosition(this);
+        if (position < 0 || position >= info.getResult().size()) {
+            position = 0;
+        }
+        String playlistUrl = info.getResult().get(position).getUrl();
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            loadingData();
+            return;
+        }
+        Intent home = new Intent(this, HomeActivity.class);
+        home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
+        startActivity(home);
+        finish();
+    }
+
     private void getUserInfoModel() {
         String strTrim = Security.getStringData(Utils.getDeviceId(this), LTVApp.version_name, false, "tv").trim();
         GetDataRequest getDataRequest = new GetDataRequest(this, 1000);
@@ -238,6 +265,11 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
                 MainTVActivity.this.descriptionDlgFragment.dismiss();
                 if (i == -1) {
                     MainTVActivity.this.finishApp();
+                } else if (i > 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.MovieModel.class).count() == 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.EPGChannel.class).count() == 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.SeriesModel.class).count() == 0) {
+                    MainTVActivity.this.openHomeForBackgroundSync(MainTVActivity.this.appInfoModel);
                 } else {
                     MainTVActivity.this.loadingData();
                 }

@@ -609,6 +609,35 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void startBootstrapPlaylistSync() {
+        String playlistUrl = getIntent().getStringExtra("bootstrap_playlist_url");
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            return;
+        }
+        getIntent().removeExtra("bootstrap_playlist_url");
+        final String url = playlistUrl.trim();
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+            try {
+                String lower = url.toLowerCase(java.util.Locale.ROOT);
+                if (lower.contains("get.php") || lower.contains("type=m3u") || lower.contains("output=mpegts")) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(true);
+                    reloadM3UData(url, this.wordModels);
+                } else if (lower.contains("username")) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(false);
+                    goToLogin(url, this.wordModels);
+                } else if (GetSharedInfo.checkXUILink(url)) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(false);
+                    goToXUILogin(url, this.wordModels);
+                } else {
+                    this.preferenceHelper.setSharedPreferenceISM3U(true);
+                    reloadM3UData(url, this.wordModels);
+                }
+            } catch (Exception ignored) {
+                // A Home permanece utilizável mesmo se a sincronização inicial falhar.
+            }
+        });
+    }
+
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(dashtheme.mNewDashtheme());
@@ -626,5 +655,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.ly_live.requestFocus();
         refreshSeriesInBackground();
         refreshM3USeriesInBackground();
+        startBootstrapPlaylistSync();
     }
 }
