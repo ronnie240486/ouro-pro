@@ -3,6 +3,7 @@ package com.ouropro.player.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -81,6 +82,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public ConstraintLayout ly_reload;
     public ConstraintLayout ly_series;
     public ConstraintLayout ly_setting;
+    public ConstraintLayout ly_radio;
     public NoConnectionDlgFragment noConnectionDlgFragment;
     public PreferenceHelper preferenceHelper;
     public GifImageView progressBar;
@@ -603,6 +605,63 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void setupRadioButton() {
+        if (this.ly_radio != null || this.ly_live == null) {
+            return;
+        }
+        ConstraintLayout root = (ConstraintLayout) findViewById(R.id.fullContainer);
+        if (root == null) {
+            return;
+        }
+        ConstraintLayout radio = new ConstraintLayout(this);
+        radio.setId(View.generateViewId());
+        radio.setFocusable(true);
+        radio.setClickable(true);
+        radio.setBackgroundResource(R.drawable.home_small_item_bg);
+        radio.setContentDescription("Abrir Rádios");
+
+        ImageView icon = new ImageView(this);
+        icon.setId(View.generateViewId());
+        icon.setImageResource(R.drawable.ic_radio);
+        icon.setPadding(dpRadio(10), dpRadio(10), dpRadio(10), dpRadio(10));
+        radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(38), dpRadio(38)));
+        ConstraintLayout.LayoutParams iconParams = (ConstraintLayout.LayoutParams) icon.getLayoutParams();
+        iconParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.setMarginStart(dpRadio(10));
+        icon.setLayoutParams(iconParams);
+
+        TextView label = new TextView(this);
+        label.setText("Rádios");
+        label.setTextColor(Color.WHITE);
+        label.setTextSize(12.0f);
+        label.setGravity(Gravity.CENTER_VERTICAL);
+        radio.addView(label, new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        ConstraintLayout.LayoutParams labelParams = (ConstraintLayout.LayoutParams) label.getLayoutParams();
+        labelParams.startToEnd = icon.getId();
+        labelParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.setMarginStart(dpRadio(8));
+        radio.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
+        radio.setOnFocusChangeListener((view, focused) -> {
+            view.setScaleX(focused ? 1.04f : 1.0f);
+            view.setScaleY(focused ? 1.04f : 1.0f);
+        });
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(dpRadio(130), dpRadio(42));
+        params.startToStart = this.ly_live.getId();
+        params.endToEnd = this.ly_live.getId();
+        params.topToBottom = this.ly_live.getId();
+        params.topMargin = dpRadio(8);
+        root.addView(radio, params);
+        this.ly_radio = radio;
+    }
+
+    private int dpRadio(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
     private void startBootstrapPlaylistSync() {
         String playlistUrl = getIntent().getStringExtra("bootstrap_playlist_url");
         if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
@@ -638,6 +697,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         Utils.FullScreenCall(this);
         this.preferenceHelper = new PreferenceHelper(this);
         initView();
+        setupRadioButton();
         setupMicrophoneButton();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());

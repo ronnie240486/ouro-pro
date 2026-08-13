@@ -63,6 +63,7 @@
         <activity android:exported="false" android:name="com.ouropro.player.activities.LiveActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.ChangePlaylistActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.HomeActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:exported="false" android:name="com.ouropro.player.activities.RadioActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="true" android:label="@string/app_name" android:name="com.ouropro.player.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
