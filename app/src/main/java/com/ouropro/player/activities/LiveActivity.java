@@ -177,6 +177,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public TextView txt_right;
     public TextView txt_search;
     public TextView txt_series;
+    public String epgNowDisplay = "carregando EPG...";
+    public String epgNextDisplay = "aguardando programação...";
     public TextView txt_subtitle;
     public TextView txt_vod;
     public WordModels wordModels;
@@ -749,7 +751,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelEpgText("carregando EPG...", "aguardando programação...");
             showFavImageIcon(this.selectedChannel.is_favorite());
             changeChannelInfo(this.channel_pos);
         }
@@ -805,7 +807,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelEpgText("carregando EPG...", "aguardando programação...");
             showFavImageIcon(ePGChannel.is_favorite());
             changeChannelInfo(this.pre_channel_pos);
         }
@@ -869,7 +871,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
         this.handler.removeCallbacks(this.hideInfoTicker);
         mInfoHideTimer();
-        this.txt_name.setText(this.channel_name);
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         this.recycler_channel.setSelectedPosition(this.channel_pos);
     }
 
@@ -888,7 +890,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.handler.removeCallbacks(this.epgTicker);
         epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
-        this.txt_name.setText(this.channel_name);
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
         }
@@ -1270,7 +1272,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         String channelTitle = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
         this.txt_name.setMaxLines(3);
         this.txt_name.setEllipsize(null);
-        this.txt_name.setText(channelTitle + "\nAgora: " + nowText + "\nPróximo: " + nextText);
+        this.epgNowDisplay = nowText == null ? "carregando EPG..." : nowText;
+        this.epgNextDisplay = nextText == null ? "aguardando programação..." : nextText;
+        this.txt_name.setText(channelTitle + "\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
@@ -1466,7 +1470,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 liveActivity11.handler.removeCallbacks(liveActivity11.hideInfoTicker);
                 LiveActivity.this.mInfoHideTimer();
                 LiveActivity liveActivity12 = LiveActivity.this;
-                liveActivity12.txt_name.setText(liveActivity12.channel_name);
+                liveActivity12.updateChannelEpgText("carregando EPG...", "aguardando programação...");
                 LiveActivity liveActivity13 = LiveActivity.this;
                 liveActivity13.recycler_channel.setSelectedPosition(liveActivity13.channel_pos);
             }
@@ -2176,7 +2180,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.handler.removeCallbacks(this.epgTicker);
         epgTimer(channel.getStream_id());
         this.channel_name = channel.getName();
-        this.txt_name.setText(this.channel_name);
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         changeChannelInfo(index);
         this.recycler_channel.setSelectedPosition(index);
         this.recycler_channel.scrollToPosition(index);
