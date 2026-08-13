@@ -60,6 +60,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     public int failed_count = 0;
     public int playlist_position = 0;
     public String device_type = "tv";
+    private boolean openedHomeForBackgroundSync = false;
 
     @RequiresApi(api = 23)
     private void CheckSDK23Permission() {
@@ -268,6 +269,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             loadingData();
             return;
         }
+        this.openedHomeForBackgroundSync = true;
         Intent home = new Intent(this, HomeActivity.class);
         home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
         startActivity(home);
@@ -436,6 +438,10 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     }
 
     public final void doNextTask(boolean z) {
+        if (this.openedHomeForBackgroundSync) {
+            setLoaderVisibility(8);
+            return;
+        }
         if (z) {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
             startActivity(new Intent(this, (Class<?>) HomeActivity.class));

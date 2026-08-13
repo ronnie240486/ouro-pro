@@ -54,6 +54,7 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
     public WordModels wordModels = new WordModels();
     public int failed_count = 0;
     public int playlist_position = 0;
+    private boolean openedHomeForBackgroundSync = false;
 
     @RequiresApi(api = 23)
     private void CheckSDK23Permission() {
@@ -207,6 +208,7 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
             loadingData();
             return;
         }
+        this.openedHomeForBackgroundSync = true;
         Intent home = new Intent(this, HomeActivity.class);
         home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
         startActivity(home);
@@ -359,6 +361,10 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
     }
 
     public final void doNextTask(boolean z) {
+        if (this.openedHomeForBackgroundSync) {
+            if (this.image_loader != null) this.image_loader.setVisibility(8);
+            return;
+        }
         if (z) {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
             startActivity(new Intent(this, (Class<?>) HomeActivity.class));

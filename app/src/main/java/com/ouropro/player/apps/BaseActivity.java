@@ -20,6 +20,7 @@ import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.improvements.M3USeriesRebuilder;
+import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -582,17 +583,147 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchM3UItems(String str) {
-        NetworkTask<Void, Void, List<M3UItem>> networkTask = this.fetchM3uItemsTask;
-        if (networkTask != null && !networkTask.isComplete()) {
-            this.fetchM3uItemsTask.abort();
-        }
-        FetchM3uItemsTask fetchM3uItemsTask = new FetchM3uItemsTask(str, null);
-        this.fetchM3uItemsTask = fetchM3uItemsTask;
-        fetchM3uItemsTask.setOnCompleteListener(new BaseActivity$$ExternalSyntheticLambda4(this, 2));
-        this.fetchM3uItemsTask.setOnGenericExceptionListener(new BaseActivity$$ExternalSyntheticLambda4(this, 3));
-        this.fetchM3uItemsTask.setOnNetworkUnavailableListener(new BaseActivity$$ExternalSyntheticLambda4(this, 4));
-        this.fetchM3uItemsTask.execute();
+    private void fetchM3UItems(final String str) {
+        new Thread(() -> {
+            final Realm streamRealm = Realm.getDefaultInstance();
+            final ArrayList<EpisodeModel> allEpisodes = new ArrayList<>();
+            final TreeSet<String> liveCategoryNames = new TreeSet<>();
+            final TreeSet<String> movieCategoryNames = new TreeSet<>();
+            final TreeSet<String> seriesCategoryNames = new TreeSet<>();
+            final int[] channelNumber = {0};
+            final int[] movieNumber = {0};
+            final ArrayList<M3UItem> m3uChannels = new ArrayList<>();
+            final ArrayList<M3UItem> m3uMovies = new ArrayList<>();
+            final ArrayList<M3UItem> m3uSeries = new ArrayList<>();
+            try {
+                LTVApp.getInstance().setM3UChannelsItems(m3uChannels);
+                LTVApp.getInstance().setM3UVideosItems(m3uMovies);
+                LTVApp.getInstance().setM3USeriesItems(m3uSeries);
+                new StreamingM3UImporter().execute(str, new StreamingM3UImporter.Listener() {
+                    @Override
+                    public void onBatch(List<M3UItem> batch) {
+                        if (is_stop || batch == null || batch.isEmpty()) {
+                            return;
+                        }
+                        ArrayList<EPGChannel> channels = new ArrayList<>();
+                        ArrayList<MovieModel> movies = new ArrayList<>();
+                        ArrayList<EpisodeModel> episodes = new ArrayList<>();
+
+                        for (M3UItem item : batch) {
+                            int type = getMediaType(item);
+                            if (type == 0) {
+                                EPGChannel channel = EPGChannel.fromM3UItem(item);
+                                if (channel != null) {
+                                    channel.setNum(String.valueOf(++channelNumber[0]));
+                                    channels.add(channel);
+                                    liveCategoryNames.add(channel.getCategory_name());
+                                    m3uChannels.add(item);
+                                }
+                            } else if (type == 1) {
+                                MovieModel movie = MovieModel.fromM3UItem(item);
+                                if (movie != null) {
+                                    movie.setNum(++movieNumber[0]);
+                                    movies.add(movie);
+                                    movieCategoryNames.add(movie.getCategory_name());
+                                    m3uMovies.add(item);
+                                }
+                            } else if (type == 2) {
+                                EpisodeModel episode = EpisodeModel.fromM3UItem(item);
+                                if (episode != null) {
+                                    episodes.add(episode);
+                                    allEpisodes.add(episode);
+                                    seriesCategoryNames.add(episode.getCategory_name());
+                                    m3uSeries.add(item);
+                                }
+                            }
+                        }
+                        if (!channels.isEmpty()) {
+                            streamRealm.executeTransaction(realm -> {
+                                if (!channels.isEmpty()) realm.insertOrUpdate(channels);
+                            });
+                        }
+                        if (!movies.isEmpty()) {
+                            streamRealm.executeTransaction(realm -> {
+                                if (!movies.isEmpty()) realm.insertOrUpdate(movies);
+                            });
+                        }
+                        if (!episodes.isEmpty()) {
+                            ArrayList<SeriesModel> batchSeries = buildSeriesFromEpisodes(episodes);
+                            streamRealm.executeTransaction(realm -> {
+                                if (!episodes.isEmpty()) realm.insertOrUpdate(episodes);
+                                if (!batchSeries.isEmpty()) realm.insertOrUpdate(batchSeries);
+                            });
+                            for (SeriesModel batchItem : batchSeries) {
+                                seriesCategoryNames.add(batchItem.getCategory_name());
+                            }
+                        }
+                        if (!channels.isEmpty() || !movies.isEmpty() || !episodes.isEmpty()) {
+                            saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
+                        }
+                        if (!m3uVisibleNavigationSent && (!channels.isEmpty() || !movies.isEmpty())) {
+                            runOnUiThread(() -> {
+                                if (!m3uVisibleNavigationSent && !is_stop) {
+                                    m3uVisibleNavigationSent = true;
+                                    doNextTask(true);
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        try {
+                            if (!allEpisodes.isEmpty()) {
+                                streamRealm.executeTransaction(realm -> realm.insertOrUpdate(allEpisodes));
+                                ArrayList<SeriesModel> series = buildSeriesFromEpisodes(allEpisodes);
+                                if (!series.isEmpty()) {
+                                    streamRealm.executeTransaction(realm -> realm.insertOrUpdate(series));
+                                    for (SeriesModel item : series) {
+                                        seriesCategoryNames.add(item.getCategory_name());
+                                    }
+                                    saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
+                                }
+                            }
+                            preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
+                            getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
+                                    .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
+                            runOnUiThread(() -> {
+                                if (!m3uVisibleNavigationSent && !is_stop) {
+                                    m3uVisibleNavigationSent = true;
+                                    doNextTask(true);
+                                }
+                                setBusy(false);
+                            });
+                        } catch (Exception error) {
+                            onError(error);
+                        } finally {
+                            streamRealm.close();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Exception error) {
+                        runOnUiThread(() -> {
+                            if (!m3uVisibleNavigationSent && !is_stop) {
+                                doNextTask(false);
+                                Toast.makeText(getApplicationContext(), wordModels.getUser_incorrect(), Toast.LENGTH_SHORT).show();
+                            }
+                            setBusy(false);
+                        });
+                        try {
+                            streamRealm.close();
+                        } catch (Exception ignored) {
+                        }
+                    }
+                });
+            } catch (Exception error) {
+                streamRealm.close();
+                runOnUiThread(() -> {
+                    if (!m3uVisibleNavigationSent && !is_stop) doNextTask(false);
+                    setBusy(false);
+                });
+            }
+        }, "ouropro-m3u-stream").start();
     }
 
     private String getCategoryNameFromKey(String str) {
@@ -1167,6 +1298,21 @@ public class BaseActivity extends AppCompatActivity {
             seriesModels.add(series);
         }
         return seriesModels;
+    }
+
+    private void saveM3UVisibleCategoryNames(TreeSet<String> liveNames, TreeSet<String> movieNames, TreeSet<String> seriesNames) {
+        if (liveNames != null) {
+            this.preferenceHelper.setSharedPreferenceLiveCategory(buildM3UCategoryList(
+                    wordModels.getRecently_viewed(), wordModels.getAll(), wordModels.getFavorite(), new ArrayList<>(liveNames)));
+        }
+        if (movieNames != null) {
+            this.preferenceHelper.setSharedPreferenceVodCategory(buildM3UCategoryList(
+                    wordModels.getResume_to_watch(), wordModels.getAll(), wordModels.getFavorite(), new ArrayList<>(movieNames)));
+        }
+        if (seriesNames != null) {
+            this.preferenceHelper.setSharedPreferenceSeriesCategory(buildM3UCategoryList(
+                    wordModels.getRecently_viewed(), wordModels.getAll(), wordModels.getFavorite(), new ArrayList<>(seriesNames)));
+        }
     }
 
     private void saveM3UVisibleCategories(List<EPGChannel> channels, List<MovieModel> movies, List<SeriesModel> series) {
