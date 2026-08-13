@@ -349,7 +349,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         try {
             RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.mobile.LiveChannelMobileActivity.3
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
-                    LiveChannelMobileActivity.this.showEpgInfo(null);
+                    LiveChannelMobileActivity.this.loadXmlTvEpg(str);
                 }
 
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
@@ -395,7 +395,11 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         if (this.selectedChannel != null) {
             releaseMediaPlayer();
             LTVApp.channelName = this.selectedChannel.getName();
-            this.someActivityResultLauncher.launch(new Intent(this, (Class<?>) CatchUpActivity.class));
+            Intent intent = new Intent(this, (Class<?>) CatchUpActivity.class);
+            intent.putExtra("catchup_stream_id", this.selectedChannel.getStream_id());
+            intent.putExtra("catchup_channel_id", this.selectedChannel.getId());
+            intent.putExtra("catchup_channel_name", this.selectedChannel.getName());
+            this.someActivityResultLauncher.launch(intent);
         }
     }
 
@@ -638,12 +642,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             controlFav(ePGChannel, num.intValue());
             showFavImageIcon(ePGChannel.is_favorite());
         } else if (!this.is_full) {
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(ePGChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(ePGChannel.getStream_id());
             String name2 = ePGChannel.getName();
             this.channel_name = name2;
             this.txt_name.setText(name2);
@@ -689,12 +689,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
@@ -720,12 +716,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
         this.txt_name.setText(this.channel_name);
         if (this.ly_control.getVisibility() == 8) {

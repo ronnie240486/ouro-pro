@@ -365,7 +365,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     /* JADX INFO: Access modifiers changed from: private */
     public void getShortEpg(String str) {
         try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.mobile.LiveMobileActivity.4
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.mobile.LiveMobileActivity.4
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
                     LiveMobileActivity.this.showEpgInfo(null);
                 }
@@ -385,12 +385,14 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void goToCatchupActivity() {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), 0).show();
-        } else if (this.selectedChannel != null) {
+        if (this.selectedChannel != null) {
             releaseMediaPlayer();
             LTVApp.channelName = this.selectedChannel.getName();
-            this.someActivityResultLauncher.launch(new Intent(this, (Class<?>) CatchUpActivity.class));
+            Intent intent = new Intent(this, (Class<?>) CatchUpActivity.class);
+            intent.putExtra("catchup_stream_id", this.selectedChannel.getStream_id());
+            intent.putExtra("catchup_channel_id", this.selectedChannel.getId());
+            intent.putExtra("catchup_channel_name", this.selectedChannel.getName());
+            this.someActivityResultLauncher.launch(intent);
         }
     }
 
@@ -710,12 +712,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
@@ -741,12 +739,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
         this.txt_name.setText(this.channel_name);
         if (this.ly_control.getVisibility() == 8) {
