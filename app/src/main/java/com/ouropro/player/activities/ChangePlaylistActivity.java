@@ -156,27 +156,24 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
     }
 
     private void applyPanelAppInfo(AppInfoModel remoteInfo) {
-        if (remoteInfo == null || remoteInfo.getResult() == null || remoteInfo.getResult().isEmpty()) {
+        if (remoteInfo == null || remoteInfo.getResult() == null) {
             return;
         }
-        List<AppInfoModel.UrlModel> merged = new ArrayList<>();
+        List<AppInfoModel.UrlModel> remotePlaylists = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         for (AppInfoModel.UrlModel model : remoteInfo.getResult()) {
-            addPlaylistIfValid(merged, seen, model);
-        }
-        if (this.urlModelList != null) {
-            for (AppInfoModel.UrlModel model : this.urlModelList) {
-                addPlaylistIfValid(merged, seen, model);
-            }
+            addPlaylistIfValid(remotePlaylists, seen, model);
         }
         this.appInfoModel = remoteInfo;
-        this.appInfoModel.setResult(merged);
-        this.urlModelList = merged;
+        this.appInfoModel.setResult(remotePlaylists);
+        this.urlModelList = remotePlaylists;
         this.preferenceHelper.setSharedPreferenceAppInfo(this.appInfoModel);
         Utils.saveToFile(this.appInfoModel);
         if (this.portalAdapter != null) {
             this.portalAdapter.setData(this.urlModelList);
-            if (!this.urlModelList.isEmpty()) {
+            if (this.urlModelList.isEmpty()) {
+                this.playlist_position = 0;
+            } else {
                 this.playlist_position = Math.min(this.playlist_position, this.urlModelList.size() - 1);
                 this.recycler_playlist.setSelectedPosition(this.playlist_position);
             }
@@ -427,7 +424,7 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
                             AppInfoModel.class);
                     applyPanelAppInfo(remoteInfo);
                 } catch (Exception ignored) {
-                    // Mantém as playlists locais caso o retorno esteja incompleto.
+                    // Não altera o cache quando a resposta não pôde ser decodificada.
                 }
                 return;
             }

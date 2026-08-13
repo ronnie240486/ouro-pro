@@ -44,7 +44,7 @@ public class AppInfoModel implements Serializable {
     @SerializedName("price")
     private String price;
 
-    @SerializedName(value = "urls", alternate = {"playlists", "lists", "playlist"})
+    @SerializedName(value = "urls", alternate = {"playlists", "lists", "playlist", "result"})
     private List<UrlModel> result;
 
     @SerializedName("mac_registered")
@@ -52,7 +52,7 @@ public class AppInfoModel implements Serializable {
 
     public static class UrlModel implements Serializable {
 
-        @SerializedName("id")
+        @SerializedName(value = "id", alternate = {"playlist_id", "uid"})
         private String id;
 
         @SerializedName("is_protected")
@@ -64,7 +64,7 @@ public class AppInfoModel implements Serializable {
         @SerializedName("type")
         private String type;
 
-        @SerializedName(value = "url", alternate = {"playlist_url", "stream_url"})
+        @SerializedName(value = "url", alternate = {"playlist_url", "stream_url", "link"})
         private String url;
 
         public String getId() {

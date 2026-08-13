@@ -44,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -597,6 +598,7 @@ public class BaseActivity extends AppCompatActivity {
             final ArrayList<M3UItem> m3uMovies = new ArrayList<>();
             final ArrayList<M3UItem> m3uSeries = new ArrayList<>();
             try {
+                streamRealm.executeTransaction(this::sanitizeM3UCatalog);
                 LTVApp.getInstance().setM3UChannelsItems(m3uChannels);
                 LTVApp.getInstance().setM3UVideosItems(m3uMovies);
                 LTVApp.getInstance().setM3USeriesItems(m3uSeries);
@@ -881,14 +883,22 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private int getMediaType(M3UItem m3UItem) {
-        String streamURL = m3UItem.getStreamURL();
-        if (streamURL == null || streamURL.length() <= 0) {
+        if (m3UItem == null) {
             return -1;
         }
-        if (streamURL.contains("movie/") || streamURL.contains("=movie") || streamURL.contains("==movie") || streamURL.contains("movies/") || streamURL.contains("vod/") || streamURL.contains("video/")) {
+        String streamURL = m3UItem.getStreamURL();
+        if (streamURL == null || streamURL.trim().isEmpty()) {
+            return -1;
+        }
+        String lowerUrl = streamURL.toLowerCase(Locale.ROOT);
+        if (lowerUrl.contains("movie/") || lowerUrl.contains("=movie") || lowerUrl.contains("==movie")
+                || lowerUrl.contains("movies/") || lowerUrl.contains("vod/") || lowerUrl.contains("video/")) {
             return 1;
         }
-        return streamURL.contains("series/") ? 2 : 0;
+        if (M3USeriesNaming.isSeriesItem(m3UItem)) {
+            return 2;
+        }
+        return 0;
     }
 
     private void getMovieCategoryModels(List<MovieModel> list) {
@@ -1299,6 +1309,40 @@ public class BaseActivity extends AppCompatActivity {
             seriesModels.add(series);
         }
         return seriesModels;
+    }
+
+    private void sanitizeM3UCatalog(Realm realm) {
+        RealmResults<EPGChannel> channels = realm.where(EPGChannel.class).findAll();
+        for (int i = channels.size() - 1; i >= 0; i--) {
+            EPGChannel channel = channels.get(i);
+            if (channel != null && isMovieOrSeriesEntry(channel.getUrl(), channel.getName())) {
+                channel.deleteFromRealm();
+            }
+        }
+        RealmResults<MovieModel> movies = realm.where(MovieModel.class).findAll();
+        for (int i = movies.size() - 1; i >= 0; i--) {
+            MovieModel movie = movies.get(i);
+            if (movie != null && isSeriesEntry(movie.getUrl(), movie.getName())) {
+                movie.deleteFromRealm();
+            }
+        }
+    }
+
+    private boolean isMovieOrSeriesEntry(String url, String title) {
+        return isMovieEntry(url) || isSeriesEntry(url, title);
+    }
+
+    private boolean isMovieEntry(String url) {
+        if (url == null) return false;
+        String lower = url.toLowerCase(Locale.ROOT);
+        return lower.contains("movie/") || lower.contains("=movie") || lower.contains("==movie")
+                || lower.contains("movies/") || lower.contains("vod/") || lower.contains("video/");
+    }
+
+    private boolean isSeriesEntry(String url, String title) {
+        String lower = url == null ? "" : url.toLowerCase(Locale.ROOT);
+        return lower.contains("/series/") || lower.contains("/series?") || lower.contains("=series")
+                || M3USeriesNaming.hasEpisodeMarker(title);
     }
 
     private void saveM3UVisibleCategoryNames(TreeSet<String> liveNames, TreeSet<String> movieNames, TreeSet<String> seriesNames) {
