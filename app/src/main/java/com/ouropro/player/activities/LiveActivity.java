@@ -794,12 +794,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             controlFav(ePGChannel, num.intValue());
             showFavImageIcon(ePGChannel.is_favorite());
         } else if (!this.is_full) {
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(ePGChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -2157,12 +2153,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.is_full = true;
         setFull();
         playSelectedChannel(channel);
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(channel.getStream_id());
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(channel.getStream_id());
         this.channel_name = channel.getName();
         this.txt_name.setText(this.channel_name);
         changeChannelInfo(index);
