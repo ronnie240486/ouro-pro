@@ -1298,9 +1298,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             return;
         }
         String channelTitle = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
-        this.txt_name.setMaxLines(1);
-        this.txt_name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        this.txt_name.setText(channelTitle);
+        this.txt_name.setMaxLines(4);
+        this.txt_name.setEllipsize(null);
+        this.txt_name.setTextColor(Color.YELLOW);
+        this.txt_name.setText(channelTitle + "\n[EPG TESTE] painel abaixo do canal\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {

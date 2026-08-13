@@ -2,6 +2,8 @@ package com.ouropro.player.activities;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -10,6 +12,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -260,52 +263,110 @@ public class CatchUpActivity extends AppCompatActivity {
         }
         this.activeReminder = program;
         final String title = Utils.decode64String(program.getTitle());
-        int padding = (int) (24.0f * getResources().getDisplayMetrics().density + 0.5f);
+        final int gold = Color.rgb(255, 208, 0);
+        final int dark = Color.rgb(28, 22, 36);
+        int density = (int) (getResources().getDisplayMetrics().density + 0.5f);
+        int padding = 24 * density;
+
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setGravity(Gravity.CENTER_HORIZONTAL);
-        content.setPadding(padding, padding / 2, padding, padding / 3);
+        content.setPadding(padding, padding, padding, padding / 2);
+        GradientDrawable cardBackground = new GradientDrawable();
+        cardBackground.setColor(dark);
+        cardBackground.setCornerRadius(22 * density);
+        cardBackground.setStroke(2 * density, gold);
+        content.setBackground(cardBackground);
+
+        TextView header = new TextView(this);
+        header.setText("LEMBRETE DO EPG");
+        header.setTextColor(gold);
+        header.setTextSize(13.0f);
+        header.setGravity(Gravity.CENTER);
+        header.setTypeface(null, android.graphics.Typeface.BOLD);
+        content.addView(header, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView status = new TextView(this);
         status.setTextColor(Color.WHITE);
-        status.setTextSize(18.0f);
+        status.setTextSize(17.0f);
         status.setGravity(Gravity.CENTER);
+        status.setPadding(0, padding / 2, 0, padding / 3);
         status.setText("O programa começa em 10 segundos");
         content.addView(status, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView titleView = new TextView(this);
-        titleView.setTextColor(Color.rgb(255, 215, 0));
-        titleView.setTextSize(20.0f);
+        titleView.setTextColor(Color.WHITE);
+        titleView.setTextSize(22.0f);
         titleView.setGravity(Gravity.CENTER);
-        titleView.setPadding(0, padding / 2, 0, padding / 2);
+        titleView.setTypeface(null, android.graphics.Typeface.BOLD);
+        titleView.setSingleLine(true);
+        titleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
         titleView.setText(title);
         content.addView(titleView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView countdown = new TextView(this);
+        countdown.setTextColor(gold);
+        countdown.setTextSize(34.0f);
+        countdown.setGravity(Gravity.CENTER);
+        countdown.setTypeface(null, android.graphics.Typeface.BOLD);
+        countdown.setText("10");
+        GradientDrawable clockBackground = new GradientDrawable();
+        clockBackground.setShape(GradientDrawable.OVAL);
+        clockBackground.setColor(Color.rgb(48, 36, 58));
+        clockBackground.setStroke(4 * density, gold);
+        countdown.setBackground(clockBackground);
+        int clockSize = 96 * density;
+        LinearLayout.LayoutParams clockParams = new LinearLayout.LayoutParams(clockSize, clockSize);
+        clockParams.gravity = Gravity.CENTER_HORIZONTAL;
+        clockParams.topMargin = padding / 2;
+        clockParams.bottomMargin = padding / 2;
+        content.addView(countdown, clockParams);
 
         ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(10);
         progress.setProgress(10);
-        content.addView(progress, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        content.addView(progress, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 8 * density));
 
-        TextView countdown = new TextView(this);
-        countdown.setTextColor(Color.WHITE);
-        countdown.setTextSize(30.0f);
-        countdown.setGravity(Gravity.CENTER);
-        countdown.setPadding(0, padding / 3, 0, 0);
-        countdown.setText("10");
-        content.addView(countdown, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setGravity(Gravity.CENTER);
+        buttons.setPadding(0, padding / 2, 0, 0);
+        TextView discard = new TextView(this);
+        TextView goNow = new TextView(this);
+        for (TextView button : new TextView[]{discard, goNow}) {
+            button.setTextColor(Color.WHITE);
+            button.setTextSize(14.0f);
+            button.setGravity(Gravity.CENTER);
+            button.setTypeface(null, android.graphics.Typeface.BOLD);
+            button.setPadding(20 * density, 12 * density, 20 * density, 12 * density);
+            GradientDrawable buttonBackground = new GradientDrawable();
+            buttonBackground.setColor(Color.rgb(102, 72, 150));
+            buttonBackground.setCornerRadius(10 * density);
+            button.setBackground(buttonBackground);
+        }
+        discard.setText("DESCARTAR");
+        goNow.setText("IR AGORA");
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        buttonParams.setMargins(6 * density, 0, 6 * density, 0);
+        buttons.addView(discard, new LinearLayout.LayoutParams(buttonParams));
+        buttons.addView(goNow, new LinearLayout.LayoutParams(buttonParams));
+        content.addView(buttons, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Lembrete do EPG")
-                .setView(content)
-                .setPositiveButton("Ir agora", (d, which) -> {
-                    clearActiveReminder(program);
-                    goToLivePage();
-                })
-                .setNegativeButton("Descartar", (d, which) -> clearActiveReminder(program))
-                .setOnCancelListener(d -> clearActiveReminder(program))
-                .create();
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(content).setOnCancelListener(d -> clearActiveReminder(program)).create();
         this.reminderDialog = dialog;
+        discard.setOnClickListener(v -> clearActiveReminder(program));
+        goNow.setOnClickListener(v -> {
+            clearActiveReminder(program);
+            goToLivePage();
+        });
         dialog.setOnShowListener(d -> {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                android.view.WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.82f);
+                window.setAttributes(attributes);
+            }
             this.reminderTimer = new CountDownTimer(10000L, 1000L) {
                 @Override
                 public void onTick(long millisUntilFinished) {
