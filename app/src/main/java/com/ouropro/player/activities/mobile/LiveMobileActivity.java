@@ -90,6 +90,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
@@ -1185,13 +1186,9 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
                     LiveMobileActivity liveMobileActivity = LiveMobileActivity.this;
                     liveMobileActivity.channel_pos = i;
                     liveMobileActivity.playSelectedChannel(ePGChannel);
-                    if (LiveMobileActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                        LiveMobileActivity.this.showEpgInfo(null);
-                    } else {
-                        LiveMobileActivity liveMobileActivity2 = LiveMobileActivity.this;
-                        liveMobileActivity2.handler.removeCallbacks(liveMobileActivity2.epgTicker);
-                        LiveMobileActivity.this.epgTimer(ePGChannel.getStream_id());
-                    }
+                LiveMobileActivity liveMobileActivity2 = LiveMobileActivity.this;
+                liveMobileActivity2.handler.removeCallbacks(liveMobileActivity2.epgTicker);
+                LiveMobileActivity.this.epgTimer(ePGChannel.getStream_id());
                     LiveMobileActivity.this.channel_name = ePGChannel.getName();
                     LiveMobileActivity liveMobileActivity3 = LiveMobileActivity.this;
                     liveMobileActivity3.txt_name.setText(liveMobileActivity3.channel_name);
@@ -1226,14 +1223,10 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
                 }
                 LiveMobileActivity liveMobileActivity11 = LiveMobileActivity.this;
                 liveMobileActivity11.playSelectedChannel((EPGChannel) liveMobileActivity11.epgChannels.get(liveMobileActivity11.channel_pos));
-                if (LiveMobileActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                    LiveMobileActivity.this.showEpgInfo(null);
-                } else {
-                    LiveMobileActivity liveMobileActivity12 = LiveMobileActivity.this;
-                    liveMobileActivity12.handler.removeCallbacks(liveMobileActivity12.epgTicker);
-                    LiveMobileActivity liveMobileActivity13 = LiveMobileActivity.this;
-                    liveMobileActivity13.epgTimer(liveMobileActivity13.stream_id);
-                }
+                LiveMobileActivity liveMobileActivity12 = LiveMobileActivity.this;
+                liveMobileActivity12.handler.removeCallbacks(liveMobileActivity12.epgTicker);
+                LiveMobileActivity liveMobileActivity13 = LiveMobileActivity.this;
+                liveMobileActivity13.epgTimer(liveMobileActivity13.stream_id);
                 LiveMobileActivity liveMobileActivity14 = LiveMobileActivity.this;
                 liveMobileActivity14.changeChannelInfo(liveMobileActivity14.channel_pos);
                 if (LiveMobileActivity.this.ly_control.getVisibility() == 8) {
@@ -1449,6 +1442,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         this.recycler_channel.requestFocus();
         this.recycler_channel.scrollToPosition(this.channel_pos);
         this.epgAdapter = new EpgRecyclerAdapter(this, new ArrayList());
+        EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);
@@ -1459,12 +1453,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             }
             playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
             this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.stream_id);
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.stream_id);
             String name = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -1607,12 +1597,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         setFull();
         playSelectedChannel(channel);
         this.stream_id = channel.getStream_id();
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(channel.getStream_id());
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(channel.getStream_id());
         this.channel_name = channel.getName();
         this.txt_name.setText(this.channel_name);
         changeChannelInfo(index);

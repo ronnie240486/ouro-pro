@@ -84,6 +84,7 @@ import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
+import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceButtonFactory;
@@ -1298,10 +1299,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             return;
         }
         String channelTitle = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
-        this.txt_name.setMaxLines(4);
-        this.txt_name.setEllipsize(null);
-        this.txt_name.setTextColor(Color.YELLOW);
-        this.txt_name.setText(channelTitle + "\n[EPG TESTE] painel abaixo do canal\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
+        this.txt_name.setMaxLines(1);
+        this.txt_name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        this.txt_name.setTextColor(Color.WHITE);
+        this.txt_name.setText(channelTitle);
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
@@ -2025,6 +2026,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         setFocusTopView(false);
         setFocusButtons(false);
         this.epgAdapter = new EpgRecyclerAdapter(this, new ArrayList());
+        EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);

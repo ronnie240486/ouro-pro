@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -273,10 +274,17 @@ public class CatchUpActivity extends AppCompatActivity {
         content.setGravity(Gravity.CENTER_HORIZONTAL);
         content.setPadding(padding, padding, padding, padding / 2);
         GradientDrawable cardBackground = new GradientDrawable();
-        cardBackground.setColor(dark);
+        cardBackground.setColor(Color.argb(228, 28, 22, 36));
         cardBackground.setCornerRadius(22 * density);
         cardBackground.setStroke(2 * density, gold);
         content.setBackground(cardBackground);
+        FrameLayout modalRoot = new FrameLayout(this);
+        ImageView backdrop = new ImageView(this);
+        backdrop.setImageResource(R.drawable.home_logo);
+        backdrop.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        backdrop.setAlpha(0.12f);
+        modalRoot.addView(backdrop, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        modalRoot.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         TextView header = new TextView(this);
         header.setText("LEMBRETE DO EPG");
@@ -352,7 +360,7 @@ public class CatchUpActivity extends AppCompatActivity {
         buttons.addView(goNow, new LinearLayout.LayoutParams(buttonParams));
         content.addView(buttons, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(content).setOnCancelListener(d -> clearActiveReminder(program)).create();
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(modalRoot).setOnCancelListener(d -> clearActiveReminder(program)).create();
         this.reminderDialog = dialog;
         discard.setOnClickListener(v -> clearActiveReminder(program));
         goNow.setOnClickListener(v -> {
