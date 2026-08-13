@@ -117,14 +117,35 @@ public final class XmlTvEpgLoader {
             }
             event = parser.next();
         }
+        long now = System.currentTimeMillis();
+        int firstCurrentOrNext = -1;
+        for (int i = 0; i < result.size(); i++) {
+            CatchUpEpg item = result.get(i);
+            if (item.getStop_timestamp() * 1000L >= now) {
+                firstCurrentOrNext = i;
+                break;
+            }
+        }
+        if (firstCurrentOrNext > 0) {
+            return new ArrayList<>(result.subList(firstCurrentOrNext, result.size()));
+        }
         return result;
     }
 
     private static boolean matches(String xmlChannel, String channelId, String channelName) {
         if (xmlChannel == null) return false;
         String xml = normalize(xmlChannel);
-        return (!isBlank(channelId) && xml.equals(normalize(channelId)))
-                || (!isBlank(channelName) && xml.equals(normalize(channelName)));
+        if (!isBlank(channelId)) {
+            for (String alias : channelId.split("\\|")) {
+                if (!isBlank(alias) && xml.equals(normalize(alias))) return true;
+            }
+        }
+        if (!isBlank(channelName)) {
+            for (String alias : channelName.split("\\|")) {
+                if (!isBlank(alias) && xml.equals(normalize(alias))) return true;
+            }
+        }
+        return false;
     }
 
     private static CatchUpEpg createProgram(String channel, String startRaw, String stopRaw,
