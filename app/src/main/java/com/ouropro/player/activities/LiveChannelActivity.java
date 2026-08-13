@@ -450,7 +450,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                 this.preferenceHelper.getSharedPreferenceISM3U(),
                 this.preferenceHelper.getSharedPreferenceUsername(),
                 this.preferenceHelper.getSharedPreferencePassword(),
-                this.selectedChannel == null ? "" : this.selectedChannel.getId(),
+                this.preferenceHelper.getSharedPreferenceM3UEpgUrl(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId() + "|" + this.selectedChannel.getStream_id(),
                 this.selectedChannel == null ? this.channel_name : this.selectedChannel.getName(),
                 new XmlTvEpgLoader.Listener() {
                     @Override

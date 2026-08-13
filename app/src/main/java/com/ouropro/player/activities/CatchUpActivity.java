@@ -184,7 +184,8 @@ public class CatchUpActivity extends AppCompatActivity {
                 this.preferenceHelper.getSharedPreferenceISM3U(),
                 this.preferenceHelper.getSharedPreferenceUsername(),
                 this.preferenceHelper.getSharedPreferencePassword(),
-                this.selectedChannel == null ? "" : this.selectedChannel.getId(),
+                this.preferenceHelper.getSharedPreferenceM3UEpgUrl(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId() + "|" + this.selectedChannel.getStream_id(),
                 this.selectedChannel == null ? "" : this.selectedChannel.getName(),
                 new XmlTvEpgLoader.Listener() {
                     @Override

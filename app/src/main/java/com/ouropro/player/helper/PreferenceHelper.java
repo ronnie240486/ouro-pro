@@ -39,6 +39,7 @@ public class PreferenceHelper {
     private static final String LAST_EPG_DATE = "last_epg_date";
     private static final String LAST_M3U_DATE = "LastM3uDate";
     private static final String LAST_PLAYLIST_DATE = "last_playlist_date";
+    private static final String M3U_EPG_URL = "m3u_epg_url";
     private static final String LIVE_CATEGORY = "live_category";
     private static final String LIVE_FAV_NAMES = "live_fav_names";
     private static final String LIVE_ORDER = "live_order";
@@ -266,6 +267,15 @@ public class PreferenceHelper {
             String string = this.settings.getString(LAST_M3U_DATE + getSharedPreferenceUserId(), "");
             return (string == null || string.isEmpty()) ? "" : string;
         } catch (Exception unused) {
+            return "";
+        }
+    }
+
+    public String getSharedPreferenceM3UEpgUrl() {
+        try {
+            String value = this.settings.getString(M3U_EPG_URL + getSharedPreferenceUserId(), "");
+            return value == null ? "" : value;
+        } catch (Exception ignored) {
             return "";
         }
     }
@@ -648,6 +658,12 @@ public class PreferenceHelper {
         sbM.append(getSharedPreferenceUserId());
         editorEdit.putString(sbM.toString(), str);
         editorEdit.apply();
+    }
+
+    public void setSharedPreferenceM3UEpgUrl(String url) {
+        SharedPreferences.Editor editor = this.settings.edit();
+        editor.putString(M3U_EPG_URL + getSharedPreferenceUserId(), url == null ? "" : url.trim());
+        editor.apply();
     }
 
     public void setSharedPreferenceLastPlaylistDate(long j) {

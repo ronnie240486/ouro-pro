@@ -32,6 +32,7 @@ public final class StreamingM3UImporter {
     private static final Pattern ATTRIBUTE = Pattern.compile("([A-Za-z0-9_-]+)\\s*=\\s*(?:\\\"([^\\\"]*)\\\"|'([^']*)'|([^\\s,]+))");
 
     public interface Listener {
+        void onSourceInfo(String xmlTvUrl);
         void onBatch(List<M3UItem> batch);
         void onComplete();
         void onError(Exception error);
@@ -78,7 +79,15 @@ public final class StreamingM3UImporter {
         ArrayList<M3UItem> batch = new ArrayList<>(BATCH_SIZE);
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            if (line.isEmpty() || line.startsWith("#EXTM3U") || line.startsWith("#EXTVLCOPT") || line.startsWith("#KODIPROP")) {
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (line.startsWith("#EXTM3U")) {
+                String xmlTvUrl = headerAttribute(line, "url-tvg", "x-tvg-url", "epg-url");
+                if (!xmlTvUrl.isEmpty()) listener.onSourceInfo(xmlTvUrl);
+                continue;
+            }
+            if (line.startsWith("#EXTVLCOPT") || line.startsWith("#KODIPROP")) {
                 continue;
             }
             if (line.startsWith("#EXTINF")) {
@@ -129,6 +138,15 @@ public final class StreamingM3UImporter {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private String headerAttribute(String line, String... names) {
+        Map<String, String> values = attributes(line);
+        for (String name : names) {
+            String value = values.get(name.toLowerCase(Locale.ROOT));
+            if (value != null && !value.trim().isEmpty()) return value.trim();
+        }
+        return "";
     }
 
     private Map<String, String> attributes(String line) {

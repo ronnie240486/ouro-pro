@@ -599,10 +599,16 @@ public class BaseActivity extends AppCompatActivity {
             final ArrayList<M3UItem> m3uSeries = new ArrayList<>();
             try {
                 streamRealm.executeTransaction(this::sanitizeM3UCatalog);
+                preferenceHelper.setSharedPreferenceM3UEpgUrl("");
                 LTVApp.getInstance().setM3UChannelsItems(m3uChannels);
                 LTVApp.getInstance().setM3UVideosItems(m3uMovies);
                 LTVApp.getInstance().setM3USeriesItems(m3uSeries);
                 new StreamingM3UImporter().execute(str, new StreamingM3UImporter.Listener() {
+                    @Override
+                    public void onSourceInfo(String xmlTvUrl) {
+                        preferenceHelper.setSharedPreferenceM3UEpgUrl(xmlTvUrl);
+                    }
+
                     @Override
                     public void onBatch(List<M3UItem> batch) {
                         if (is_stop || batch == null || batch.isEmpty()) {

@@ -33,6 +33,10 @@ public interface APIService {
     @GET("/xmltv.php")
     Call<ResponseBody> getEpgXml(@Query("username") String str, @Query("password") String str2);
 
+    @Streaming
+    @GET
+    Call<ResponseBody> getEpgXmlUrl(@Url String url);
+
     @GET
     Call<MovieCreditResponse> getMovieCreditModels(@Url String str);
 

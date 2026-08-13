@@ -40,9 +40,20 @@ public final class XmlTvEpgLoader {
 
     public static void load(String baseUrl, boolean allowHttp, String username, String password,
                             String channelId, String channelName, Listener listener) {
+        load(baseUrl, allowHttp, username, password, "", channelId, channelName, listener);
+    }
+
+    public static void load(String baseUrl, boolean allowHttp, String username, String password,
+                            String sourceUrl, String channelId, String channelName, Listener listener) {
         try {
             APIService service = RetroClass.getAPIService(baseUrl, allowHttp);
-            service.getEpgXml(username, password).enqueue(new Callback<ResponseBody>() {
+            Call<ResponseBody> epgCall;
+            if (!isBlank(sourceUrl)) {
+                epgCall = service.getEpgXmlUrl(resolveSourceUrl(baseUrl, sourceUrl));
+            } else {
+                epgCall = service.getEpgXml(username, password);
+            }
+            epgCall.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     if (response.body() == null) {
@@ -69,6 +80,22 @@ public final class XmlTvEpgLoader {
             });
         } catch (Throwable error) {
             listener.onError(error);
+        }
+    }
+
+    private static String resolveSourceUrl(String baseUrl, String sourceUrl) {
+        String value = sourceUrl == null ? "" : sourceUrl.trim();
+        if (value.startsWith("http://") || value.startsWith("https://")) return value;
+        if (baseUrl == null || baseUrl.trim().isEmpty()) return value;
+        try {
+            java.net.URI base = new java.net.URI(baseUrl);
+            if (value.startsWith("/")) {
+                return base.getScheme() + "://" + base.getAuthority() + value;
+            }
+            String root = base.getScheme() + "://" + base.getAuthority() + "/";
+            return root + value;
+        } catch (Exception ignored) {
+            return value;
         }
     }
 
