@@ -2,6 +2,8 @@ package com.ouropro.player.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -9,6 +11,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.DialogInterface;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
@@ -24,6 +28,7 @@ import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.EpgReminderStore;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CatchupModel;
@@ -65,6 +70,10 @@ public class CatchUpActivity extends AppCompatActivity {
     public SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM d");
     public SimpleDateFormat weekFormat = new SimpleDateFormat("EEEE");
     public WordModels wordModels = new WordModels();
+    private final Handler reminderHandler = new Handler(Looper.getMainLooper());
+    private AlertDialog reminderDialog;
+    private Runnable reminderRunnable;
+    private CatchUpEpg activeReminder;
 
     /* JADX INFO: Access modifiers changed from: private */
     /* JADX WARN: Type inference failed for: r0v15, types: [java.util.ArrayList, java.util.List<com.ouropro.player.models.CatchupModel>] */
@@ -185,6 +194,98 @@ public class CatchUpActivity extends AppCompatActivity {
         intent.putExtra("is_changed", "");
         setResult(-1, intent);
         finish();
+    }
+
+    private boolean isReminderScheduled(CatchUpEpg program) {
+        return this.selectedChannel != null && EpgReminderStore.isScheduled(this, this.selectedChannel.getStream_id(), program);
+    }
+
+    private void toggleReminder(CatchUpEpg program) {
+        if (this.selectedChannel == null || program == null) {
+            return;
+        }
+        boolean scheduled = isReminderScheduled(program);
+        EpgReminderStore.setScheduled(this, this.selectedChannel.getStream_id(), program, !scheduled);
+        int index = this.currentEventList == null ? -1 : this.currentEventList.indexOf(program);
+        if (index >= 0 && this.programAdapter != null) {
+            this.programAdapter.notifyItemChanged(index);
+        }
+        if (scheduled) {
+            Toast.makeText(this, "Aviso removido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        long startMillis = program.getStart_timestamp() * 1000L;
+        long delay = startMillis - System.currentTimeMillis() - 10000L;
+        if (delay < 0L) {
+            delay = 0L;
+        }
+        this.reminderHandler.postDelayed(() -> showReminderDialog(program), delay);
+        Toast.makeText(this, "Aviso ativado para este programa", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showReminderDialog(CatchUpEpg program) {
+        if (program == null || this.selectedChannel == null || !isReminderScheduled(program)
+                || isFinishing() || (android.os.Build.VERSION.SDK_INT >= 17 && isDestroyed())) {
+            return;
+        }
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            return;
+        }
+        this.activeReminder = program;
+        final TextView body = new TextView(this);
+        body.setTextColor(android.graphics.Color.WHITE);
+        body.setTextSize(18.0f);
+        body.setPadding(48, 24, 48, 8);
+        final long[] secondsLeft = {10L};
+        body.setText("O programa vai começar em 10 segundos.\n\n" + Utils.decode64String(program.getTitle()));
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Programa começando")
+                .setView(body)
+                .setPositiveButton("Ir agora", (d, which) -> {
+                    clearActiveReminder(program);
+                    goToLivePage();
+                })
+                .setNegativeButton("Descartar", (d, which) -> clearActiveReminder(program))
+                .setOnCancelListener(d -> clearActiveReminder(program))
+                .create();
+        this.reminderDialog = dialog;
+        dialog.setOnShowListener(d -> {
+            this.reminderRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (this == CatchUpActivity.this.reminderRunnable && reminderDialog != null && reminderDialog.isShowing()) {
+                        if (secondsLeft[0] <= 0L) {
+                            clearActiveReminder(program);
+                            return;
+                        }
+                        body.setText("O programa vai começar em " + secondsLeft[0] + " segundos.\n\n" + Utils.decode64String(program.getTitle()));
+                        secondsLeft[0]--;
+                        reminderHandler.postDelayed(this, 1000L);
+                    }
+                }
+            };
+            reminderHandler.post(this.reminderRunnable);
+        });
+        dialog.setOnDismissListener(d -> {
+            if (this.reminderRunnable != null) {
+                this.reminderHandler.removeCallbacks(this.reminderRunnable);
+            }
+            this.reminderDialog = null;
+        });
+        dialog.show();
+    }
+
+    private void clearActiveReminder(CatchUpEpg program) {
+        if (this.selectedChannel != null && program != null) {
+            EpgReminderStore.setScheduled(this, this.selectedChannel.getStream_id(), program, false);
+        }
+        if (this.reminderRunnable != null) {
+            this.reminderHandler.removeCallbacks(this.reminderRunnable);
+        }
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            this.reminderDialog.dismiss();
+        }
+        this.activeReminder = null;
     }
 
     private void initView() {
@@ -373,7 +474,27 @@ public class CatchUpActivity extends AppCompatActivity {
             }
         });
         this.programAdapter = programRecyclerAdapter;
+        programRecyclerAdapter.setBellClickListener(new ProgramRecyclerAdapter.BellClickListener() {
+            @Override
+            public boolean isScheduled(CatchUpEpg program) {
+                return isReminderScheduled(program);
+            }
+
+            @Override
+            public void onBellClick(CatchUpEpg program) {
+                toggleReminder(program);
+            }
+        });
         this.epg_list.setAdapter(programRecyclerAdapter);
         getEpg();
+    }
+
+    @Override
+    protected void onDestroy() {
+        this.reminderHandler.removeCallbacksAndMessages(null);
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            this.reminderDialog.dismiss();
+        }
+        super.onDestroy();
     }
 }

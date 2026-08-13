@@ -18,7 +18,13 @@ import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
 public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecyclerAdapter.XCProgramViewHolder> {
+    public interface BellClickListener {
+        boolean isScheduled(CatchUpEpg program);
+        void onBellClick(CatchUpEpg program);
+    }
+
     public Function3<CatchUpEpg, Integer, Boolean, Unit> clickFunctionListener;
+    public BellClickListener bellClickListener;
     public Context context;
     public List<CatchUpEpg> epgModels;
     public int disabled_pos = -1;
@@ -31,6 +37,7 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecycler
         public TextView txt_program;
         public TextView txt_program_description;
         public TextView txt_time;
+        public ImageView epg_bell;
 
         public XCProgramViewHolder(@NonNull ProgramRecyclerAdapter programRecyclerAdapter, View view) {
             super(view);
@@ -39,6 +46,7 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecycler
             this.txt_program = (TextView) view.findViewById(R.id.txt_program);
             this.txt_program_description = (TextView) view.findViewById(R.id.txt_program_description);
             this.catch_image = (ImageView) view.findViewById(R.id.catch_image);
+            this.epg_bell = (ImageView) view.findViewById(R.id.epg_bell);
         }
     }
 
@@ -94,6 +102,10 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecycler
         notifyDataSetChanged();
     }
 
+    public void setBellClickListener(BellClickListener listener) {
+        this.bellClickListener = listener;
+    }
+
     public void onBindViewHolder(@NonNull XCProgramViewHolder xCProgramViewHolder, int i) {
         CatchUpEpg catchUpEpg = this.epgModels.get(i);
         xCProgramViewHolder.txt_program.setText(Utils.decode64String(catchUpEpg.getTitle()));
@@ -110,6 +122,17 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecycler
         }
         xCProgramViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, catchUpEpg, i, xCProgramViewHolder, 4));
         xCProgramViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, catchUpEpg, i, 7));
+        if (this.bellClickListener == null) {
+            xCProgramViewHolder.epg_bell.setVisibility(View.GONE);
+        } else {
+            xCProgramViewHolder.epg_bell.setVisibility(View.VISIBLE);
+            if (this.bellClickListener.isScheduled(catchUpEpg)) {
+                xCProgramViewHolder.epg_bell.setColorFilter(Color.YELLOW);
+            } else {
+                xCProgramViewHolder.epg_bell.clearColorFilter();
+            }
+            xCProgramViewHolder.epg_bell.setOnClickListener(view -> this.bellClickListener.onBellClick(catchUpEpg));
+        }
         if (!this.is_disable) {
             xCProgramViewHolder.itemView.setBackgroundColor(Color.parseColor("#00FFFFFF"));
         } else if (i == this.disabled_pos) {

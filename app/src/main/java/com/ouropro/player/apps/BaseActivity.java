@@ -24,6 +24,9 @@ import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
 import com.ouropro.player.net.FetchVideosTask;
+import com.ouropro.player.net.LoadChannelsCommand;
+import com.ouropro.player.net.LoadEpisodeCommand;
+import com.ouropro.player.net.LoadVideosCommand;
 import com.ouropro.player.net.NetworkTask;
 import com.ouropro.player.remote.RetroClass;
 import com.ouropro.player.utils.Utils;
@@ -55,6 +58,7 @@ public class BaseActivity extends AppCompatActivity {
     private NetworkTask<Void, Void, List<EpisodeModel>> fetchEpisodesTask;
     private NetworkTask<Void, Void, List<M3UItem>> fetchM3uItemsTask;
     private NetworkTask<Void, Void, List<MovieModel>> fetchVideosTask;
+    private volatile boolean m3uVisibleNavigationSent;
     public String password;
     public PreferenceHelper preferenceHelper;
     public Realm realm;
@@ -1064,22 +1068,14 @@ public class BaseActivity extends AppCompatActivity {
             setBusy(false);
             return;
         }
-        // A lista pode ter centenas de milhares de itens. O particionamento
-        // não pode ocupar a thread principal no retorno do AsyncTask.
+        // O índice completo é preparado fora da UI e publicado por tipo. Assim,
+        // canais e filmes aparecem antes da reconstrução pesada de episódios/séries.
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     prepareData(list);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!is_stop) {
-                                getChannelModels();
-                            }
-                            setBusy(false);
-                        }
-                    });
+                    publishM3UVisibleCatalog();
                 } catch (final Exception exception) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -1093,7 +1089,137 @@ public class BaseActivity extends AppCompatActivity {
                     });
                 }
             }
-        }, "ouropro-m3u-index").start();
+        }, "ouropro-m3u-progressive-index").start();
+    }
+
+    private void publishM3UVisibleCatalog() throws Exception {
+        Realm backgroundRealm = Realm.getDefaultInstance();
+        try {
+            List<EPGChannel> channels = new LoadChannelsCommand().execute();
+            backgroundRealm.executeTransaction(realm -> {
+                realm.where(EPGChannel.class).findAll().deleteAllFromRealm();
+                if (channels != null && !channels.isEmpty()) {
+                    realm.insertOrUpdate(channels);
+                }
+            });
+            saveM3UVisibleCategories(channels, null, null);
+            runOnUiThread(() -> {
+                if (!m3uVisibleNavigationSent && !is_stop) {
+                    m3uVisibleNavigationSent = true;
+                    setBusy(false);
+                    doNextTask(true);
+                }
+            });
+
+            List<MovieModel> movies = new LoadVideosCommand().execute();
+            backgroundRealm.executeTransaction(realm -> {
+                realm.where(MovieModel.class).findAll().deleteAllFromRealm();
+                if (movies != null && !movies.isEmpty()) {
+                    realm.insertOrUpdate(movies);
+                }
+            });
+            saveM3UVisibleCategories(channels, movies, null);
+            this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
+
+            // Séries são mantidas em segundo plano para não atrasar canais e filmes.
+            List<EpisodeModel> episodes = new LoadEpisodeCommand().execute();
+            if (episodes != null && !episodes.isEmpty()) {
+                backgroundRealm.executeTransaction(realm -> {
+                    realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
+                    realm.insertOrUpdate(episodes);
+                });
+                ArrayList<SeriesModel> series = buildSeriesFromEpisodes(episodes);
+                if (!series.isEmpty()) {
+                    backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(series));
+                    saveM3UVisibleCategories(channels, movies, series);
+                    getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
+                            .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
+                }
+            }
+        } finally {
+            backgroundRealm.close();
+        }
+    }
+
+    private ArrayList<SeriesModel> buildSeriesFromEpisodes(List<EpisodeModel> episodes) {
+        HashMap<String, List<EpisodeModel>> grouped = new HashMap<>();
+        for (EpisodeModel episode : episodes) {
+            if (episode == null || episode.getSeries_name() == null || episode.getSeries_name().trim().isEmpty()) {
+                continue;
+            }
+            List<EpisodeModel> current = grouped.get(episode.getSeries_name());
+            if (current == null) {
+                current = new ArrayList<>();
+                grouped.put(episode.getSeries_name(), current);
+            }
+            current.add(episode);
+        }
+        ArrayList<SeriesModel> seriesModels = new ArrayList<>();
+        for (String name : new TreeSet<>(grouped.keySet())) {
+            List<EpisodeModel> group = grouped.get(name);
+            if (group == null || group.isEmpty()) {
+                continue;
+            }
+            SeriesModel series = new SeriesModel();
+            series.setName(name);
+            series.setCategory_name(group.get(0).getCategory_name());
+            series.setStream_icon(group.get(0).getStream_icon());
+            seriesModels.add(series);
+        }
+        return seriesModels;
+    }
+
+    private void saveM3UVisibleCategories(List<EPGChannel> channels, List<MovieModel> movies, List<SeriesModel> series) {
+        ArrayList<String> liveNames = new ArrayList<>();
+        ArrayList<String> movieNames = new ArrayList<>();
+        ArrayList<String> seriesNames = new ArrayList<>();
+        if (channels != null) {
+            for (EPGChannel channel : channels) {
+                if (channel != null) liveNames.add(channel.getCategory_name());
+            }
+        }
+        if (movies != null) {
+            for (MovieModel movie : movies) {
+                if (movie != null) movieNames.add(movie.getCategory_name());
+            }
+        }
+        if (series != null) {
+            for (SeriesModel item : series) {
+                if (item != null) seriesNames.add(item.getCategory_name());
+            }
+        }
+        if (channels != null) {
+            this.preferenceHelper.setSharedPreferenceLiveCategory(buildM3UCategoryList(
+                    wordModels.getRecently_viewed(), wordModels.getAll(), wordModels.getFavorite(), liveNames));
+        }
+        if (movies != null) {
+            this.preferenceHelper.setSharedPreferenceVodCategory(buildM3UCategoryList(
+                    wordModels.getResume_to_watch(), wordModels.getAll(), wordModels.getFavorite(), movieNames));
+        }
+        if (series != null) {
+            this.preferenceHelper.setSharedPreferenceSeriesCategory(buildM3UCategoryList(
+                    wordModels.getRecently_viewed(), wordModels.getAll(), wordModels.getFavorite(), seriesNames));
+        }
+    }
+
+    private ArrayList<CategoryModel> buildM3UCategoryList(String resumeName, String allName, String favoriteName, List<String> names) {
+        ArrayList<CategoryModel> result = new ArrayList<>();
+        result.add(new CategoryModel(Constants.resume_id, resumeName));
+        result.add(new CategoryModel(Constants.all_id, allName));
+        result.add(new CategoryModel(Constants.fav_id, favoriteName));
+        TreeSet<String> distinct = new TreeSet<>();
+        if (names != null) {
+            for (String name : names) {
+                if (name != null && !name.trim().isEmpty() && !"null".equalsIgnoreCase(name.trim())) {
+                    distinct.add(name.trim());
+                }
+            }
+        }
+        int id = 0;
+        for (String name : distinct) {
+            result.add(new CategoryModel(String.valueOf(id++), name));
+        }
+        return result;
     }
 
     /* JADX INFO: Access modifiers changed from: private */

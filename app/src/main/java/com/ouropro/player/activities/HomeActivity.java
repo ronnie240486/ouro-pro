@@ -561,9 +561,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 showExitDlgFragment();
                 break;
             case R.id.ly_live /* 2131427903 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     LTVApp.homeType = HomeType.live;
                     startActivity(new Intent(this, (Class<?>) CategoryActivity.class));
                 } else if (!GetSharedInfo.isTVDevice(this)) {
@@ -573,9 +571,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.ly_movie /* 2131427906 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     startActivity(new Intent(this, (Class<?>) MovieActivity.class));
                 } else {
                     LTVApp.homeType = HomeType.movies;
@@ -590,9 +586,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.ly_series /* 2131427913 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     startActivity(new Intent(this, (Class<?>) SeriesActivity.class));
                 } else {
                     LTVApp.homeType = HomeType.series;
