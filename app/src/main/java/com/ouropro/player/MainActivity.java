@@ -292,8 +292,8 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
                     String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
                     String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
                     if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
-                        this.preferenceHelper.setSharedPreferenceISM3U(true);
-                        reloadM3UData(playlistUrl, this.wordModels);
+                        this.preferenceHelper.setSharedPreferenceISM3U(false);
+                        goToLogin(playlistUrl, this.wordModels);
                     } else if (playlistUrl.contains("username")) {
                         this.preferenceHelper.setSharedPreferenceISM3U(false);
                         goToLogin(playlistUrl, this.wordModels);
