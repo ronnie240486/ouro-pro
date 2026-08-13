@@ -158,7 +158,7 @@ public class CatchUpActivity extends AppCompatActivity {
     private void getEpg() {
         this.progressBar.setVisibility(0);
         try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_full_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
                     CatchUpActivity.this.loadXmlTvEpg();
                 }
@@ -447,7 +447,14 @@ public class CatchUpActivity extends AppCompatActivity {
         this.preferenceHelper = new PreferenceHelper(this);
         this.wordModels = GetSharedInfo.getWordModel(this);
         initView();
-        this.selectedChannel = RealmController.with().getEpgChannelByName(LTVApp.channelName);
+        String requestedStreamId = getIntent().getStringExtra("catchup_stream_id");
+        EPGChannel channelByStreamId = RealmController.with().getEpgChannelByStreamId(requestedStreamId);
+        this.selectedChannel = channelByStreamId != null ? channelByStreamId : RealmController.with().getEpgChannelByName(LTVApp.channelName);
+        if (this.selectedChannel == null) {
+            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         TextView textView = this.channel_name;
         StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("");
         sbM.append(this.selectedChannel.getNum());

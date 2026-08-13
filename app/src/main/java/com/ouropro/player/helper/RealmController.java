@@ -230,6 +230,11 @@ public class RealmController {
         return (EPGChannel) Insets$$ExternalSyntheticOutline0.m(this.realm, EPGChannel.class, "name", str);
     }
 
+    public EPGChannel getEpgChannelByStreamId(String streamId) {
+        if (streamId == null || streamId.trim().isEmpty()) return null;
+        return this.realm.where(EPGChannel.class).equalTo("stream_id", streamId.trim()).findFirst();
+    }
+
     public List<EpisodeModel> getEpisodesBySeason(String str, String str2) {
         return new ArrayList(this.realm.where(EpisodeModel.class).equalTo("series_name", str).equalTo("season_name", str2).findAll());
     }

@@ -492,7 +492,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (this.selectedChannel != null) {
             releaseMediaPlayer();
             LTVApp.channelName = this.selectedChannel.getName();
-            this.someActivityResultLauncher.launch(new Intent(this, (Class<?>) CatchUpActivity.class));
+            Intent intent = new Intent(this, (Class<?>) CatchUpActivity.class);
+            intent.putExtra("catchup_stream_id", this.selectedChannel.getStream_id());
+            intent.putExtra("catchup_channel_id", this.selectedChannel.getId());
+            intent.putExtra("catchup_channel_name", this.selectedChannel.getName());
+            this.someActivityResultLauncher.launch(intent);
         }
     }
 
@@ -736,12 +740,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.recycler_category.setSelectedPosition(this.category_pos);
             this.recycler_category.scrollToPosition(this.category_pos);
             this.categoryAdapter.setCategoryPosition(this.category_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -1431,14 +1431,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     return;
                 }
                 LiveActivity.this.playSelectedChannel(ePGChannel);
-                if (LiveActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                    LiveActivity.this.showEpgInfo(null);
-                } else {
-                    LiveActivity liveActivity8 = LiveActivity.this;
-                    liveActivity8.handler.removeCallbacks(liveActivity8.epgTicker);
-                    LiveActivity liveActivity9 = LiveActivity.this;
-                    liveActivity9.epgTimer(liveActivity9.stream_id);
-                }
+                LiveActivity liveActivity8 = LiveActivity.this;
+                liveActivity8.handler.removeCallbacks(liveActivity8.epgTicker);
+                LiveActivity liveActivity9 = LiveActivity.this;
+                liveActivity9.epgTimer(liveActivity9.stream_id);
                 LiveActivity liveActivity10 = LiveActivity.this;
                 liveActivity10.changeChannelInfo(liveActivity10.channel_pos);
                 if (LiveActivity.this.ly_control.getVisibility() == 8) {
