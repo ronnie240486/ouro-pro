@@ -141,6 +141,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public ConstraintLayout ly_buttons;
     public ConstraintLayout ly_control;
     public ConstraintLayout ly_surface;
+    public ConstraintLayout epg_summary_visible;
     public ConstraintLayout main_lay;
     public LiveActivity$$ExternalSyntheticLambda2 moveTicker;
     public int move_time;
@@ -159,6 +160,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public TextView txt_channel_name;
     public TextView txt_current_program;
     public TextView txt_current_time;
+    public TextView txt_epg_now_visible;
+    public TextView txt_epg_next_visible;
     public TextView txt_epg;
     public TextView txt_fav;
     public TextView txt_group;
@@ -539,6 +542,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_movie = (TextView) findViewById(R.id.txt_movie);
         this.txt_series = (TextView) findViewById(R.id.txt_series);
         this.txt_name = (TextView) findViewById(R.id.txt_name);
+        this.epg_summary_visible = (ConstraintLayout) findViewById(R.id.epg_summary_visible);
+        this.txt_epg_now_visible = (TextView) findViewById(R.id.txt_epg_now_visible);
+        this.txt_epg_next_visible = (TextView) findViewById(R.id.txt_epg_next_visible);
         this.et_search = (EditText) findViewById(R.id.et_search);
         this.recycler_category = (LiveVerticalGridView) findViewById(R.id.recycler_category);
         this.recycler_channel = (LiveVerticalGridView) findViewById(R.id.recycler_channel);
@@ -616,6 +622,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.image_search = (ImageButton) findViewById(R.id.image_search);
         this.seekBar = (SeekBar) findViewById(R.id.seekBar);
         this.txt_current_time = (TextView) findViewById(R.id.txt_current_time);
+        this.txt_epg_now_visible.setText("Agora: carregando EPG...");
+        this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
         this.txt_current_program = (TextView) findViewById(R.id.txt_current_program);
         this.txt_next_time = (TextView) findViewById(R.id.txt_next_time);
         this.txt_next_program = (TextView) findViewById(R.id.txt_next_program);
@@ -1259,17 +1267,26 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.seekBar.setProgress(0);
             this.txt_next_time.setText("");
             this.txt_next_program.setText(this.wordModels.getNo_information());
+            if (this.txt_epg_now_visible != null) this.txt_epg_now_visible.setText("Agora: EPG não disponível");
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
             return;
         }
-        this.txt_current_program.setText(Utils.decode64String(list.get(0).getTitle()));
-        this.txt_current_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", list.get(0).getStart()).getTime() + LTVApp.SEVER_OFFSET));
-        this.seekBar.setProgress(list.get(0).getProgress());
+        CatchUpEpg current = list.get(0);
+        String currentTitle = Utils.decode64String(current.getTitle());
+        this.txt_current_program.setText(currentTitle);
+        this.txt_current_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", current.getStart()).getTime() + LTVApp.SEVER_OFFSET));
+        this.seekBar.setProgress(Math.max(0, Math.min(100, current.getProgress())));
+        if (this.txt_epg_now_visible != null) this.txt_epg_now_visible.setText("Agora: " + currentTitle);
         if (list.size() > 1) {
-            this.txt_next_program.setText(Utils.decode64String(list.get(1).getTitle()));
-            this.txt_next_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", list.get(1).getStart()).getTime() + LTVApp.SEVER_OFFSET));
+            CatchUpEpg next = list.get(1);
+            String nextTitle = Utils.decode64String(next.getTitle());
+            this.txt_next_program.setText(nextTitle);
+            this.txt_next_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", next.getStart()).getTime() + LTVApp.SEVER_OFFSET));
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: " + nextTitle);
         } else {
             this.txt_next_time.setText("");
             this.txt_next_program.setText(this.wordModels.getNo_information());
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: " + this.wordModels.getNo_information());
         }
     }
 
