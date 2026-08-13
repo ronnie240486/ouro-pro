@@ -151,6 +151,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public LiveVerticalGridView recycler_category;
     public LiveVerticalGridView recycler_channel;
     public RecyclerView recycler_epg;
+    public RecyclerView visibleEpgPanel;
     public SeekBar seekBar;
     public EPGChannel selectedChannel;
     public TrackSelectionParameters trackSelectionParameters;
@@ -1265,16 +1266,41 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_channel.scrollToPosition(0);
     }
 
+    private void ensureVisibleEpgPanel() {
+        if (this.main_lay == null || this.epgAdapter == null) {
+            return;
+        }
+        if (this.visibleEpgPanel == null) {
+            RecyclerView panel = new RecyclerView(this);
+            panel.setId(View.generateViewId());
+            panel.setFocusable(false);
+            panel.setClickable(false);
+            panel.setBackgroundColor(Color.TRANSPARENT);
+            panel.setLayoutManager(new LinearLayoutManager(this));
+            panel.setAdapter(this.epgAdapter);
+            ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, 0);
+            params.startToStart = R.id.vertical_line2;
+            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+            params.topToBottom = R.id.txt_name;
+            params.bottomToTop = R.id.btn_catch_up;
+            int margin = getResources().getDimensionPixelSize(R.dimen._5sdp);
+            params.setMargins(margin, margin, margin, margin);
+            this.main_lay.addView(panel, params);
+            this.visibleEpgPanel = panel;
+        }
+        this.visibleEpgPanel.setVisibility(View.VISIBLE);
+        this.visibleEpgPanel.bringToFront();
+        this.visibleEpgPanel.requestLayout();
+    }
+
     private void updateChannelEpgText(String nowText, String nextText) {
         if (this.txt_name == null) {
             return;
         }
         String channelTitle = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
-        this.txt_name.setMaxLines(3);
-        this.txt_name.setEllipsize(null);
-        this.epgNowDisplay = nowText == null ? "carregando EPG..." : nowText;
-        this.epgNextDisplay = nextText == null ? "aguardando programação..." : nextText;
-        this.txt_name.setText(channelTitle + "\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
+        this.txt_name.setMaxLines(1);
+        this.txt_name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        this.txt_name.setText(channelTitle);
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
@@ -1490,6 +1516,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
     /* JADX INFO: Access modifiers changed from: private */
     public void showEpgInfo(List<CatchUpEpg> list) {
+        ensureVisibleEpgPanel();
+        if (this.recycler_epg != null) {
+            this.recycler_epg.setVisibility(View.GONE);
+        }
         if (list == null || list.size() == 0) {
             this.epgAdapter.setEpgList(new ArrayList());
             setCurrentEpgEvent(new ArrayList());
@@ -1997,6 +2027,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);
+        this.recycler_epg.setVisibility(View.GONE);
+        ensureVisibleEpgPanel();
         if (this.epgChannels.size() <= 0) {
             this.recycler_category.requestFocus();
             return;
