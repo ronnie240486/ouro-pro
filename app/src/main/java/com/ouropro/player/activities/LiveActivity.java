@@ -651,7 +651,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_series.setOnClickListener(this);
         this.txt_movie.setOnClickListener(this);
         this.btn_fav.setOnClickListener(this);
-        this.btn_catch_up.setOnClickListener(this);
+        this.btn_catch_up.setOnClickListener(view -> goToCatchupActivity());
+        this.image_epg.setOnClickListener(view -> goToCatchupActivity());
+        this.image_subtitle.setOnClickListener(view -> showSubtitleTrack());
         this.btn_search.setOnClickListener(this);
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.LiveActivity.7
             public void afterTextChanged(Editable editable) {
@@ -1953,7 +1955,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (isAdultChannel(this.categoryModels.get(this.category_pos).getId(), this.categoryModels.get(this.category_pos).getId())) {
             this.category_pos = 0;
         }
-        RecyclerLiveCategoryAdapter recyclerLiveCategoryAdapter = new RecyclerLiveCategoryAdapter(this, this.categoryModels, this.preferenceHelper.getSharedPreferenceISM3U(), false, this.category_pos, new LiveActivity$$ExternalSyntheticLambda4(this, i));
+        RecyclerLiveCategoryAdapter recyclerLiveCategoryAdapter = new RecyclerLiveCategoryAdapter(this, this.categoryModels, this.preferenceHelper.getSharedPreferenceISM3U(), this.preferenceHelper.getSharedPreferenceIsGrid(), this.category_pos, new LiveActivity$$ExternalSyntheticLambda4(this, i));
         this.categoryAdapter = recyclerLiveCategoryAdapter;
         this.recycler_category.setAdapter(recyclerLiveCategoryAdapter);
         this.recycler_category.setSelectedPosition(this.category_pos);

@@ -590,18 +590,18 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         this.image_search.setOnFocusChangeListener(this);
         this.image_subtitle.setOnFocusChangeListener(this);
         this.image_audio.setOnFocusChangeListener(this);
-        this.image_epg.setOnClickListener(this);
+        this.image_epg.setOnClickListener(view -> goToCatchupActivity());
         this.image_vod.setOnClickListener(this);
         this.image_series.setOnClickListener(this);
         this.image_fav.setOnClickListener(this);
         this.image_search.setOnClickListener(this);
-        this.image_subtitle.setOnClickListener(this);
+        this.image_subtitle.setOnClickListener(view -> showSubtitleTrack());
         this.txt_live.setOnClickListener(this);
         this.txt_home.setOnClickListener(this);
         this.txt_series.setOnClickListener(this);
         this.txt_movie.setOnClickListener(this);
         this.btn_fav.setOnClickListener(this);
-        this.btn_catch_up.setOnClickListener(this);
+        this.btn_catch_up.setOnClickListener(view -> goToCatchupActivity());
         this.btn_search.setOnClickListener(this);
         this.image_audio.setOnClickListener(this);
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.LiveChannelActivity.5
