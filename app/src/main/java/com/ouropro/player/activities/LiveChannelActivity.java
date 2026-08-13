@@ -155,6 +155,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
     public TextView txt_live;
     public TextView txt_movie;
     public TextView txt_name;
+    public String epgNowDisplay = "carregando EPG...";
+    public String epgNextDisplay = "aguardando programação...";
     public TextView txt_next_program;
     public TextView txt_next_time;
     public TextView txt_num;
@@ -686,7 +688,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(this.selectedChannel.is_favorite());
             changeChannelInfo(this.channel_pos);
         }
@@ -722,7 +724,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                     epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(ePGChannel.is_favorite());
             changeChannelInfo(this.pre_channel_pos);
         }
@@ -788,7 +790,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         }
         this.handler.removeCallbacks(this.hideInfoTicker);
         mInfoHideTimer();
-        this.txt_name.setText(this.channel_name);
+        updateChannelDiagnosticText();
         this.recycler_channel.setSelectedPosition(this.channel_pos);
     }
 
@@ -811,7 +813,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             epgTimer(this.stream_id);
         }
         changeChannelInfo(this.channel_pos);
-        this.txt_name.setText(this.channel_name);
+        updateChannelDiagnosticText();
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
         }
@@ -1342,7 +1344,23 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
     }
 
     /* JADX INFO: Access modifiers changed from: private */
+    private void updateChannelDiagnosticText() {
+        if (this.txt_name == null) {
+            return;
+        }
+        String title = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
+        this.txt_name.setMaxLines(4);
+        this.txt_name.setEllipsize(null);
+        this.txt_name.setTextColor(Color.YELLOW);
+        this.txt_name.setText(title + "\n[EPG TESTE] painel abaixo do canal\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
+    }
+
     public void showEpgInfo(List<CatchUpEpg> list) {
+        if (this.recycler_epg != null) {
+            this.recycler_epg.setVisibility(View.VISIBLE);
+            this.recycler_epg.bringToFront();
+            this.recycler_epg.requestLayout();
+        }
         if (list == null || list.size() == 0) {
             this.epgAdapter.setEpgList(new ArrayList());
             setCurrentEpgEvent(new ArrayList());
@@ -1789,7 +1807,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             epgTimer(this.stream_id);
             String name = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(((EPGChannel) this.epgChannels.get(this.channel_pos)).is_favorite());
             changeChannelInfo(this.channel_pos);
             this.recycler_channel.requestFocus();
