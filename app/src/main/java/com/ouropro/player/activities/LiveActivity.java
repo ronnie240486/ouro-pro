@@ -141,7 +141,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public ConstraintLayout ly_buttons;
     public ConstraintLayout ly_control;
     public ConstraintLayout ly_surface;
-    public ConstraintLayout epg_summary_visible;
+    public View epg_summary_visible;
     public ConstraintLayout main_lay;
     public LiveActivity$$ExternalSyntheticLambda2 moveTicker;
     public int move_time;
@@ -546,7 +546,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_movie = (TextView) findViewById(R.id.txt_movie);
         this.txt_series = (TextView) findViewById(R.id.txt_series);
         this.txt_name = (TextView) findViewById(R.id.txt_name);
-        this.epg_summary_visible = (ConstraintLayout) findViewById(R.id.epg_summary_visible);
+        this.epg_summary_visible = findViewById(R.id.epg_summary_visible);
         this.txt_epg_now_visible = (TextView) findViewById(R.id.txt_epg_now_visible);
         this.txt_epg_next_visible = (TextView) findViewById(R.id.txt_epg_next_visible);
         this.et_search = (EditText) findViewById(R.id.et_search);
@@ -626,6 +626,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.image_search = (ImageButton) findViewById(R.id.image_search);
         this.seekBar = (SeekBar) findViewById(R.id.seekBar);
         this.txt_current_time = (TextView) findViewById(R.id.txt_current_time);
+        if (this.epg_summary_visible != null) {
+            this.epg_summary_visible.setVisibility(View.VISIBLE);
+            this.epg_summary_visible.bringToFront();
+        }
         this.txt_epg_now_visible.setText("Agora: carregando EPG...");
         this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
         this.txt_current_program = (TextView) findViewById(R.id.txt_current_program);
@@ -1259,6 +1263,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
+        if (this.epg_summary_visible != null) {
+            this.epg_summary_visible.setVisibility(View.VISIBLE);
+            this.epg_summary_visible.bringToFront();
+        }
         if (list == null || list.size() <= 0) {
             this.txt_current_time.setText(this.wordModels.getNo_information());
             this.txt_current_program.setText("");

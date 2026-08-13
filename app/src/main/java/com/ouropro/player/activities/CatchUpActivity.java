@@ -1,13 +1,18 @@
 package com.ouropro.player.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -73,7 +78,7 @@ public class CatchUpActivity extends AppCompatActivity {
     public WordModels wordModels = new WordModels();
     private final Handler reminderHandler = new Handler(Looper.getMainLooper());
     private AlertDialog reminderDialog;
-    private Runnable reminderRunnable;
+    private CountDownTimer reminderTimer;
     private CatchUpEpg activeReminder;
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -254,15 +259,44 @@ public class CatchUpActivity extends AppCompatActivity {
             return;
         }
         this.activeReminder = program;
-        final TextView body = new TextView(this);
-        body.setTextColor(android.graphics.Color.WHITE);
-        body.setTextSize(18.0f);
-        body.setPadding(48, 24, 48, 8);
-        final long[] secondsLeft = {10L};
-        body.setText("O programa vai começar em 10 segundos.\n\n" + Utils.decode64String(program.getTitle()));
+        final String title = Utils.decode64String(program.getTitle());
+        int padding = (int) (24.0f * getResources().getDisplayMetrics().density + 0.5f);
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        content.setPadding(padding, padding / 2, padding, padding / 3);
+
+        TextView status = new TextView(this);
+        status.setTextColor(Color.WHITE);
+        status.setTextSize(18.0f);
+        status.setGravity(Gravity.CENTER);
+        status.setText("O programa começa em 10 segundos");
+        content.addView(status, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView titleView = new TextView(this);
+        titleView.setTextColor(Color.rgb(255, 215, 0));
+        titleView.setTextSize(20.0f);
+        titleView.setGravity(Gravity.CENTER);
+        titleView.setPadding(0, padding / 2, 0, padding / 2);
+        titleView.setText(title);
+        content.addView(titleView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progress.setMax(10);
+        progress.setProgress(10);
+        content.addView(progress, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView countdown = new TextView(this);
+        countdown.setTextColor(Color.WHITE);
+        countdown.setTextSize(30.0f);
+        countdown.setGravity(Gravity.CENTER);
+        countdown.setPadding(0, padding / 3, 0, 0);
+        countdown.setText("10");
+        content.addView(countdown, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Programa começando")
-                .setView(body)
+                .setTitle("Lembrete do EPG")
+                .setView(content)
                 .setPositiveButton("Ir agora", (d, which) -> {
                     clearActiveReminder(program);
                     goToLivePage();
@@ -272,25 +306,27 @@ public class CatchUpActivity extends AppCompatActivity {
                 .create();
         this.reminderDialog = dialog;
         dialog.setOnShowListener(d -> {
-            this.reminderRunnable = new Runnable() {
+            this.reminderTimer = new CountDownTimer(10000L, 1000L) {
                 @Override
-                public void run() {
-                    if (this == CatchUpActivity.this.reminderRunnable && reminderDialog != null && reminderDialog.isShowing()) {
-                        if (secondsLeft[0] <= 0L) {
-                            clearActiveReminder(program);
-                            return;
-                        }
-                        body.setText("O programa vai começar em " + secondsLeft[0] + " segundos.\n\n" + Utils.decode64String(program.getTitle()));
-                        secondsLeft[0]--;
-                        reminderHandler.postDelayed(this, 1000L);
-                    }
+                public void onTick(long millisUntilFinished) {
+                    int seconds = (int) Math.ceil(millisUntilFinished / 1000.0d);
+                    status.setText("O programa começa em " + seconds + " segundos");
+                    countdown.setText(String.valueOf(seconds));
+                    progress.setProgress(seconds);
                 }
-            };
-            reminderHandler.post(this.reminderRunnable);
+
+                @Override
+                public void onFinish() {
+                    status.setText("O programa está começando agora");
+                    countdown.setText("0");
+                    progress.setProgress(0);
+                }
+            }.start();
         });
         dialog.setOnDismissListener(d -> {
-            if (this.reminderRunnable != null) {
-                this.reminderHandler.removeCallbacks(this.reminderRunnable);
+            if (this.reminderTimer != null) {
+                this.reminderTimer.cancel();
+                this.reminderTimer = null;
             }
             this.reminderDialog = null;
         });
@@ -301,8 +337,9 @@ public class CatchUpActivity extends AppCompatActivity {
         if (this.selectedChannel != null && program != null) {
             EpgReminderStore.setScheduled(this, this.selectedChannel.getStream_id(), program, false);
         }
-        if (this.reminderRunnable != null) {
-            this.reminderHandler.removeCallbacks(this.reminderRunnable);
+        if (this.reminderTimer != null) {
+            this.reminderTimer.cancel();
+            this.reminderTimer = null;
         }
         if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
             this.reminderDialog.dismiss();
@@ -521,6 +558,10 @@ public class CatchUpActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         this.reminderHandler.removeCallbacksAndMessages(null);
+        if (this.reminderTimer != null) {
+            this.reminderTimer.cancel();
+            this.reminderTimer = null;
+        }
         if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
             this.reminderDialog.dismiss();
         }
