@@ -198,6 +198,11 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             openHomeFromCache();
             return;
         }
+        AppInfoModel cachedInfo = this.preferenceHelper.getSharedPreferenceAppInfo();
+        if (cachedInfo != null && cachedInfo.getResult() != null && !cachedInfo.getResult().isEmpty()) {
+            openHomeForBackgroundSync(cachedInfo);
+            return;
+        }
         getUserInfoModel();
     }
 

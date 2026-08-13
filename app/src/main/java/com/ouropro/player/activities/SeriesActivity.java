@@ -688,8 +688,9 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         this.sortLists = GetSharedInfo.getVodSortLists(this.wordModels);
         Constants.getSeriesGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleSeriesCategories(), this);
         this.categoryModels = LTVApp.series_categories_filter;
-        if (this.categoryModels == null) {
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
             this.categoryModels = new ArrayList<>();
+            this.categoryModels.add(new CategoryModel(Constants.all_id, "All"));
         }
         this.category_pos = getAvailableCategoryPosition();
         this.sort_pos = this.preferenceHelper.getSharedPreferenceSeriesOrder();

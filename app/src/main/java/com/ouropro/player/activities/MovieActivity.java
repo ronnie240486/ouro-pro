@@ -721,6 +721,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.sortLists = GetSharedInfo.getVodSortLists(this.wordModels);
         Constants.getVodGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleVodCategories(), this);
         this.categoryModels = LTVApp.vod_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = new ArrayList<>();
+            this.categoryModels.add(new CategoryModel(Constants.all_id, "All"));
+        }
         this.category_pos = getAvailableCategoryPosition();
         this.sort_pos = this.preferenceHelper.getSharedPreferenceVodOrder();
         this.movieModels = RealmController.with().getMovieModelsByCategory(this.categoryModels.get(this.category_pos), "", this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);

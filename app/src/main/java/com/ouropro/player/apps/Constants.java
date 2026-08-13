@@ -80,6 +80,9 @@ public class Constants {
         LTVApp.live_categories_filter = new ArrayList();
         List<CategoryModel> sharedLiveCategoryModels = preferenceHelper.getSharedLiveCategoryModels();
         LTVApp.live_categories_filter.addAll(sharedLiveCategoryModels);
+        if (LTVApp.live_categories_filter.isEmpty()) {
+            LTVApp.live_categories_filter.add(new CategoryModel(all_id, "All"));
+        }
         if (list == null || list.size() == 0) {
             return;
         }
@@ -92,6 +95,9 @@ public class Constants {
                 }
             }
         }
+        if (LTVApp.live_categories_filter.isEmpty()) {
+            LTVApp.live_categories_filter.add(new CategoryModel(all_id, "All"));
+        }
     }
 
     public static void getSeriesGroupModels(List<String> list, Context context) {
@@ -99,6 +105,9 @@ public class Constants {
         LTVApp.series_categories_filter = new ArrayList();
         List<CategoryModel> sharedPreferenceSeriesCategoryModel = preferenceHelper.getSharedPreferenceSeriesCategoryModel();
         LTVApp.series_categories_filter.addAll(sharedPreferenceSeriesCategoryModel);
+        if (LTVApp.series_categories_filter.isEmpty()) {
+            LTVApp.series_categories_filter.add(new CategoryModel(all_id, "All"));
+        }
         if (list == null || list.size() == 0) {
             return;
         }
@@ -111,6 +120,9 @@ public class Constants {
                 }
             }
         }
+        if (LTVApp.series_categories_filter.isEmpty()) {
+            LTVApp.series_categories_filter.add(new CategoryModel(all_id, "All"));
+        }
     }
 
     public static void getVodGroupModels(List<String> list, Context context) {
@@ -118,6 +130,9 @@ public class Constants {
         LTVApp.vod_categories_filter = new ArrayList();
         List<CategoryModel> sharedPreferenceVodCategory = preferenceHelper.getSharedPreferenceVodCategory();
         LTVApp.vod_categories_filter.addAll(sharedPreferenceVodCategory);
+        if (LTVApp.vod_categories_filter.isEmpty()) {
+            LTVApp.vod_categories_filter.add(new CategoryModel(all_id, "All"));
+        }
         if (list == null || list.size() == 0) {
             return;
         }
@@ -129,6 +144,9 @@ public class Constants {
                     LTVApp.vod_categories_filter.remove(categoryModel);
                 }
             }
+        }
+        if (LTVApp.vod_categories_filter.isEmpty()) {
+            LTVApp.vod_categories_filter.add(new CategoryModel(all_id, "All"));
         }
     }
 

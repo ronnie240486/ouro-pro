@@ -1912,6 +1912,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.is_full = getIntent().getBooleanExtra("is_full", false);
         Constants.getLiveGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleLiveCategories(), this);
         this.categoryModels = LTVApp.live_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = new ArrayList<>();
+            this.categoryModels.add(new CategoryModel(Constants.all_id, "All"));
+        }
         int sharedPreferenceCategoryPos = this.preferenceHelper.getSharedPreferenceCategoryPos();
         this.category_pos = sharedPreferenceCategoryPos;
         if (sharedPreferenceCategoryPos > this.categoryModels.size() - 1) {
