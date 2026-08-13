@@ -629,8 +629,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.seekBar = (SeekBar) findViewById(R.id.seekBar);
         this.txt_current_time = (TextView) findViewById(R.id.txt_current_time);
         if (this.epg_summary_visible != null) {
-            this.epg_summary_visible.setVisibility(View.VISIBLE);
-            this.epg_summary_visible.bringToFront();
+            this.epg_summary_visible.setVisibility(View.GONE);
         }
         this.txt_epg_now_visible.setText("Agora: carregando EPG...");
         this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
@@ -1274,13 +1273,12 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_name.setEllipsize(null);
         this.epgNowDisplay = nowText == null ? "carregando EPG..." : nowText;
         this.epgNextDisplay = nextText == null ? "aguardando programação..." : nextText;
-        this.txt_name.setText(channelTitle + "\nAgora: " + this.epgNowDisplay + "\nPróximo: " + this.epgNextDisplay);
+        this.txt_name.setText(channelTitle);
     }
 
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
         if (this.epg_summary_visible != null) {
-            this.epg_summary_visible.setVisibility(View.VISIBLE);
-            this.epg_summary_visible.bringToFront();
+            this.epg_summary_visible.setVisibility(View.GONE);
         }
         if (list == null || list.size() <= 0) {
             this.txt_current_time.setText(this.wordModels.getNo_information());
