@@ -2,6 +2,13 @@ package com.ouropro.player.improvements;
 
 import static org.junit.Assert.assertEquals;
 
+import com.ouropro.player.models.EPGChannel;
+import com.ouropro.player.models.MovieModel;
+import com.ouropro.player.models.SeriesModel;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 
 public class VoiceCommandTest {
@@ -86,6 +93,30 @@ public class VoiceCommandTest {
         VoiceCommand command = VoiceCommand.parse("Esqueceram de Mim");
         assertEquals(VoiceCommand.Action.OPEN_TITLE, command.getAction());
         assertEquals("esqueceram de mim", command.getQuery());
+    }
+
+    @Test
+    public void findsAllChannelsForBroadVoiceQuery() {
+        EPGChannel space = new EPGChannel();
+        space.setName("Space HD");
+        EPGChannel spaceOne = new EPGChannel();
+        spaceOne.setName("Space 1");
+        List<EPGChannel> matches = VoiceChannelMatcher.findMatches(Arrays.asList(space, spaceOne), "Space");
+        assertEquals(2, matches.size());
+        assertEquals(space, VoiceChannelMatcher.findExactMatch(Arrays.asList(space, spaceOne), "Space HD"));
+        assertEquals(null, VoiceChannelMatcher.findExactMatch(Arrays.asList(space, spaceOne), "Space"));
+    }
+
+    @Test
+    public void findsAllMediaTitlesContainingVoiceWords() {
+        MovieModel firstMovie = new MovieModel();
+        firstMovie.setName("Esqueceram de Mim");
+        MovieModel secondMovie = new MovieModel();
+        secondMovie.setName("Esqueceram de Mim 2");
+        SeriesModel series = new SeriesModel();
+        series.setName("The Walking Dead");
+        assertEquals(2, VoiceMediaMatcher.findMovies(Arrays.asList(firstMovie, secondMovie), "esqueceram").size());
+        assertEquals(1, VoiceMediaMatcher.findSeries(Arrays.asList(series), "walking dead").size());
     }
 
     @Test

@@ -580,7 +580,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
             case OPEN_SERIES_ITEM:
             case SEARCH_SERIES:
             case OPEN_TITLE:
-                openSeriesByVoice(command.getQuery());
+                applyVoiceSeriesSearch(command.getQuery());
                 break;
             case OPEN_MOVIES:
                 startActivity(new Intent(this, MovieActivity.class));
@@ -600,22 +600,30 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void openSeriesByVoice(String query) {
-        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(this.seriesModels, query);
-        if (series == null) {
-            series = VoiceMediaMatcher.findUniqueSeries(RealmController.with().getSeriesByKey(query), query);
-        }
-        if (series == null) {
-            Toast.makeText(this, "Série não encontrada ou nome ambíguo", Toast.LENGTH_SHORT).show();
+        applyVoiceSeriesSearch(query);
+    }
+
+    private void applyVoiceSeriesSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
             return;
         }
-        int index = 0;
-        for (int i = 0; i < this.seriesModels.size(); i++) {
-            if (this.seriesModels.get(i) == series) {
-                index = i;
+        int allPosition = 0;
+        for (int i = 0; i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                allPosition = i;
                 break;
             }
         }
-        new AnonymousClass1().onItemClick(series, index);
+        this.category_pos = allPosition;
+        this.recycler_category.setSelectedPosition(allPosition);
+        this.seriesModels = RealmController.with().getSeriesModelsByCategory(
+                this.categoryModels.get(allPosition), query,
+                this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
+        this.seriesAdapter.updateData(this.seriesModels);
+        this.recycler_series.setSelectedPosition(0);
+        this.recycler_series.scrollToPosition(0);
+        this.et_search.setText(query);
+        Toast.makeText(this, "Séries encontradas para: " + query, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -736,7 +744,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         setupVoiceButton();
         String voiceQuery = getIntent().getStringExtra("voice_query");
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
-            openSeriesByVoice(voiceQuery);
+            applyVoiceSeriesSearch(voiceQuery);
         }
     }
 }

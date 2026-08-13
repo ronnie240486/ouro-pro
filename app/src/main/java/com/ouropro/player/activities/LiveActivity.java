@@ -1970,6 +1970,25 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
     }
 
+    private void applyVoiceChannelSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+        int allPosition = 0;
+        for (int i = 0; this.categoryModels != null && i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                allPosition = i;
+                break;
+            }
+        }
+        this.category_pos = allPosition;
+        if (this.categoryAdapter != null) {
+            this.categoryAdapter.setCategoryPosition(allPosition);
+        }
+        this.et_search.setText(query);
+        Toast.makeText(this, "Canais encontrados para: " + query, Toast.LENGTH_SHORT).show();
+    }
+
     private int voiceDp(int value) {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
@@ -2050,8 +2069,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 }
                 return;
             case SEARCH_CHANNEL:
-                this.et_search.setText(command.getQuery());
-                Toast.makeText(this, "Canais filtrados por: " + command.getQuery(), Toast.LENGTH_SHORT).show();
+                applyVoiceChannelSearch(command.getQuery());
                 return;
             case OPEN_CHANNEL:
             case OPEN_TITLE:
@@ -2066,12 +2084,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (this.et_search != null && this.et_search.length() > 0) {
             this.et_search.setText("");
         }
-        EPGChannel channel = this.epgChannels == null ? null : VoiceChannelMatcher.findUniqueMatch(this.epgChannels, query);
+        RealmResults<EPGChannel> globalMatches = RealmController.with().getLiveChannelsByKey(query, true);
+        EPGChannel channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
         if (channel == null) {
-            channel = VoiceChannelMatcher.findUniqueMatch(RealmController.with().getLiveChannelsByKey(query, true), query);
-        }
-        if (channel == null) {
-            Toast.makeText(this, "Não encontrei um único canal para: " + query, Toast.LENGTH_SHORT).show();
+            applyVoiceChannelSearch(query);
             return;
         }
         int index = -1;
@@ -2083,7 +2099,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             }
         }
         if (index < 0) {
-            this.epgChannels = RealmController.with().getLiveChannelsByKey(query, true);
+            this.epgChannels = globalMatches;
             if (this.channelAdapter != null) {
                 this.channelAdapter.updateData(this.epgChannels, 0);
             }
@@ -2096,7 +2112,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             }
         }
         if (index < 0) {
-            Toast.makeText(this, "Canal não disponível nesta lista", Toast.LENGTH_SHORT).show();
+            applyVoiceChannelSearch(query);
             return;
         }
         if (isAdultChannel(channel.getCategory_id(), channel.getCategory_name())) {

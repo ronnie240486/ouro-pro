@@ -3,6 +3,9 @@ package com.ouropro.player.improvements;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SeriesModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.realm.RealmResults;
 
 /** Resolve títulos de filmes e séries no catálogo atualmente carregado. */
@@ -17,7 +20,6 @@ public final class VoiceMediaMatcher {
         String normalizedQuery = VoiceCommand.normalize(query);
         MovieModel best = null;
         int bestScore = 0;
-        boolean tied = false;
         for (MovieModel model : models) {
             if (model == null || model.getName() == null) {
                 continue;
@@ -33,9 +35,6 @@ public final class VoiceMediaMatcher {
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
-                tied = false;
-            } else if (score > 0 && score == bestScore) {
-                tied = true;
             }
         }
         return bestScore == 0 ? null : best;
@@ -48,7 +47,6 @@ public final class VoiceMediaMatcher {
         String normalizedQuery = VoiceCommand.normalize(query);
         SeriesModel best = null;
         int bestScore = 0;
-        boolean tied = false;
         for (SeriesModel model : models) {
             if (model == null || model.getName() == null) {
                 continue;
@@ -64,12 +62,72 @@ public final class VoiceMediaMatcher {
             if (score > bestScore) {
                 best = model;
                 bestScore = score;
-                tied = false;
-            } else if (score > 0 && score == bestScore) {
-                tied = true;
             }
         }
         return bestScore == 0 ? null : best;
+    }
+
+    public static List<MovieModel> findMovies(Iterable<MovieModel> models, String query) {
+        List<MovieModel> matches = new ArrayList<>();
+        if (models == null) {
+            return matches;
+        }
+        String normalizedQuery = VoiceCommand.normalize(query);
+        if (normalizedQuery.isEmpty()) {
+            return matches;
+        }
+        String meaningfulQuery = meaningful(normalizedQuery);
+        for (MovieModel model : models) {
+            if (model == null || model.getName() == null) {
+                continue;
+            }
+            String title = VoiceCommand.normalize(model.getName());
+            String meaningfulTitle = meaningful(title);
+            if (title.contains(normalizedQuery)
+                    || meaningfulTitle.contains(meaningfulQuery)
+                    || containsAllWords(meaningfulTitle, meaningfulQuery)) {
+                matches.add(model);
+            }
+        }
+        return matches;
+    }
+
+    public static List<SeriesModel> findSeries(Iterable<SeriesModel> models, String query) {
+        List<SeriesModel> matches = new ArrayList<>();
+        if (models == null) {
+            return matches;
+        }
+        String normalizedQuery = VoiceCommand.normalize(query);
+        if (normalizedQuery.isEmpty()) {
+            return matches;
+        }
+        String meaningfulQuery = meaningful(normalizedQuery);
+        for (SeriesModel model : models) {
+            if (model == null || model.getName() == null) {
+                continue;
+            }
+            String title = VoiceCommand.normalize(model.getName());
+            String meaningfulTitle = meaningful(title);
+            if (title.contains(normalizedQuery)
+                    || meaningfulTitle.contains(meaningfulQuery)
+                    || containsAllWords(meaningfulTitle, meaningfulQuery)) {
+                matches.add(model);
+            }
+        }
+        return matches;
+    }
+
+    private static boolean containsAllWords(String title, String query) {
+        if (query.isEmpty()) {
+            return false;
+        }
+        String[] words = query.split(" ");
+        for (String word : words) {
+            if (!word.isEmpty() && !title.contains(word)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String meaningful(String value) {

@@ -474,40 +474,48 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void openGlobalVoiceTitle(String query, String preferredType) {
-        MovieModel movie = null;
-        SeriesModel series = null;
-        EPGChannel channel = null;
-        if (preferredType == null || "movie".equals(preferredType)) {
-            movie = VoiceMediaMatcher.findUniqueMovie(RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
-        }
-        if (preferredType == null || "series".equals(preferredType)) {
-            series = VoiceMediaMatcher.findUniqueSeries(RealmController.with().getSeriesByKey(query), query);
-        }
-        if (preferredType == null || "channel".equals(preferredType)) {
-            channel = VoiceChannelMatcher.findUniqueMatch(RealmController.with().getLiveChannelsByKey(query, true), query);
-        }
-        int matches = (movie == null ? 0 : 1) + (series == null ? 0 : 1) + (channel == null ? 0 : 1);
-        if (matches != 1) {
-            Toast.makeText(this, "Não encontrei um único resultado para: " + query, Toast.LENGTH_SHORT).show();
+        if (query == null || query.trim().isEmpty()) {
             return;
         }
-        if (movie != null) {
-            Intent intent = new Intent(this, MovieInfoActivity.class);
-            intent.putExtra("name", movie.getName());
-            intent.putExtra("stream_id", movie.getStream_id());
-            intent.putExtra("category_name", movie.getCategory_name());
+        if ("movie".equals(preferredType)) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
             startActivity(intent);
-        } else if (series != null) {
-            Intent intent = new Intent(this, SeriesInfoActivity.class);
-            intent.putExtra("series_id", series.getSeries_id());
-            intent.putExtra("name", series.getName());
-            intent.putExtra("category_name", series.getCategory_name());
+            return;
+        }
+        if ("series".equals(preferredType)) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
             startActivity(intent);
-        } else {
+            return;
+        }
+
+        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(
+                RealmController.with().getLiveChannelsByKey(query, true), query);
+        if ("channel".equals(preferredType) || channel != null) {
             Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
             intent.putExtra("voice_query", query);
             startActivity(intent);
+            return;
         }
+
+        MovieModel movie = VoiceMediaMatcher.findUniqueMovie(
+                RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
+        if (movie != null) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(
+                RealmController.with().getSeriesByKey(query), query);
+        if (series != null) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        Toast.makeText(this, "Não encontrei resultados para: " + query, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -612,10 +620,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
-        TextView textView = this.txt_version;
-        StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("v");
-        sbM.append(LTVApp.version_name);
-        textView.setText(sbM.toString());
+        // A versão não deve ser exibida na tela principal.
+        this.txt_version.setText("");
+        this.txt_version.setVisibility(View.GONE);
         this.ly_live.requestFocus();
         refreshSeriesInBackground();
         refreshM3USeriesInBackground();

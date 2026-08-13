@@ -196,10 +196,8 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         this.str_device_key.setText(this.wordModels.getDevice_key());
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
-        TextView textView = this.txt_version;
-        StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("v");
-        sbM.append(LTVApp.version_name);
-        textView.setText(sbM.toString());
+        this.txt_version.setText("");
+        this.txt_version.setVisibility(8);
     }
 
     /* JADX INFO: Access modifiers changed from: private */

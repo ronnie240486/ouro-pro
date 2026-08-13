@@ -613,7 +613,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             case OPEN_MOVIE_ITEM:
             case SEARCH_MOVIE:
             case OPEN_TITLE:
-                openMovieByVoice(command.getQuery());
+                applyVoiceMovieSearch(command.getQuery());
                 break;
             case OPEN_SERIES:
                 startActivity(new Intent(this, SeriesActivity.class));
@@ -633,22 +633,30 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void openMovieByVoice(String query) {
-        MovieModel movie = VoiceMediaMatcher.findUniqueMovie(this.movieModels, query);
-        if (movie == null) {
-            movie = VoiceMediaMatcher.findUniqueMovie(RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
-        }
-        if (movie == null) {
-            Toast.makeText(this, "Filme não encontrado ou nome ambíguo", Toast.LENGTH_SHORT).show();
+        applyVoiceMovieSearch(query);
+    }
+
+    private void applyVoiceMovieSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
             return;
         }
-        int index = 0;
-        for (int i = 0; i < this.movieModels.size(); i++) {
-            if (this.movieModels.get(i) == movie) {
-                index = i;
+        int allPosition = 0;
+        for (int i = 0; i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                allPosition = i;
                 break;
             }
         }
-        new AnonymousClass1().onItemClick(movie, index);
+        this.category_pos = allPosition;
+        this.recycler_category.setSelectedPosition(allPosition);
+        this.movieModels = RealmController.with().getMovieModelsByCategory(
+                this.categoryModels.get(allPosition), query,
+                this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
+        this.vodAdapter.updateData(this.movieModels);
+        this.recycler_movie.setSelectedPosition(0);
+        this.recycler_movie.scrollToPosition(0);
+        this.et_search.setText(query);
+        Toast.makeText(this, "Filmes encontrados para: " + query, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -764,7 +772,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         setupVoiceButton();
         String voiceQuery = getIntent().getStringExtra("voice_query");
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
-            openMovieByVoice(voiceQuery);
+            applyVoiceMovieSearch(voiceQuery);
         }
     }
 }
