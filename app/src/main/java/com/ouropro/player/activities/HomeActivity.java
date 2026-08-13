@@ -98,6 +98,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public TextView txt_version;
     public WordModels wordModels = new WordModels();
     private ImageButton microphoneButton;
+    private ImageButton radioIconButton;
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 906;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new HomeActivity$$ExternalSyntheticLambda0(this));
@@ -401,14 +402,36 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (content == null) {
             return;
         }
+        int marginEnd = dpRadio(24);
+        int marginBottom = dpRadio(24);
         this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.BOTTOM | Gravity.END);
-        params.setMargins(0, 0, 24, 24);
+        params.setMargins(0, 0, marginEnd, marginBottom);
         content.addView(this.microphoneButton, params);
         this.microphoneButton.bringToFront();
+
+        this.radioIconButton = new ImageButton(this);
+        this.radioIconButton.setImageResource(R.drawable.radio_icon_user);
+        this.radioIconButton.setContentDescription("Abrir Rádios");
+        this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
+        int radioPadding = dpRadio(8);
+        this.radioIconButton.setPadding(radioPadding, radioPadding, radioPadding, radioPadding);
+        this.radioIconButton.setFocusable(true);
+        this.radioIconButton.setClickable(true);
+        this.radioIconButton.setElevation(dpRadio(6));
+        this.radioIconButton.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
+        this.radioIconButton.setOnFocusChangeListener((view, focused) -> {
+            view.setScaleX(focused ? 1.15f : 1.0f);
+            view.setScaleY(focused ? 1.15f : 1.0f);
+        });
+        FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(
+                dpRadio(56), dpRadio(56), Gravity.BOTTOM | Gravity.END);
+        radioParams.setMargins(0, 0, marginEnd + dpRadio(62), marginBottom);
+        content.addView(this.radioIconButton, radioParams);
+        this.radioIconButton.bringToFront();
         if (!VoiceCommandController.isAvailable(this)) {
             this.microphoneButton.setVisibility(View.GONE);
             return;
@@ -622,39 +645,44 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
         ImageView icon = new ImageView(this);
         icon.setId(View.generateViewId());
-        icon.setImageResource(R.drawable.ic_radio);
-        icon.setPadding(dpRadio(10), dpRadio(10), dpRadio(10), dpRadio(10));
-        radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(38), dpRadio(38)));
+        icon.setImageResource(R.drawable.radio_icon_user);
+        icon.setPadding(dpRadio(8), dpRadio(8), dpRadio(8), dpRadio(8));
+        radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(58), dpRadio(58)));
         ConstraintLayout.LayoutParams iconParams = (ConstraintLayout.LayoutParams) icon.getLayoutParams();
         iconParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
         iconParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
-        iconParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
-        iconParams.setMarginStart(dpRadio(10));
+        iconParams.topMargin = dpRadio(10);
         icon.setLayoutParams(iconParams);
 
         TextView label = new TextView(this);
         label.setText("Rádios");
         label.setTextColor(Color.WHITE);
-        label.setTextSize(12.0f);
-        label.setGravity(Gravity.CENTER_VERTICAL);
+        label.setTextSize(14.0f);
+        label.setGravity(Gravity.CENTER_HORIZONTAL);
+        label.setTypeface(null, android.graphics.Typeface.BOLD);
         radio.addView(label, new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ConstraintLayout.LayoutParams labelParams = (ConstraintLayout.LayoutParams) label.getLayoutParams();
-        labelParams.startToEnd = icon.getId();
+        labelParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
         labelParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
-        labelParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.topToBottom = icon.getId();
         labelParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
-        labelParams.setMarginStart(dpRadio(8));
+        labelParams.bottomMargin = dpRadio(8);
         radio.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
         radio.setOnFocusChangeListener((view, focused) -> {
             view.setScaleX(focused ? 1.04f : 1.0f);
             view.setScaleY(focused ? 1.04f : 1.0f);
         });
-        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(dpRadio(130), dpRadio(42));
-        params.startToStart = this.ly_live.getId();
-        params.endToEnd = this.ly_live.getId();
-        params.topToBottom = this.ly_live.getId();
-        params.topMargin = dpRadio(8);
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(dpRadio(90), dpRadio(120));
+        params.startToEnd = this.ly_live.getId();
+        params.topToTop = this.ly_live.getId();
+        params.bottomToBottom = this.ly_live.getId();
+        params.leftMargin = dpRadio(10);
         root.addView(radio, params);
+        radio.setNextFocusLeftId(this.ly_live.getId());
+        radio.setNextFocusRightId(this.ly_movie.getId());
+        radio.setNextFocusUpId(this.ly_live.getId());
+        radio.setNextFocusDownId(this.ly_account == null ? this.ly_live.getId() : this.ly_account.getId());
         this.ly_radio = radio;
     }
 
@@ -697,7 +725,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         Utils.FullScreenCall(this);
         this.preferenceHelper = new PreferenceHelper(this);
         initView();
-        setupRadioButton();
         setupMicrophoneButton();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
