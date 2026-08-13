@@ -95,24 +95,8 @@ public class EPGChannel extends RealmObject implements Serializable {
             }
             if (!TextUtils.isEmpty(m3UItem.getStreamURL())) {
                 ePGChannel.setUrl(m3UItem.getStreamURL());
-                if (m3UItem.getStreamURL().contains("live")) {
-                    try {
-                        String str = ePGChannel.getUrl().split("/")[6];
-                        if (str.contains(".")) {
-                            ePGChannel.setStream_id(str.split(".")[0]);
-                        } else {
-                            ePGChannel.setStream_id(str);
-                        }
-                    } catch (Exception unused) {
-                        ePGChannel.setStream_id("" + new Random().nextInt());
-                    }
-                } else {
-                    try {
-                        ePGChannel.setStream_id(ePGChannel.getUrl().split("/")[5]);
-                    } catch (Exception unused2) {
-                        ePGChannel.setStream_id("" + new Random().nextInt());
-                    }
-                }
+                String streamId = extractStreamId(ePGChannel.getUrl());
+                ePGChannel.setStream_id(streamId.isEmpty() ? "" + new Random().nextInt() : streamId);
             }
             if (!TextUtils.isEmpty(m3UItem.getLogoURL())) {
                 ePGChannel.setStream_icon(m3UItem.getLogoURL());
@@ -122,6 +106,24 @@ public class EPGChannel extends RealmObject implements Serializable {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String extractStreamId(String rawUrl) {
+        if (rawUrl == null || rawUrl.trim().isEmpty()) return "";
+        try {
+            String path = rawUrl.split("\\?", 2)[0];
+            String[] parts = path.split("/");
+            for (int i = parts.length - 1; i >= 0; i--) {
+                String candidate = parts[i].trim();
+                if (candidate.isEmpty()) continue;
+                int dot = candidate.lastIndexOf('.');
+                if (dot > 0) candidate = candidate.substring(0, dot);
+                if (candidate.matches("\\d+")) return candidate;
+                if (!candidate.isEmpty() && !candidate.equalsIgnoreCase("index")) return candidate;
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
     }
 
     public String getAdded() {
