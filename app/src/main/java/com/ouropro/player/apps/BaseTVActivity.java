@@ -930,7 +930,23 @@ public class BaseTVActivity extends FragmentActivity {
                 SeriesModel seriesModel = new SeriesModel();
                 seriesModel.setName(str);
                 seriesModel.setCategory_name(list2.get(0).getCategory_name());
-                seriesModel.setStream_icon(list2.get(0).getStream_icon());
+                String originalPoster = "";
+                for (EpisodeModel episode : list2) {
+                    if (episode != null && episode.getStream_icon() != null
+                            && !episode.getStream_icon().trim().isEmpty()
+                            && !"null".equalsIgnoreCase(episode.getStream_icon().trim())) {
+                        originalPoster = episode.getStream_icon().trim();
+                        break;
+                    }
+                }
+                seriesModel.setStream_icon(originalPoster);
+                for (EpisodeModel episode : list2) {
+                    String extractedId = extractM3USeriesId(episode == null ? "" : episode.getUrl());
+                    if (!extractedId.isEmpty()) {
+                        seriesModel.setSeries_id(extractedId);
+                        break;
+                    }
+                }
                 arrayList.add(seriesModel);
             }
         }
@@ -949,6 +965,20 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
         getSeriesCategoryModels(arrayList);
+    }
+
+    private String extractM3USeriesId(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "";
+        }
+        String lower = url.toLowerCase(java.util.Locale.ROOT);
+        int marker = lower.indexOf("/series/");
+        if (marker < 0) {
+            return "";
+        }
+        String remainder = url.substring(marker + "/series/".length());
+        String[] parts = remainder.split("[/?#]");
+        return parts.length >= 3 ? parts[2].trim() : "";
     }
 
     /* JADX INFO: Access modifiers changed from: private */

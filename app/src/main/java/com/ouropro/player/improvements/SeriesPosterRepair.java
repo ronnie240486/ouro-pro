@@ -33,11 +33,18 @@ public final class SeriesPosterRepair {
         }
         // Para listas M3U, a capa original do episódio é a fonte de verdade.
         final Map<String, String> originalM3UPosters = new HashMap<>();
+        final Map<String, String> uniqueNamePosters = new HashMap<>();
+        final Map<String, Integer> nameCounts = new HashMap<>();
         for (EpisodeModel episode : realm.where(EpisodeModel.class).findAll()) {
             if (episode == null || isBlank(episode.getSeries_name()) || isBlank(episode.getStream_icon())) {
                 continue;
             }
-            originalM3UPosters.putIfAbsent(key(episode.getSeries_name()), episode.getStream_icon().trim());
+            String nameKey = key(episode.getSeries_name());
+            String categoryKey = key(episode.getCategory_name());
+            String scopedKey = categoryKey + "|" + nameKey;
+            originalM3UPosters.putIfAbsent(scopedKey, episode.getStream_icon().trim());
+            nameCounts.put(nameKey, nameCounts.containsKey(nameKey) ? nameCounts.get(nameKey) + 1 : 1);
+            uniqueNamePosters.putIfAbsent(nameKey, episode.getStream_icon().trim());
         }
         if (posters.isEmpty() && originalM3UPosters.isEmpty()) {
             return 0;
@@ -48,7 +55,12 @@ public final class SeriesPosterRepair {
             RealmResults<SeriesModel> localSeries = transactionRealm.where(SeriesModel.class).findAll();
             for (SeriesModel local : localSeries) {
                 String normalizedName = key(local.getName());
-                String originalM3UPoster = originalM3UPosters.get(normalizedName);
+                String scopedName = key(local.getCategory_name()) + "|" + normalizedName;
+                String originalM3UPoster = originalM3UPosters.get(scopedName);
+                if (isBlank(originalM3UPoster) && nameCounts.get(normalizedName) != null
+                        && nameCounts.get(normalizedName) == 1) {
+                    originalM3UPoster = uniqueNamePosters.get(normalizedName);
+                }
                 String poster = !isBlank(originalM3UPoster) ? originalM3UPoster : posters.get(normalizedName);
                 // Nunca substitui uma capa M3U original por uma capa remota/genérica.
                 if (!isBlank(poster) && !poster.equals(local.getStream_icon())
