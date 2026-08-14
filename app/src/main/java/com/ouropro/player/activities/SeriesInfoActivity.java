@@ -293,7 +293,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         this.resolved_series_id = this.currentSeries.getSeries_id();
         this.resolved_stream_icon = this.currentSeries.getStream_icon();
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(this.currentSeries.getName());
+            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesNameAndCategory(this.currentSeries.getName(), this.currentSeries.getCategory_name());
             if (firstEpisode != null) {
                 String extractedId = extractM3USeriesId(firstEpisode.getUrl());
                 if (!extractedId.isEmpty()) {

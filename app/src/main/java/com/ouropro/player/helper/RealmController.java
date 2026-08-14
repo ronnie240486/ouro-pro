@@ -243,6 +243,19 @@ public class RealmController {
         return (EpisodeModel) this.realm.where(EpisodeModel.class).equalTo("series_name", str).findFirst();
     }
 
+    public EpisodeModel getFirstEpisodeBySeriesNameAndCategory(String seriesName, String categoryName) {
+        if (seriesName == null || seriesName.trim().isEmpty()) {
+            return null;
+        }
+        if (categoryName == null || categoryName.trim().isEmpty() || "null".equalsIgnoreCase(categoryName.trim())) {
+            return getFirstEpisodeBySeriesName(seriesName);
+        }
+        return this.realm.where(EpisodeModel.class)
+                .equalTo("series_name", seriesName)
+                .equalTo("category_name", categoryName)
+                .findFirst();
+    }
+
     public List<String> getFavChannelNames() {
         ArrayList arrayList = new ArrayList();
         Iterator it = this.realm.where(EPGChannel.class).equalTo("is_favorite", Boolean.TRUE).findAll().iterator();

@@ -112,7 +112,7 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         }
         String posterUrl = item.getStream_icon();
         try {
-            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(item.getName());
+            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesNameAndCategory(item.getName(), item.getCategory_name());
             if (firstEpisode != null && firstEpisode.getStream_icon() != null
                     && !firstEpisode.getStream_icon().trim().isEmpty()
                     && !"null".equalsIgnoreCase(firstEpisode.getStream_icon().trim())) {

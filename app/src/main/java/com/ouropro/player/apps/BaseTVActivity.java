@@ -494,16 +494,24 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private void addEpisodeToSeries(EpisodeModel episodeModel) {
-        String series_name = episodeModel.getSeries_name();
-        if (series_name == null || series_name.equals("null")) {
-            series_name = "All";
+        if (episodeModel == null) {
+            return;
         }
-        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(series_name);
+        String seriesName = episodeModel.getSeries_name();
+        if (seriesName == null || seriesName.trim().isEmpty() || seriesName.equalsIgnoreCase("null")) {
+            seriesName = "All";
+        }
+        String categoryName = episodeModel.getCategory_name();
+        if (categoryName == null || categoryName.trim().isEmpty() || categoryName.equalsIgnoreCase("null")) {
+            categoryName = "";
+        }
+        String groupKey = categoryName.trim() + "|" + seriesName.trim();
+        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(groupKey);
         if (arrayList == null) {
             arrayList = new ArrayList<>();
         }
         arrayList.add(episodeModel);
-        this.episodeModelHashMap.put(series_name, arrayList);
+        this.episodeModelHashMap.put(groupKey, arrayList);
     }
 
     private void addMovieToCategory(MovieModel movieModel) {
@@ -927,9 +935,14 @@ public class BaseTVActivity extends FragmentActivity {
         this.episodeModelHashMap.keySet();
         for (String str : (TreeSet<String>) (TreeSet) new TreeSet(this.episodeModelHashMap.keySet())) {
             if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
+                EpisodeModel firstEpisode = list2.get(0);
+                String displayName = firstEpisode.getSeries_name();
+                if (displayName == null || displayName.trim().isEmpty() || displayName.equalsIgnoreCase("null")) {
+                    displayName = str;
+                }
                 SeriesModel seriesModel = new SeriesModel();
-                seriesModel.setName(str);
-                seriesModel.setCategory_name(list2.get(0).getCategory_name());
+                seriesModel.setName(displayName);
+                seriesModel.setCategory_name(firstEpisode.getCategory_name());
                 String originalPoster = "";
                 for (EpisodeModel episode : list2) {
                     if (episode != null && episode.getStream_icon() != null

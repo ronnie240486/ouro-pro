@@ -67,7 +67,7 @@ public class BaseActivity extends AppCompatActivity {
         NullTextGuard.sanitize(this);
     }
 
-    private static final int M3U_SERIES_SCHEMA_VERSION = 4;
+    private static final int M3U_SERIES_SCHEMA_VERSION = 5;
     private static final String M3U_MIGRATION_PREFS = "ouropro_migrations";
     public static boolean busy;
     private HashMap<String, String> categoryHashMap;
@@ -554,16 +554,24 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void addEpisodeToSeries(EpisodeModel episodeModel) {
-        String series_name = episodeModel.getSeries_name();
-        if (series_name == null || series_name.equals("null")) {
-            series_name = "All";
+        if (episodeModel == null) {
+            return;
         }
-        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(series_name);
+        String seriesName = episodeModel.getSeries_name();
+        if (seriesName == null || seriesName.trim().isEmpty() || seriesName.equalsIgnoreCase("null")) {
+            seriesName = "All";
+        }
+        String categoryName = episodeModel.getCategory_name();
+        if (categoryName == null || categoryName.trim().isEmpty() || categoryName.equalsIgnoreCase("null")) {
+            categoryName = "";
+        }
+        String groupKey = categoryName.trim() + "|" + seriesName.trim();
+        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(groupKey);
         if (arrayList == null) {
             arrayList = new ArrayList<>();
         }
         arrayList.add(episodeModel);
-        this.episodeModelHashMap.put(series_name, arrayList);
+        this.episodeModelHashMap.put(groupKey, arrayList);
     }
 
     private void addMovieToCategory(MovieModel movieModel) {
@@ -709,14 +717,10 @@ public class BaseActivity extends AppCompatActivity {
                             });
                         }
                         if (!episodes.isEmpty()) {
-                            ArrayList<SeriesModel> batchSeries = buildSeriesFromEpisodes(episodes);
-                            streamRealm.executeTransaction(realm -> {
-                                if (!episodes.isEmpty()) realm.insertOrUpdate(episodes);
-                                if (!batchSeries.isEmpty()) realm.insertOrUpdate(batchSeries);
-                            });
-                            for (SeriesModel batchItem : batchSeries) {
-                                seriesCategoryNames.add(batchItem.getCategory_name());
-                            }
+                            // Séries só podem ser materializadas depois que todos os lotes
+                            // forem reunidos. Inserir SeriesModel por lote sobrescreve a capa
+                            // correta com a capa parcial do último episódio recebido.
+                            streamRealm.executeTransaction(realm -> realm.insertOrUpdate(episodes));
                         }
                         if (!channels.isEmpty() || !movies.isEmpty() || !episodes.isEmpty()) {
                             saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
@@ -1127,10 +1131,24 @@ public class BaseActivity extends AppCompatActivity {
             if (name == null || episodes == null || episodes.isEmpty()) {
                 continue;
             }
+            EpisodeModel firstEpisode = episodes.get(0);
+            String displayName = firstEpisode.getSeries_name();
+            if (displayName == null || displayName.trim().isEmpty() || displayName.equalsIgnoreCase("null")) {
+                displayName = name;
+            }
             SeriesModel series = new SeriesModel();
-            series.setName(name);
-            series.setCategory_name(episodes.get(0).getCategory_name());
-            series.setStream_icon(episodes.get(0).getStream_icon());
+            series.setName(displayName);
+            series.setCategory_name(firstEpisode.getCategory_name());
+            String originalPoster = "";
+            for (EpisodeModel episode : episodes) {
+                if (episode != null && episode.getStream_icon() != null
+                        && !episode.getStream_icon().trim().isEmpty()
+                        && !"null".equalsIgnoreCase(episode.getStream_icon().trim())) {
+                    originalPoster = episode.getStream_icon().trim();
+                    break;
+                }
+            }
+            series.setStream_icon(originalPoster);
             seriesModels.add(series);
         }
         this.realm.executeTransaction(realm -> {
@@ -1347,22 +1365,33 @@ public class BaseActivity extends AppCompatActivity {
             if (episode == null || episode.getSeries_name() == null || episode.getSeries_name().trim().isEmpty()) {
                 continue;
             }
-            List<EpisodeModel> current = grouped.get(episode.getSeries_name());
+            String categoryName = episode.getCategory_name();
+            if (categoryName == null || categoryName.trim().isEmpty() || categoryName.equalsIgnoreCase("null")) {
+                categoryName = "";
+            }
+            String seriesName = episode.getSeries_name().trim();
+            String groupKey = categoryName.trim() + "|" + seriesName;
+            List<EpisodeModel> current = grouped.get(groupKey);
             if (current == null) {
                 current = new ArrayList<>();
-                grouped.put(episode.getSeries_name(), current);
+                grouped.put(groupKey, current);
             }
             current.add(episode);
         }
         ArrayList<SeriesModel> seriesModels = new ArrayList<>();
-        for (String name : new TreeSet<>(grouped.keySet())) {
-            List<EpisodeModel> group = grouped.get(name);
+        for (String groupKey : new TreeSet<>(grouped.keySet())) {
+            List<EpisodeModel> group = grouped.get(groupKey);
             if (group == null || group.isEmpty()) {
                 continue;
             }
+            EpisodeModel firstEpisode = group.get(0);
+            String displayName = firstEpisode.getSeries_name();
+            if (displayName == null || displayName.trim().isEmpty() || displayName.equalsIgnoreCase("null")) {
+                continue;
+            }
             SeriesModel series = new SeriesModel();
-            series.setName(name);
-            series.setCategory_name(group.get(0).getCategory_name());
+            series.setName(displayName);
+            series.setCategory_name(firstEpisode.getCategory_name());
             for (EpisodeModel episode : group) {
                 String extractedSeriesId = extractM3USeriesId(episode == null ? "" : episode.getUrl());
                 if (extractedSeriesId != null && !extractedSeriesId.isEmpty()) {
