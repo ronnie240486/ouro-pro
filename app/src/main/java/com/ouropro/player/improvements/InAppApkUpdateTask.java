@@ -45,6 +45,7 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
     private final Listener listener;
     private final ProgressDialog progress;
     private boolean sawNotNewerVersion;
+    private String notNewerMessage;
 
     public InAppApkUpdateTask(Context context, String message, Listener listener) {
         this.context = context;
@@ -83,7 +84,7 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
             }
         }
         if (sawNotNewerVersion) {
-            return Result.failure("Seu APK já está na última versão");
+            return Result.failure(notNewerMessage == null ? "Seu APK já está na última versão" : notNewerMessage);
         }
         return Result.failure("Não foi possível baixar uma atualização válida. Verifique o link direto do APK no painel. Último erro: " + lastError);
     }
@@ -178,6 +179,7 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
             long installedCode = Build.VERSION.SDK_INT >= 28 ? installed.getLongVersionCode() : installed.versionCode;
             if (downloadedCode <= installedCode) {
                 sawNotNewerVersion = true;
+                notNewerMessage = "Seu APK já está na última versão.\nInstalada: v" + installedCode + "\nEncontrada no link: v" + downloadedCode;
                 return false;
             }
             return true;

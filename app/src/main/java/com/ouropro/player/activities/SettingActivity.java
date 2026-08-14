@@ -397,10 +397,10 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                 startInstall(apk);
             }
             @Override public void onFailure(String message) {
-                if ("Seu APK já está na última versão".equals(message)) {
+                if (message != null && message.startsWith("Seu APK já está na última versão")) {
                     new AlertDialog.Builder(SettingActivity.this)
                             .setTitle("Atualização")
-                            .setMessage("Seu APK já está na última versão")
+                            .setMessage(message)
                             .setPositiveButton("OK", null)
                             .show();
                 } else {
