@@ -2,8 +2,10 @@ package com.ouropro.player.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -89,7 +91,52 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgRecyclerAdapter.
             view.setScaleX(hasFocus ? 1.25f : 1.0f);
             view.setScaleY(hasFocus ? 1.25f : 1.0f);
         });
+        holder.epg_bell.setOnKeyListener((view, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                return false;
+            }
+            int currentPosition = holder.getBindingAdapterPosition();
+            if (currentPosition == RecyclerView.NO_POSITION) {
+                return false;
+            }
+            ViewParent parent = holder.itemView.getParent();
+            RecyclerView recyclerView = parent instanceof RecyclerView ? (RecyclerView) parent : null;
+            if (recyclerView == null) {
+                return false;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && currentPosition + 1 < getItemCount()) {
+                requestBellFocus(recyclerView, currentPosition + 1);
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                if (currentPosition > 0) {
+                    requestBellFocus(recyclerView, currentPosition - 1);
+                } else {
+                    View channelList = recyclerView.getRootView().findViewById(R.id.recycler_channel);
+                    if (channelList != null) {
+                        channelList.requestFocus();
+                    } else {
+                        recyclerView.requestFocus();
+                    }
+                }
+                return true;
+            }
+            return false;
+        });
         holder.epg_bell.setOnClickListener(view -> this.bellClickListener.onBellClick(program));
+    }
+
+    private void requestBellFocus(RecyclerView recyclerView, int position) {
+        recyclerView.scrollToPosition(position);
+        recyclerView.post(() -> {
+            RecyclerView.ViewHolder nextHolder = recyclerView.findViewHolderForAdapterPosition(position);
+            if (nextHolder != null) {
+                View nextBell = nextHolder.itemView.findViewById(R.id.epg_bell);
+                if (nextBell != null) {
+                    nextBell.requestFocus();
+                }
+            }
+        });
     }
 
     @NonNull
