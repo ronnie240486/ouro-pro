@@ -153,7 +153,9 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void getMovieInfo() {
-        RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_vod_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.stream_id).enqueue(new Callback<MovieInfoResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.1
+        String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        boolean allowLegacyCleartext = server != null && server.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
+        RetroClass.getAPIService(server, allowLegacyCleartext).get_vod_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.stream_id).enqueue(new Callback<MovieInfoResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.1
             public void onFailure(Call<MovieInfoResponse> call, Throwable th) {
                 MovieInfoActivity.this.setNoDescriptionData();
             }
@@ -619,11 +621,8 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         } catch (Exception unused) {
             Glide.with(getApplicationContext()).load(Integer.valueOf(R.drawable.default_bg)).error(R.drawable.default_bg).into(this.movie_logo);
         }
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            setNoDescriptionData();
-        } else {
-            getMovieInfo();
-        }
+        setNoDescriptionData();
+        getMovieInfo();
         this.btn_play.requestFocus();
     }
 

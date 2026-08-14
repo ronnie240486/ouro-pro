@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ouropro.player.R;
+import com.ouropro.player.activities.TrailerSearchActivity;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
@@ -27,10 +28,12 @@ public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<RecyclerVodHome
         public ImageView image_logo;
         public ImageView image_movie;
         public TextView txt_name;
+        public TextView btn_trailer;
 
         public LiveHomeViewHolder(@NonNull RecyclerVodHomeAdapter recyclerVodHomeAdapter, View view) {
             super(view);
             this.txt_name = (TextView) view.findViewById(R.id.txt_name);
+            this.btn_trailer = (TextView) view.findViewById(R.id.btn_trailer);
             this.image_movie = (ImageView) view.findViewById(R.id.image_channel);
             this.image_logo = (ImageView) view.findViewById(R.id.image_logo);
         }
@@ -92,6 +95,8 @@ public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<RecyclerVodHome
         MovieModel movieModel = this.models.get(i);
         liveHomeViewHolder.txt_name.setText(movieModel.getName());
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, liveHomeViewHolder.image_movie, movieModel.getStream_icon(), R.drawable.default_bg, liveHomeViewHolder.image_logo);
+        liveHomeViewHolder.btn_trailer.setVisibility(View.VISIBLE);
+        liveHomeViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, movieModel.getName()));
         liveHomeViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, movieModel, i, liveHomeViewHolder, 10));
         liveHomeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, movieModel, i, 13));
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, movieModel, i, 0));
