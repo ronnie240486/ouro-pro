@@ -32,6 +32,7 @@ import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
+import com.ouropro.player.improvements.MovieCatalogDeduplicator;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -713,9 +714,7 @@ public class BaseActivity extends AppCompatActivity {
                             });
                         }
                         if (!movies.isEmpty()) {
-                            streamRealm.executeTransaction(realm -> {
-                                if (!movies.isEmpty()) realm.insertOrUpdate(movies);
-                            });
+                            MovieCatalogDeduplicator.upsert(streamRealm, movies);
                         }
                         if (!episodes.isEmpty()) {
                             // Séries só podem ser materializadas depois que todos os lotes
@@ -1329,12 +1328,10 @@ public class BaseActivity extends AppCompatActivity {
             });
 
             List<MovieModel> movies = new LoadVideosCommand().execute();
-            backgroundRealm.executeTransaction(realm -> {
-                realm.where(MovieModel.class).findAll().deleteAllFromRealm();
-                if (movies != null && !movies.isEmpty()) {
-                    realm.insertOrUpdate(movies);
-                }
-            });
+            backgroundRealm.executeTransaction(realm -> realm.where(MovieModel.class).findAll().deleteAllFromRealm());
+            if (movies != null && !movies.isEmpty()) {
+                MovieCatalogDeduplicator.upsert(backgroundRealm, movies);
+            }
             saveM3UVisibleCategories(channels, movies, null);
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
 
@@ -1796,6 +1793,7 @@ public class BaseActivity extends AppCompatActivity {
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
         SeriesCatalogDeduplicator.deduplicate(this.realm);
+        MovieCatalogDeduplicator.deduplicate(this.realm);
         try {
             IntentFilter failoverFilter = new IntentFilter();
             failoverFilter.addAction(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC);

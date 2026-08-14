@@ -136,15 +136,16 @@ public final class SeriesCatalogDeduplicator {
     }
 
     public static String key(String categoryName, String seriesName) {
-        return normalize(categoryName) + "|" + normalize(seriesName);
+        return normalizeCategory(categoryName) + "|" + SeriesPosterRepair.key(seriesName);
     }
 
-    private static String normalize(String value) {
+    private static String normalizeCategory(String value) {
         if (value == null) {
             return "";
         }
         return value.trim().toLowerCase(Locale.ROOT)
-                .replaceAll("\\s+", " ");
+                .replaceAll("[^\\p{L}\\p{N}]+", " ")
+                .replaceAll("\\s+", " ").trim();
     }
 
     private static boolean isBlank(String value) {

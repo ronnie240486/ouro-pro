@@ -19,6 +19,7 @@ import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
+import com.ouropro.player.improvements.MovieCatalogDeduplicator;
 import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
@@ -1351,6 +1352,7 @@ public class BaseTVActivity extends FragmentActivity {
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
         SeriesCatalogDeduplicator.deduplicate(this.realm);
+        MovieCatalogDeduplicator.deduplicate(this.realm);
     }
 
     private void fetchM3UAccountMetadata(String playlistUrl) {
