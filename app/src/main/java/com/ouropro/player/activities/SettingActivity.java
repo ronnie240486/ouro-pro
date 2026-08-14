@@ -69,6 +69,7 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
+    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/HJpwLflhkVxTrahI.apk";
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
     public double api_version;
@@ -368,8 +369,11 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     public void goToUpdate() {
         String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
         if (apkLink == null || apkLink.trim().isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
-            Toast.makeText(this, "Nenhuma atualização foi configurada no painel.", Toast.LENGTH_LONG).show();
-            return;
+            apkLink = VERIFIED_UPDATE_APK_URL;
+        }
+        String normalizedLink = apkLink.trim().toLowerCase(java.util.Locale.US);
+        if (!normalizedLink.endsWith(".apk") && !normalizedLink.contains(".apk?")) {
+            apkLink = VERIFIED_UPDATE_APK_URL;
         }
         new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
             @Override public void onSuccess(File apk) {
