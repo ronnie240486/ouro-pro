@@ -13,6 +13,7 @@ import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.ouropro.player.R;
+import com.ouropro.player.activities.TrailerSearchActivity;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.utils.ImageLoaderJava;
 import io.realm.RealmResults;
@@ -40,12 +41,14 @@ public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, Vod
         public RoundedImageView image_vod;
         public ProgressBar seekBar;
         public TextView txt_name;
+        public TextView btn_trailer;
 
         public VodViewHolder(@NonNull VodRecyclerAdapter vodRecyclerAdapter, View view) {
             super(view);
             this.image_vod = (RoundedImageView) view.findViewById(R.id.image_vod);
             this.image_logo = (RoundedImageView) view.findViewById(R.id.image_logo);
             this.txt_name = (TextView) view.findViewById(R.id.txt_name);
+            this.btn_trailer = (TextView) view.findViewById(R.id.btn_trailer);
             this.image_fav = (ImageView) view.findViewById(R.id.image_fav);
             this.seekBar = (ProgressBar) view.findViewById(R.id.seekBar);
         }
@@ -123,6 +126,8 @@ public class VodRecyclerAdapter extends RealmRecyclerViewAdapter<MovieModel, Vod
             vodViewHolder.seekBar.setVisibility(0);
         }
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, item.getStream_icon(), R.drawable.default_bg, vodViewHolder.image_logo);
+        vodViewHolder.btn_trailer.setVisibility(View.VISIBLE);
+        vodViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, item.getName()));
         vodViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, i, item, i2));
         vodViewHolder.itemView.setOnFocusChangeListener(new VodRecyclerAdapter$$ExternalSyntheticLambda1(this, vodViewHolder, i, i2));
         vodViewHolder.itemView.setOnLongClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda2(this, item, i, i2));
