@@ -531,11 +531,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             return;
         }
 
-        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(
-                RealmController.with().getLiveChannelsByKey(query, true), query);
         boolean hasQuality = VoiceCommand.normalize(query).matches(".*\\b(full hd|fhd|hd|sd)\\b.*");
-        if ("channel".equals(preferredType) || channel != null || hasQuality) {
+        if ("channel".equals(preferredType)) {
             Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(
+                RealmController.with().getSeriesByKey(query), query);
+        if (series != null && !hasQuality) {
+            Intent intent = new Intent(this, SeriesActivity.class);
             intent.putExtra("voice_query", query);
             startActivity(intent);
             return;
@@ -543,16 +550,30 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
         MovieModel movie = VoiceMediaMatcher.findUniqueMovie(
                 RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
-        if (movie != null) {
+        if (movie != null && !hasQuality) {
             Intent intent = new Intent(this, MovieActivity.class);
             intent.putExtra("voice_query", query);
             startActivity(intent);
             return;
         }
-        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(
-                RealmController.with().getSeriesByKey(query), query);
+
+        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(
+                RealmController.with().getLiveChannelsByKey(query, true), query);
+        if (channel != null || hasQuality) {
+            Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
         if (series != null) {
             Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        if (movie != null) {
+            Intent intent = new Intent(this, MovieActivity.class);
             intent.putExtra("voice_query", query);
             startActivity(intent);
             return;
