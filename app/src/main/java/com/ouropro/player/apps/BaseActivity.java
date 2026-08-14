@@ -725,14 +725,8 @@ public class BaseActivity extends AppCompatActivity {
                         if (!channels.isEmpty() || !movies.isEmpty() || !episodes.isEmpty()) {
                             saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
                         }
-                        if (!m3uVisibleNavigationSent && (!channels.isEmpty() || !movies.isEmpty())) {
-                            runOnUiThread(() -> {
-                                if (!m3uVisibleNavigationSent && !is_stop) {
-                                    m3uVisibleNavigationSent = true;
-                                    doNextTask(true);
-                                }
-                            });
-                        }
+                        // A Home só pode ser liberada no onComplete, depois que
+                        // canais, filmes, episódios e séries já estiverem persistidos.
                     }
 
                     @Override
@@ -1319,13 +1313,6 @@ public class BaseActivity extends AppCompatActivity {
                 }
             });
             saveM3UVisibleCategories(channels, null, null);
-            runOnUiThread(() -> {
-                if (!m3uVisibleNavigationSent && !is_stop) {
-                    m3uVisibleNavigationSent = true;
-                    setBusy(false);
-                    doNextTask(true);
-                }
-            });
 
             List<MovieModel> movies = new LoadVideosCommand().execute();
             backgroundRealm.executeTransaction(realm -> realm.where(MovieModel.class).findAll().deleteAllFromRealm());
@@ -1350,6 +1337,14 @@ public class BaseActivity extends AppCompatActivity {
                             .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
                 }
             }
+            // Só agora a Home fica navegável: nenhum catálogo abre vazio.
+            runOnUiThread(() -> {
+                if (!m3uVisibleNavigationSent && !is_stop) {
+                    m3uVisibleNavigationSent = true;
+                    setBusy(false);
+                    doNextTask(true);
+                }
+            });
         } finally {
             backgroundRealm.close();
         }

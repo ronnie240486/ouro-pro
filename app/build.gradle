@@ -12,7 +12,7 @@ android {
         applicationId 'com.ouropro.player'
         minSdk 21
         targetSdk 34
-        versionCode 170
+        versionCode 171
         versionName '6.4'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
