@@ -1306,13 +1306,24 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.visibleEpgPanel.bringToFront();
         this.visibleEpgPanel.requestLayout();
         this.visibleEpgPanel.setOnFocusChangeListener((view, hasFocus) -> {
-            if (hasFocus && this.epgAdapter != null && this.epgAdapter.getItemCount() > 0) {
-                view.post(() -> {
-                    RecyclerView.ViewHolder holder = this.visibleEpgPanel.findViewHolderForAdapterPosition(0);
-                    if (holder != null && holder.itemView.findViewById(R.id.epg_bell) != null) {
-                        holder.itemView.findViewById(R.id.epg_bell).requestFocus();
-                    }
-                });
+            if (hasFocus) {
+                focusFirstEpgBell();
+            }
+        });
+    }
+
+    private void focusFirstEpgBell() {
+        if (this.visibleEpgPanel == null || this.epgAdapter == null || this.epgAdapter.getItemCount() <= 0) {
+            return;
+        }
+        this.visibleEpgPanel.scrollToPosition(0);
+        this.visibleEpgPanel.post(() -> {
+            RecyclerView.ViewHolder holder = this.visibleEpgPanel.findViewHolderForAdapterPosition(0);
+            if (holder != null) {
+                View bell = holder.itemView.findViewById(R.id.epg_bell);
+                if (bell != null) {
+                    bell.requestFocus();
+                }
             }
         });
     }
@@ -1892,6 +1903,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                                             }
                                             break;
                                         case 20:
+                                            if (!this.is_full && this.recycler_channel != null && this.recycler_channel.hasFocus() && this.visibleEpgPanel != null && this.visibleEpgPanel.getVisibility() == View.VISIBLE && this.epgAdapter != null && this.epgAdapter.getItemCount() > 0 && this.recycler_channel.getSelectedPosition() >= this.epgChannels.size() - 1) {
+                                                focusFirstEpgBell();
+                                                return true;
+                                            }
                                             if (!this.is_full) {
                                                 if (this.txt_home.hasFocus() || this.txt_live.hasFocus() || this.txt_movie.hasFocus()) {
                                                     setFocusTopView(false);

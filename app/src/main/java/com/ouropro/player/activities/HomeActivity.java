@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -403,9 +404,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (content == null) {
             return;
         }
-        int marginBottom = dpRadio(18);
-        int gap = dpRadio(12);
-        int buttonSize = dpRadio(52);
+        int marginBottom = dpRadio(24);
+        int gap = dpRadio(46);
+        int buttonSize = dpRadio(70);
         this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
         this.microphoneButton.setFocusable(true);
         this.microphoneButton.setFocusableInTouchMode(true);
@@ -418,17 +419,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.radioIconButton.setImageResource(R.drawable.ic_radio);
         this.radioIconButton.setContentDescription("Abrir Rádios");
         this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
-        int radioPadding = dpRadio(5);
+        int radioPadding = dpRadio(8);
         this.radioIconButton.setPadding(radioPadding, radioPadding, radioPadding, radioPadding);
         this.radioIconButton.setFocusable(true);
         this.radioIconButton.setFocusableInTouchMode(true);
         this.radioIconButton.setClickable(true);
         this.radioIconButton.setElevation(dpRadio(6));
         this.radioIconButton.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
-        this.radioIconButton.setOnFocusChangeListener((view, focused) -> {
-            view.setScaleX(focused ? 1.12f : 1.0f);
-            view.setScaleY(focused ? 1.12f : 1.0f);
-        });
+        this.radioIconButton.setOnFocusChangeListener((view, focused) -> updateActionButtonFocus(view, focused));
         FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         radioParams.setMargins(0, 0, gap, marginBottom);
         content.addView(this.radioIconButton, radioParams);
@@ -445,6 +443,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (this.ly_movie != null) {
             this.ly_movie.setNextFocusDownId(this.microphoneButton.getId());
         }
+        this.microphoneButton.setOnFocusChangeListener((view, focused) -> updateActionButtonFocus(view, focused));
         if (!VoiceCommandController.isAvailable(this)) {
             this.voiceCommandController = null;
             return;
@@ -699,6 +698,18 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         radio.setNextFocusUpId(this.ly_live.getId());
         radio.setNextFocusDownId(this.ly_account == null ? this.ly_live.getId() : this.ly_account.getId());
         this.ly_radio = radio;
+    }
+
+    private void updateActionButtonFocus(View view, boolean focused) {
+        view.setScaleX(focused ? 1.12f : 1.0f);
+        view.setScaleY(focused ? 1.12f : 1.0f);
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.TRANSPARENT);
+        background.setCornerRadius(dpRadio(40));
+        if (focused) {
+            background.setStroke(dpRadio(2), Color.rgb(255, 211, 42));
+        }
+        view.setBackground(background);
     }
 
     private int dpRadio(int value) {
