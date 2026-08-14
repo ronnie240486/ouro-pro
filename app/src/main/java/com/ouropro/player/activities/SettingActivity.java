@@ -1,5 +1,6 @@
 package com.ouropro.player.activities;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -383,7 +384,15 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                 startInstall(apk);
             }
             @Override public void onFailure(String message) {
-                Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
+                if ("Seu APK já está na última versão".equals(message)) {
+                    new AlertDialog.Builder(SettingActivity.this)
+                            .setTitle("Atualização")
+                            .setMessage("Seu APK já está na última versão")
+                            .setPositiveButton("OK", null)
+                            .show();
+                } else {
+                    Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
+                }
             }
         }).execute(cacheBustedLink, fallbackLink);
     }
