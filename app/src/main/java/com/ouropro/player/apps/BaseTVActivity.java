@@ -1351,8 +1351,6 @@ public class BaseTVActivity extends FragmentActivity {
         RealmConfiguration realmConfigurationBuild = new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1L).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build();
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
-        SeriesCatalogDeduplicator.deduplicate(this.realm);
-        MovieCatalogDeduplicator.deduplicate(this.realm);
     }
 
     private void fetchM3UAccountMetadata(String playlistUrl) {

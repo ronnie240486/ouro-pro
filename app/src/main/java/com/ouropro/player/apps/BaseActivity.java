@@ -650,6 +650,8 @@ public class BaseActivity extends AppCompatActivity {
     private void fetchM3UItems(final String str) {
         new Thread(() -> {
             final Realm streamRealm = Realm.getDefaultInstance();
+            final ArrayList<EPGChannel> allChannels = new ArrayList<>();
+            final ArrayList<MovieModel> allMovies = new ArrayList<>();
             final ArrayList<EpisodeModel> allEpisodes = new ArrayList<>();
             final TreeSet<String> liveCategoryNames = new TreeSet<>();
             final TreeSet<String> movieCategoryNames = new TreeSet<>();
@@ -687,6 +689,7 @@ public class BaseActivity extends AppCompatActivity {
                                 if (channel != null) {
                                     channel.setNum(String.valueOf(++channelNumber[0]));
                                     channels.add(channel);
+                                    allChannels.add(channel);
                                     liveCategoryNames.add(channel.getCategory_name());
                                     m3uChannels.add(item);
                                 }
@@ -695,6 +698,7 @@ public class BaseActivity extends AppCompatActivity {
                                 if (movie != null) {
                                     movie.setNum(++movieNumber[0]);
                                     movies.add(movie);
+                                    allMovies.add(movie);
                                     movieCategoryNames.add(movie.getCategory_name());
                                     m3uMovies.add(item);
                                 }
@@ -708,32 +712,28 @@ public class BaseActivity extends AppCompatActivity {
                                 }
                             }
                         }
-                        if (!channels.isEmpty()) {
-                            streamRealm.executeTransaction(realm -> {
-                                if (!channels.isEmpty()) realm.insertOrUpdate(channels);
-                            });
-                        }
-                        if (!movies.isEmpty()) {
-                            MovieCatalogDeduplicator.upsert(streamRealm, movies);
-                        }
-                        if (!episodes.isEmpty()) {
-                            // Séries só podem ser materializadas depois que todos os lotes
-                            // forem reunidos. Inserir SeriesModel por lote sobrescreve a capa
-                            // correta com a capa parcial do último episódio recebido.
-                            streamRealm.executeTransaction(realm -> realm.insertOrUpdate(episodes));
-                        }
-                        if (!channels.isEmpty() || !movies.isEmpty() || !episodes.isEmpty()) {
-                            saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
-                        }
-                        // A Home só pode ser liberada no onComplete, depois que
-                        // canais, filmes, episódios e séries já estiverem persistidos.
+                        // Os lotes só são acumulados em memória. A escrita única no
+                        // onComplete evita que o Realm legado sem chave primária crie
+                        // uma cópia por lote.
                     }
 
                     @Override
                     public void onComplete() {
                         try {
+                            if (!allChannels.isEmpty()) {
+                                streamRealm.executeTransaction(realm -> {
+                                    realm.where(EPGChannel.class).findAll().deleteAllFromRealm();
+                                    realm.insertOrUpdate(allChannels);
+                                });
+                            }
+                            if (!allMovies.isEmpty()) {
+                                MovieCatalogDeduplicator.upsert(streamRealm, allMovies);
+                            }
                             if (!allEpisodes.isEmpty()) {
-                                streamRealm.executeTransaction(realm -> realm.insertOrUpdate(allEpisodes));
+                                streamRealm.executeTransaction(realm -> {
+                                    realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
+                                    realm.insertOrUpdate(allEpisodes);
+                                });
                                 ArrayList<SeriesModel> series = buildSeriesFromEpisodes(allEpisodes);
                                 if (!series.isEmpty()) {
                                     SeriesCatalogDeduplicator.upsert(streamRealm, series);
@@ -1787,8 +1787,6 @@ public class BaseActivity extends AppCompatActivity {
         RealmConfiguration realmConfigurationBuild = new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1L).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build();
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
-        SeriesCatalogDeduplicator.deduplicate(this.realm);
-        MovieCatalogDeduplicator.deduplicate(this.realm);
         try {
             IntentFilter failoverFilter = new IntentFilter();
             failoverFilter.addAction(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC);
