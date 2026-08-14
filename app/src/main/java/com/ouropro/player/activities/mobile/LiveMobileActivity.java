@@ -89,6 +89,7 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
@@ -183,6 +184,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     public String stream_id = "";
     public boolean is_full = false;
     public Handler handler = new Handler();
+    public HeartbeatPeriodicHelper heartbeatHelper;
     public String categoryName = "";
     public boolean is_system_setting = false;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new LiveMobileActivity$$ExternalSyntheticLambda0(this));
@@ -746,6 +748,13 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             this.selectedChannel = ePGChannel;
             this.stream_id = ePGChannel.getStream_id();
             this.channel_name = this.selectedChannel.getName();
+            HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+            if (currentHeartbeat != null) {
+                currentHeartbeat.stop();
+            }
+            HeartbeatPeriodicHelper nextHeartbeat = new HeartbeatPeriodicHelper();
+            this.heartbeatHelper = nextHeartbeat;
+            nextHeartbeat.start(this.preferenceHelper.getSharedPreferenceMacAddress(), this.channel_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
             showFavImageIcon(this.selectedChannel.is_favorite());
             if (this.preferenceHelper.getSharedPreferenceISM3U()) {
                 this.content_url = this.selectedChannel.getUrl();
@@ -1625,6 +1634,11 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
     public void onDestroy() {
         if (this.voiceCommandController != null) {
             this.voiceCommandController.destroy();
+        }
+        HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+        if (currentHeartbeat != null) {
+            currentHeartbeat.stop();
+            this.heartbeatHelper = null;
         }
         super.onDestroy();
     }

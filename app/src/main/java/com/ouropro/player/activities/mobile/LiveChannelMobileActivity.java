@@ -80,6 +80,7 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.models.CatchUpEpg;
@@ -165,6 +166,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
     public String stream_id = "";
     public boolean is_full = false;
     public Handler handler = new Handler();
+    public HeartbeatPeriodicHelper heartbeatHelper;
     public String categoryName = "";
     public boolean is_system_setting = false;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new LiveChannelMobileActivity$$ExternalSyntheticLambda0(this));
@@ -724,10 +726,17 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         if (ePGChannel != null) {
             this.preferenceHelper.setSharedPreferenceCategoryPos(this.category_pos);
             this.preferenceHelper.setSharedPreferenceChannelPos(this.channel_pos);
-            this.selectedChannel = ePGChannel;
-            this.stream_id = ePGChannel.getStream_id();
-            this.channel_name = this.selectedChannel.getName();
-            showFavImageIcon(this.selectedChannel.is_favorite());
+        this.selectedChannel = ePGChannel;
+        this.stream_id = ePGChannel.getStream_id();
+        this.channel_name = this.selectedChannel.getName();
+        HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+        if (currentHeartbeat != null) {
+            currentHeartbeat.stop();
+        }
+        HeartbeatPeriodicHelper nextHeartbeat = new HeartbeatPeriodicHelper();
+        this.heartbeatHelper = nextHeartbeat;
+        nextHeartbeat.start(this.preferenceHelper.getSharedPreferenceMacAddress(), this.channel_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+        showFavImageIcon(this.selectedChannel.is_favorite());
             if (this.preferenceHelper.getSharedPreferenceISM3U()) {
                 this.content_url = this.selectedChannel.getUrl();
             } else {
@@ -1362,6 +1371,16 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             showFavImageIcon(((EPGChannel) this.epgChannels.get(this.channel_pos)).is_favorite());
             changeChannelInfo(this.channel_pos);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+        if (currentHeartbeat != null) {
+            currentHeartbeat.stop();
+            this.heartbeatHelper = null;
+        }
+        super.onDestroy();
     }
 
     public void onPause() {
