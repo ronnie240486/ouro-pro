@@ -39,6 +39,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.NullTextGuard;
+import com.ouropro.player.improvements.AccessibleFocusHelper;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
@@ -404,12 +405,12 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (content == null) {
             return;
         }
-        int marginBottom = dpRadio(24);
-        int gap = dpRadio(46);
-        int buttonSize = dpRadio(70);
+        boolean tvDevice = GetSharedInfo.isTVDevice(this);
+        int marginBottom = dpRadio(tvDevice ? 24 : 16);
+        int gap = dpRadio(tvDevice ? 46 : 24);
+        int buttonSize = dpRadio(tvDevice ? 70 : 56);
         this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
-        this.microphoneButton.setFocusable(true);
-        this.microphoneButton.setFocusableInTouchMode(true);
+        AccessibleFocusHelper.apply(this.microphoneButton, "Microfone: comando de voz");
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         params.setMargins(gap, 0, 0, marginBottom);
         content.addView(this.microphoneButton, params);
@@ -419,6 +420,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.radioIconButton.setImageResource(R.drawable.ic_radio);
         this.radioIconButton.setContentDescription("Abrir Rádios");
         this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
+        AccessibleFocusHelper.apply(this.radioIconButton, "Rádios: abrir catálogo e favoritos");
         int radioPadding = dpRadio(8);
         this.radioIconButton.setPadding(radioPadding, radioPadding, radioPadding, radioPadding);
         this.radioIconButton.setFocusable(true);
@@ -426,7 +428,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.radioIconButton.setClickable(true);
         this.radioIconButton.setElevation(dpRadio(6));
         this.radioIconButton.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
-        this.radioIconButton.setOnFocusChangeListener((view, focused) -> updateActionButtonFocus(view, focused));
+
         FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
         radioParams.setMargins(0, 0, gap, marginBottom);
         content.addView(this.radioIconButton, radioParams);
@@ -443,7 +445,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (this.ly_movie != null) {
             this.ly_movie.setNextFocusDownId(this.microphoneButton.getId());
         }
-        this.microphoneButton.setOnFocusChangeListener((view, focused) -> updateActionButtonFocus(view, focused));
+
         if (!VoiceCommandController.isAvailable(this)) {
             this.voiceCommandController = null;
             return;

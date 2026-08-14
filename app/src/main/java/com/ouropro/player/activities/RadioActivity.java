@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.ouropro.player.R;
+import com.ouropro.player.improvements.AccessibleFocusHelper;
 import com.ouropro.player.improvements.NullTextGuard;
 
 import java.io.BufferedReader;
@@ -202,6 +203,7 @@ public class RadioActivity extends AppCompatActivity {
             card.setGravity(Gravity.CENTER_VERTICAL);
             card.setPadding(dp(14), 0, dp(14), 0);
             card.setFocusable(true);
+            card.setFocusableInTouchMode(true);
             card.setClickable(true);
             card.setBackground(cardBackground(category.equals(selectedCategory), false));
             card.setContentDescription("Categoria " + category);
@@ -338,6 +340,7 @@ public class RadioActivity extends AppCompatActivity {
             card.setGravity(Gravity.CENTER_VERTICAL);
             card.setPadding(dp(12), dp(8), dp(12), dp(8));
             card.setFocusable(true);
+            card.setFocusableInTouchMode(true);
             card.setClickable(true);
             card.setBackground(cardBackground(false, false));
 
@@ -363,9 +366,7 @@ public class RadioActivity extends AppCompatActivity {
             ImageButton favorite = new ImageButton(RadioActivity.this);
             favorite.setBackgroundColor(Color.TRANSPARENT);
             favorite.setPadding(dp(6), dp(6), dp(6), dp(6));
-            favorite.setFocusable(true);
-            favorite.setFocusableInTouchMode(true);
-            favorite.setClickable(true);
+            AccessibleFocusHelper.apply(favorite, "Favoritar rádio");
             card.addView(favorite, new LinearLayout.LayoutParams(dp(48), dp(60)));
 
             RecyclerView.LayoutParams compactParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(94));
