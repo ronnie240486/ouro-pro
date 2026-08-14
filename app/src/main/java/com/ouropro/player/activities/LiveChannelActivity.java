@@ -707,7 +707,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                     }
                     this.is_full = true;
                     setFull();
-                } else if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+                } else if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
                     showChannelLockDlgFragment(ePGChannel, num.intValue(), 0);
                 } else {
                     this.channel_pos = num.intValue();
@@ -771,7 +771,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         } else {
             this.channel_pos = 0;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -799,7 +799,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         } else {
             this.channel_pos = this.epgChannels.size() - 1;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -1780,10 +1780,12 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         this.recycler_epg.setFocusable(false);
         if (this.epgChannels.size() > 0) {
             setFull();
-            if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
-                this.channel_pos = 0;
+            EPGChannel initialChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
+            if (isAdultChannel(initialChannel.getCategory_id(), initialChannel.getCategory_name())) {
+                showChannelLockDlgFragment(initialChannel, this.channel_pos, 2);
+                return;
             }
-            playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
+            playSelectedChannel(initialChannel);
             this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
             this.handler.removeCallbacks(this.epgTicker);
             epgTimer(this.stream_id);

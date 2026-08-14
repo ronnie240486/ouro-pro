@@ -333,12 +333,21 @@ public class PreferenceHelper {
         }
     }
 
+    public boolean isParentPasswordConfigured() {
+        try {
+            String value = this.settings.getString(PARENT_CONTROL, "");
+            return value != null && value.matches("\\d{4}") && !"0000".equals(value);
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
     public String getSharedPreferenceParentPassword() {
         try {
-            String string = this.settings.getString(PARENT_CONTROL, "0000");
-            return (string == null || string.isEmpty()) ? "0000" : string;
+            String string = this.settings.getString(PARENT_CONTROL, "");
+            return string == null || string.isEmpty() || "0000".equals(string) ? "" : string;
         } catch (Exception unused) {
-            return "0000";
+            return "";
         }
     }
 

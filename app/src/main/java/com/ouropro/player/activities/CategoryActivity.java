@@ -80,7 +80,8 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
 
     /* JADX INFO: Access modifiers changed from: private */
     public boolean checkAdultCategory(String str) {
-        return str.contains("xxx") || str.contains("porn") || str.contains("adult");
+        String value = str == null ? "" : str.toLowerCase(java.util.Locale.US);
+        return value.contains("xxx") || value.contains("porn") || value.contains("adult") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube");
     }
 
     /* JADX INFO: Access modifiers changed from: private */

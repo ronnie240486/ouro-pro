@@ -427,7 +427,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.key = "";
         this.txt_num.setText("");
         this.txt_num.setVisibility(8);
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(this.keySelChannel.getCategory_id(), this.keySelChannel.getCategory_name())) {
+        if (isAdultChannel(this.keySelChannel.getCategory_id(), this.keySelChannel.getCategory_name())) {
             showChannelLockDlgFragment(this.keySelChannel, this.channel_pos, 2);
             return;
         }
@@ -679,10 +679,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     }
 
     private boolean isAdultChannel(String str, String str2) {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            return str2.contains("adult") || str2.contains("xxx") || str2.contains("porn");
-        }
-        return Constants.xxx_live_categories.contains(str);
+        String value = ((str == null ? "" : str) + " " + (str2 == null ? "" : str2)).toLowerCase(java.util.Locale.US);
+        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(str);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -791,7 +789,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     }
                     this.is_full = true;
                     setFull();
-                } else if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+                } else if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
                     showChannelLockDlgFragment(ePGChannel, num.intValue(), 0);
                 } else {
                     this.channel_pos = num.intValue();
@@ -857,7 +855,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         } else {
             this.channel_pos = 0;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -881,7 +879,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         } else {
             this.channel_pos = this.epgChannels.size() - 1;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -2000,10 +1998,12 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             return;
         }
         setFull();
-        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
-            this.channel_pos = 0;
+        EPGChannel initialChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
+        if (isAdultChannel(initialChannel.getCategory_id(), initialChannel.getCategory_name())) {
+            showChannelLockDlgFragment(initialChannel, this.channel_pos, 2);
+            return;
         }
-        playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
+        playSelectedChannel(initialChannel);
         this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
         this.handler.removeCallbacks(this.epgTicker);
         epgTimer(this.stream_id);
