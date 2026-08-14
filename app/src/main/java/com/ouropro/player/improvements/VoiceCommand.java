@@ -74,7 +74,11 @@ public final class VoiceCommand {
                 "ver filme ", "ver o filme ", "buscar filme ", "buscar o filme ",
                 "pesquisar filme ", "pesquisar o filme ", "me mostre filmes de ",
                 "mostre filmes de ", "procure filmes de ", "buscar filmes de ",
-                "pesquisar filmes de ", "filmes de ", "filme ");
+                "pesquisar filmes de ", "eu quero assistir um filme de ",
+                "eu quero assistir filmes de ", "eu quero ver um filme de ",
+                "eu quero ver filmes de ", "quero assistir um filme de ",
+                "quero assistir filmes de ", "quero ver um filme de ",
+                "quero ver filmes de ", "filmes de ", "filme ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_MOVIE : Action.OPEN_MOVIE_ITEM;
@@ -86,7 +90,11 @@ public final class VoiceCommand {
                 "ver serie ", "ver a serie ", "buscar serie ", "buscar a serie ",
                 "pesquisar serie ", "pesquisar a serie ", "me mostre series de ",
                 "mostre series de ", "procure series de ", "buscar series de ",
-                "pesquisar series de ", "series de ", "serie ");
+                "pesquisar series de ", "eu quero assistir uma serie de ",
+                "eu quero assistir series de ", "eu quero ver uma serie de ",
+                "eu quero ver series de ", "quero assistir uma serie de ",
+                "quero assistir series de ", "quero ver uma serie de ",
+                "quero ver series de ", "series de ", "serie ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_SERIES : Action.OPEN_SERIES_ITEM;
@@ -98,7 +106,10 @@ public final class VoiceCommand {
                 "ver canal ", "ver o canal ", "buscar canal ", "buscar o canal ",
                 "pesquisar canal ", "pesquisar o canal ", "me mostre canais de ",
                 "mostre canais de ", "procure canais de ", "buscar canais de ",
-                "pesquisar canais de ", "canais de ", "canal ");
+                "pesquisar canais de ", "abra canais e pesquise ",
+                "abrir canais e pesquisar ", "eu quero ver canais de ",
+                "eu quero assistir canais de ", "quero ver canais de ",
+                "quero assistir canais de ", "canais de ", "canal ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_CHANNEL : Action.OPEN_CHANNEL;
