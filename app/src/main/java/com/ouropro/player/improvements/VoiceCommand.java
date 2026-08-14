@@ -53,6 +53,9 @@ public final class VoiceCommand {
         if (matches(normalized, "abrir configuracoes", "abrir ajustes", "ir para configuracoes")) {
             return new VoiceCommand(Action.OPEN_SETTINGS, "", original);
         }
+        if (matches(normalized, "o que posso assistir", "quero assistir alguma coisa", "me mostre opcoes", "me mostra opcoes", "sugira algo para assistir", "o que tem para assistir")) {
+            return new VoiceCommand(Action.OPEN_MOVIES, "", original);
+        }
         if (matches(normalized, "proximo canal", "canal seguinte", "mudar canal para frente")) {
             return new VoiceCommand(Action.NEXT_CHANNEL, "", original);
         }
@@ -69,7 +72,9 @@ public final class VoiceCommand {
         String query = removePrefix(normalized,
                 "abrir filme ", "abrir o filme ", "assistir filme ", "assistir o filme ",
                 "ver filme ", "ver o filme ", "buscar filme ", "buscar o filme ",
-                "pesquisar filme ", "pesquisar o filme ", "filme ");
+                "pesquisar filme ", "pesquisar o filme ", "me mostre filmes de ",
+                "mostre filmes de ", "procure filmes de ", "buscar filmes de ",
+                "pesquisar filmes de ", "filmes de ", "filme ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_MOVIE : Action.OPEN_MOVIE_ITEM;
@@ -79,7 +84,9 @@ public final class VoiceCommand {
         query = removePrefix(normalized,
                 "abrir serie ", "abrir a serie ", "assistir serie ", "assistir a serie ",
                 "ver serie ", "ver a serie ", "buscar serie ", "buscar a serie ",
-                "pesquisar serie ", "pesquisar a serie ", "serie ");
+                "pesquisar serie ", "pesquisar a serie ", "me mostre series de ",
+                "mostre series de ", "procure series de ", "buscar series de ",
+                "pesquisar series de ", "series de ", "serie ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_SERIES : Action.OPEN_SERIES_ITEM;
@@ -89,14 +96,17 @@ public final class VoiceCommand {
         query = removePrefix(normalized,
                 "abrir canal ", "abrir o canal ", "assistir canal ", "assistir o canal ",
                 "ver canal ", "ver o canal ", "buscar canal ", "buscar o canal ",
-                "pesquisar canal ", "pesquisar o canal ", "canal ");
+                "pesquisar canal ", "pesquisar o canal ", "me mostre canais de ",
+                "mostre canais de ", "procure canais de ", "buscar canais de ",
+                "pesquisar canais de ", "canais de ", "canal ");
         if (!query.isEmpty()) {
             Action action = normalized.startsWith("buscar ") || normalized.startsWith("pesquisar ")
                     ? Action.SEARCH_CHANNEL : Action.OPEN_CHANNEL;
             return new VoiceCommand(action, query, original);
         }
 
-        String untypedQuery = removePrefix(normalized, "abrir ", "assistir ", "ver ", "tocar ");
+        String untypedQuery = removePrefix(normalized, "abrir ", "assistir ", "ver ", "tocar ",
+                "me mostre ", "mostre ", "procure ", "pesquise ", "encontre ", "quero ver ", "quero assistir ");
         if (!untypedQuery.isEmpty()) {
             return new VoiceCommand(Action.OPEN_TITLE, untypedQuery, original);
         }
