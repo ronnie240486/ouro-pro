@@ -1,5 +1,6 @@
 package com.ouropro.player.activities;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -45,6 +46,7 @@ import com.ouropro.player.dlgfragment.SubtitleSettingDlgFragment;
 import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
+import com.ouropro.player.improvements.InAppApkUpdateTask;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LanguageModel;
 import com.ouropro.player.models.WordModels;
@@ -92,6 +94,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private String tv_mac_address = "";
     public SimpleDateFormat expire_format = new SimpleDateFormat("yyyy-MM-dd");
     public long expired_mils = 0;
+    private InAppApkUpdateTask updateTask;
 
     public class versionUpdate extends AsyncTask<String, Integer, String> {
         public File file;
@@ -351,15 +354,55 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
-        String apk_link;
-        AppInfoModel appInfoModel = this.appInfoModel;
-        if (appInfoModel == null || (apk_link = appInfoModel.getApk_link()) == null || apk_link.isEmpty()) {
-            apk_link = "https://renciaapp.manus.space/api/v4/update.php";
+        String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
+        if (apkLink == null || apkLink.trim().isEmpty()) {
+            apkLink = "https://renciaapp.manus.space/api/v4/update.php";
         }
-        Intent intent = new Intent("android.intent.action.VIEW", Uri.parse(apk_link));
-        intent.addCategory("android.intent.category.BROWSABLE");
-        intent.addFlags(268435456);
-        startActivity(intent);
+        if (!apkLink.startsWith("http://") && !apkLink.startsWith("https://")) {
+            Toast.makeText(this, "O link de atualização não é uma URL válida.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (this.updateTask != null && this.updateTask.getStatus() == AsyncTask.Status.RUNNING) {
+            return;
+        }
+        final String downloadUrl = apkLink.trim();
+        this.updateTask = new InAppApkUpdateTask(this, new InAppApkUpdateTask.Listener() {
+            @Override
+            public void onStarted() {
+                if (SettingActivity.this.progress_bar != null) {
+                    SettingActivity.this.progress_bar.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onProgress(int progress) {
+            }
+
+            @Override
+            public void onLatest(String message) {
+                if (SettingActivity.this.progress_bar != null) {
+                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
+                }
+                new AlertDialog.Builder(SettingActivity.this).setTitle("Atualização").setMessage(message).setPositiveButton("OK", null).show();
+            }
+
+            @Override
+            public void onReady(File file) {
+                if (SettingActivity.this.progress_bar != null) {
+                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
+                }
+                SettingActivity.this.startInstall(file);
+            }
+
+            @Override
+            public void onError(String message) {
+                if (SettingActivity.this.progress_bar != null) {
+                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
+                }
+                Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+        this.updateTask.execute(downloadUrl);
     }
 
     private void initView() {
@@ -762,6 +805,12 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void startInstall(File file) {
+        if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+            Intent permissionIntent = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
+            startActivity(permissionIntent);
+            Toast.makeText(this, "Permita instalar aplicativos desconhecidos e toque em Atualizar Agora novamente.", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent intent = new Intent("android.intent.action.VIEW");
         if (Build.VERSION.SDK_INT > 24) {
             intent.setDataAndType(FileProvider.getUriForFile(this, "com.ouropro.player.provider", file), "application/vnd.android.package-archive");

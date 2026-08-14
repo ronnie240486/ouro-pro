@@ -26,6 +26,9 @@ public class PreferenceHelper {
     private static final String EPISODE_MODELS = "episode_models";
     private static final String EPISODE_RESUME_MODEL = "episode_resume_model";
     private static final String EXTERNAL_PLAYER = "external_player";
+    private static final String FAILOVER_TRANSITION_ID = "failover_transition_id";
+    private static final String FAILOVER_ACKED_ALERTS = "failover_acked_alerts";
+    private static final String EXPIRATION_MODAL_KEY = "expiration_modal_key";
     private static final String FIRST_LUNCH = "first_lunch";
     private static final String FORWARD_STEP = "forward_step";
     private static final String INVISIBLE_LIVE_CATEGORIES = "invisible_live_categories";
@@ -85,6 +88,60 @@ public class PreferenceHelper {
             return new ArrayList();
         } catch (Exception unused) {
             return new ArrayList();
+        }
+    }
+
+    public long getSharedPreferenceFailoverTransitionId() {
+        try {
+            return this.settings.getLong(FAILOVER_TRANSITION_ID, 0L);
+        } catch (Exception unused) {
+            return 0L;
+        }
+    }
+
+    public boolean hasAcknowledgedFailoverAlert(long alertId) {
+        String stored = this.settings.getString(FAILOVER_ACKED_ALERTS, "");
+        if (stored == null || stored.isEmpty()) {
+            return false;
+        }
+        String wanted = String.valueOf(alertId);
+        for (String value : stored.split(",")) {
+            if (wanted.equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void markFailoverAlertAcknowledged(long alertId) {
+        if (alertId <= 0L || hasAcknowledgedFailoverAlert(alertId)) {
+            return;
+        }
+        String stored = this.settings.getString(FAILOVER_ACKED_ALERTS, "");
+        String updated = stored == null || stored.isEmpty() ? String.valueOf(alertId) : stored + "," + alertId;
+        String[] values = updated.split(",");
+        int start = Math.max(0, values.length - 50);
+        StringBuilder bounded = new StringBuilder();
+        for (int i = start; i < values.length; i++) {
+            if (bounded.length() > 0) {
+                bounded.append(',');
+            }
+            bounded.append(values[i]);
+        }
+        this.settings.edit().putString(FAILOVER_ACKED_ALERTS, bounded.toString()).apply();
+    }
+
+    public boolean hasShownExpirationModal(String modalKey) {
+        try {
+            return modalKey != null && modalKey.equals(this.settings.getString(EXPIRATION_MODAL_KEY, ""));
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
+    public void markExpirationModalShown(String modalKey) {
+        if (modalKey != null && !modalKey.trim().isEmpty()) {
+            this.settings.edit().putString(EXPIRATION_MODAL_KEY, modalKey.trim()).apply();
         }
     }
 
@@ -353,6 +410,10 @@ public class PreferenceHelper {
 
     public int getSharedPreferencePlaylistPosition() {
         return this.settings.getInt(PLAYLIST_POSITION, 0);
+    }
+
+    public void setSharedPreferenceFailoverTransitionId(long transitionId) {
+        this.settings.edit().putLong(FAILOVER_TRANSITION_ID, transitionId).apply();
     }
 
     public List<ResumeSeriesModel> getSharedPreferenceRecentSeriesNames() {
