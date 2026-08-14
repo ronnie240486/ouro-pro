@@ -34,7 +34,6 @@ public final class SeriesPosterRepair {
         // Para listas M3U, a capa original do episódio é a fonte de verdade.
         final Map<String, String> originalM3UPosters = new HashMap<>();
         final Map<String, String> uniqueNamePosters = new HashMap<>();
-        final Map<String, Integer> nameCounts = new HashMap<>();
         for (EpisodeModel episode : realm.where(EpisodeModel.class).findAll()) {
             if (episode == null || isBlank(episode.getSeries_name()) || isBlank(episode.getStream_icon())) {
                 continue;
@@ -43,7 +42,6 @@ public final class SeriesPosterRepair {
             String categoryKey = key(episode.getCategory_name());
             String scopedKey = categoryKey + "|" + nameKey;
             originalM3UPosters.putIfAbsent(scopedKey, episode.getStream_icon().trim());
-            nameCounts.put(nameKey, nameCounts.containsKey(nameKey) ? nameCounts.get(nameKey) + 1 : 1);
             uniqueNamePosters.putIfAbsent(nameKey, episode.getStream_icon().trim());
         }
         if (posters.isEmpty() && originalM3UPosters.isEmpty()) {
@@ -57,8 +55,7 @@ public final class SeriesPosterRepair {
                 String normalizedName = key(local.getName());
                 String scopedName = key(local.getCategory_name()) + "|" + normalizedName;
                 String originalM3UPoster = originalM3UPosters.get(scopedName);
-                if (isBlank(originalM3UPoster) && nameCounts.get(normalizedName) != null
-                        && nameCounts.get(normalizedName) == 1) {
+                if (isBlank(originalM3UPoster)) {
                     originalM3UPoster = uniqueNamePosters.get(normalizedName);
                 }
                 String poster = !isBlank(originalM3UPoster) ? originalM3UPoster : posters.get(normalizedName);
