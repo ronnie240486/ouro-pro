@@ -124,8 +124,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             try {
                 httpURLConnection = (HttpURLConnection) new URL(strArr[0]).openConnection();
                 try {
-                    httpURLConnection.setConnectTimeout(60000);
+                    httpURLConnection.setConnectTimeout(30000);
+                    httpURLConnection.setReadTimeout(60000);
+                    httpURLConnection.setRequestProperty("Accept", "application/vnd.android.package-archive, application/octet-stream");
+                    httpURLConnection.setUseCaches(false);
                     httpURLConnection.connect();
+                    if (httpURLConnection.getResponseCode() < 200 || httpURLConnection.getResponseCode() >= 300) {
+                        return "HTTP " + httpURLConnection.getResponseCode();
+                    }
                     int contentLength = httpURLConnection.getContentLength();
                     inputStream = httpURLConnection.getInputStream();
                     try {
@@ -163,6 +169,9 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                                 }
                             }
                             inputStream.close();
+                            if (this.file == null || !this.file.exists() || this.file.length() < 1024L) {
+                                return "Arquivo de atualização inválido";
+                            }
                         } catch (Exception e2) {
                             e = e2;
                             try {
@@ -351,15 +360,12 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
-        String apk_link;
-        AppInfoModel appInfoModel = this.appInfoModel;
-        if (appInfoModel == null || (apk_link = appInfoModel.getApk_link()) == null || apk_link.isEmpty()) {
-            apk_link = "https://renciaapp.manus.space/api/v4/update.php";
+        String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
+        if (apkLink == null || apkLink.trim().isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
+            Toast.makeText(this, "Nenhuma atualização foi configurada no painel.", Toast.LENGTH_LONG).show();
+            return;
         }
-        Intent intent = new Intent("android.intent.action.VIEW", Uri.parse(apk_link));
-        intent.addCategory("android.intent.category.BROWSABLE");
-        intent.addFlags(268435456);
-        startActivity(intent);
+        new versionUpdate().execute(apkLink.trim());
     }
 
     private void initView() {
@@ -762,9 +768,16 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void startInstall(File file) {
+        if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+            Intent permissionIntent = new Intent("android.settings.MANAGE_UNKNOWN_APP_SOURCES");
+            permissionIntent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(permissionIntent);
+            Toast.makeText(this, "Autorize a instalação por esta fonte e toque em Atualizar novamente.", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent intent = new Intent("android.intent.action.VIEW");
         if (Build.VERSION.SDK_INT > 24) {
-            intent.setDataAndType(FileProvider.getUriForFile(this, "com.ouropro.player.provider", file), "application/vnd.android.package-archive");
+            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName() + ".provider", file), "application/vnd.android.package-archive");
             intent.setFlags(268435456);
             intent.addFlags(1);
         } else {
