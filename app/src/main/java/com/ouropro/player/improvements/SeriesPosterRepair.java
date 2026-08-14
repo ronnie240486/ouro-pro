@@ -54,14 +54,17 @@ public final class SeriesPosterRepair {
             for (SeriesModel local : localSeries) {
                 String normalizedName = key(local.getName());
                 String scopedName = key(local.getCategory_name()) + "|" + normalizedName;
+                String catalogPoster = posters.get(normalizedName);
                 String originalM3UPoster = originalM3UPosters.get(scopedName);
                 if (isBlank(originalM3UPoster)) {
                     originalM3UPoster = uniqueNamePosters.get(normalizedName);
                 }
-                String poster = !isBlank(originalM3UPoster) ? originalM3UPoster : posters.get(normalizedName);
-                // Nunca substitui uma capa M3U original por uma capa remota/genérica.
-                if (!isBlank(poster) && !poster.equals(local.getStream_icon())
-                        && (!isBlank(originalM3UPoster) || isBlank(local.getStream_icon()))) {
+                // O catálogo Xtream é a fonte oficial da capa da série. A imagem
+                // de um episódio só pode preencher um card sem capa; nunca deve
+                // substituir uma capa existente do próprio SeriesModel.
+                String poster = !isBlank(catalogPoster) ? catalogPoster
+                        : (isBlank(local.getStream_icon()) ? originalM3UPoster : local.getStream_icon());
+                if (!isBlank(poster) && !poster.equals(local.getStream_icon())) {
                     local.setStream_icon(poster);
                     updated[0]++;
                 }

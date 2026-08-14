@@ -308,10 +308,6 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
                 if (!extractedId.isEmpty()) {
                     this.resolved_series_id = extractedId;
                 }
-                if (firstEpisode.getStream_icon() != null && !firstEpisode.getStream_icon().trim().isEmpty()
-                        && !"null".equalsIgnoreCase(firstEpisode.getStream_icon().trim())) {
-                    this.resolved_stream_icon = firstEpisode.getStream_icon().trim();
-                }
             }
         }
         this.stream_id = this.resolved_series_id;

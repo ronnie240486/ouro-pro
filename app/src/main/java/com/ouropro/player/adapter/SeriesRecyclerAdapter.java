@@ -110,16 +110,9 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         } else {
             vodViewHolder.image_fav.setVisibility(8);
         }
+        // O card representa a série e não um capítulo. Nunca substitua o
+        // poster original do SeriesModel pelo stream_icon de EpisodeModel.
         String posterUrl = item.getStream_icon();
-        try {
-            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesNameAndCategory(item.getName(), item.getCategory_name());
-            if (firstEpisode != null && firstEpisode.getStream_icon() != null
-                    && !firstEpisode.getStream_icon().trim().isEmpty()
-                    && !"null".equalsIgnoreCase(firstEpisode.getStream_icon().trim())) {
-                posterUrl = firstEpisode.getStream_icon().trim();
-            }
-        } catch (Exception ignored) {
-        }
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, posterUrl, R.drawable.default_bg, vodViewHolder.image_logo);
         vodViewHolder.btn_trailer.setVisibility(View.VISIBLE);
         vodViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, item.getName()));
