@@ -90,6 +90,9 @@ public class BaseActivity extends AppCompatActivity {
                 String key = intent.getStringExtra(PlaylistFailoverManager.EXTRA_EXPIRATION_KEY);
                 String title = intent.getStringExtra(PlaylistFailoverManager.EXTRA_EXPIRATION_TITLE);
                 String message = intent.getStringExtra(PlaylistFailoverManager.EXTRA_EXPIRATION_MESSAGE);
+                if (key == null || title == null || message == null) {
+                    return;
+                }
                 new android.app.AlertDialog.Builder(BaseActivity.this).setTitle(title).setMessage(message).setPositiveButton("OK", (dialog, which) -> {
                     new PreferenceHelper(BaseActivity.this).markExpirationModalShown(key);
                 }).setOnDismissListener(dialog -> new PreferenceHelper(BaseActivity.this).markExpirationModalShown(key)).show();
@@ -106,14 +109,10 @@ public class BaseActivity extends AppCompatActivity {
             preferenceHelper.setSharedPreferencePlaylistPosition(intent.getIntExtra(PlaylistFailoverManager.EXTRA_PLAYLIST_POSITION, 0));
             preferenceHelper.setSharedPreferenceISM3U(true);
             setStop(false);
-            String message = intent.getStringExtra(PlaylistFailoverManager.EXTRA_MESSAGE);
             if (BaseActivity.isBusy()) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> reloadM3UData(playlistUrl, wordModels), 10000L);
             } else {
                 reloadM3UData(playlistUrl, wordModels);
-            }
-            if (message != null && !message.trim().isEmpty()) {
-                Toast.makeText(BaseActivity.this, message.trim(), Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -1732,10 +1731,10 @@ public class BaseActivity extends AppCompatActivity {
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
         try {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC);
-            filter.addAction(PlaylistFailoverManager.ACTION_EXPIRATION_NOTICE);
-            ContextCompat.registerReceiver(this, this.failoverReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+            IntentFilter failoverFilter = new IntentFilter();
+            failoverFilter.addAction(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC);
+            failoverFilter.addAction(PlaylistFailoverManager.ACTION_EXPIRATION_NOTICE);
+            ContextCompat.registerReceiver(this, this.failoverReceiver, failoverFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
             this.failoverReceiverRegistered = true;
         } catch (Exception ignored) {
         }

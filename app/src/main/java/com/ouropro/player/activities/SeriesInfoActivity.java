@@ -23,6 +23,7 @@ import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda0;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.M3UAccountEndpoint;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.utils.Utils;
@@ -58,7 +59,19 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
     public WordModels wordModels = new WordModels();
 
     private void getSeriesInfo() {
-        Volley.newRequestQueue(this).add(new StringRequest(0, this.preferenceHelper.getSharedPreferenceServerUrl() + "/player_api.php?action=get_series_info&username=" + this.preferenceHelper.getSharedPreferenceUsername() + "&password=" + this.preferenceHelper.getSharedPreferencePassword() + "&series_id=" + this.stream_id, new SeriesInfoActivity$$ExternalSyntheticLambda0(this, 0), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$9));
+        String configuredServer = this.preferenceHelper.getSharedPreferenceServerUrl();
+        M3UAccountEndpoint.Credentials credentials = M3UAccountEndpoint.fromPlaylistUrl(configuredServer);
+        String baseUrl = credentials == null ? configuredServer : credentials.getBaseUrl();
+        String username = credentials == null ? this.preferenceHelper.getSharedPreferenceUsername() : credentials.getUsername();
+        String password = credentials == null ? this.preferenceHelper.getSharedPreferencePassword() : credentials.getPassword();
+        if (baseUrl == null || baseUrl.trim().isEmpty()) {
+            return;
+        }
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
+        String url = baseUrl + "player_api.php?action=get_series_info&username=" + Uri.encode(username == null ? "" : username) + "&password=" + Uri.encode(password == null ? "" : password) + "&series_id=" + Uri.encode(this.stream_id == null ? "" : this.stream_id);
+        Volley.newRequestQueue(this).add(new StringRequest(0, url, new SeriesInfoActivity$$ExternalSyntheticLambda0(this, 0), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$9));
     }
 
     private void goToSeason() {
@@ -110,6 +123,13 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
             JSONObject jSONObject = new JSONObject(str);
             if (jSONObject.has("info")) {
                 JSONObject jSONObject2 = jSONObject.getJSONObject("info");
+                String plot = jSONObject2.optString("plot", "");
+                if (plot.trim().isEmpty()) {
+                    plot = jSONObject2.optString("description", "");
+                }
+                if (!plot.trim().isEmpty()) {
+                    this.txt_description.setText(plot);
+                }
                 if (jSONObject2.has("backdrop_path")) {
                     try {
                         this.series_background = jSONObject2.getJSONArray("backdrop_path").getString(0);
@@ -151,6 +171,9 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void watchYoutubeVideo(String str) {
+        TrailerSearchActivity.open(this, this.currentSeries == null ? this.txt_name.getText().toString() : this.currentSeries.getName());
+        return;
+        /*
         if (!GetSharedInfo.isTVDevice(this)) {
             try {
                 Intent intent = new Intent("android.intent.action.VIEW", Uri.parse("vnd.youtube:" + str));
@@ -174,6 +197,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         intent3.putExtra("description", this.currentSeries.getPlot());
         intent3.putExtra("image_url", this.currentSeries.getStream_icon());
         startActivity(intent3);
+        */
     }
 
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
@@ -229,12 +253,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
                 goToSeason();
                 break;
             case R.id.btn_trailer /* 2131427489 */:
-                String youtube = this.currentSeries.getYoutube();
-                if (youtube == null || youtube.isEmpty()) {
-                    Toast.makeText(this, this.wordModels.getNo_trailer(), 0).show();
-                } else {
-                    watchYoutubeVideo(youtube);
-                }
+                watchYoutubeVideo(this.currentSeries == null ? "" : this.currentSeries.getYoutube());
                 break;
         }
     }
@@ -289,16 +308,10 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
             Glide.with((FragmentActivity) this).load(Integer.valueOf(R.drawable.default_series)).error(R.drawable.default_series).into(this.movie_logo);
         }
         setSeriesInfo();
-        if (!this.preferenceHelper.getSharedPreferenceISM3U()) {
-            getSeriesInfo();
-        }
-        if (this.currentSeries.getYoutube().isEmpty()) {
-            this.btn_trailer.setVisibility(8);
-            this.btn_play.setNextFocusRightId(R.id.btn_fav);
-            this.btn_favorite.setNextFocusLeftId(R.id.btn_play);
-        } else {
-            this.btn_trailer.setVisibility(0);
-        }
+        getSeriesInfo();
+        this.btn_trailer.setVisibility(0);
+        this.btn_play.setNextFocusRightId(R.id.btn_trailer);
+        this.btn_favorite.setNextFocusLeftId(R.id.btn_trailer);
         this.btn_back.setFocusable(false);
         this.btn_play.requestFocus();
     }

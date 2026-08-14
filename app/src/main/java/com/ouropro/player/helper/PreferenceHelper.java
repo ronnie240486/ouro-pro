@@ -100,15 +100,18 @@ public class PreferenceHelper {
     }
 
     public boolean hasAcknowledgedFailoverAlert(long alertId) {
-        String stored = this.settings.getString(FAILOVER_ACKED_ALERTS, "");
-        if (stored == null || stored.isEmpty()) {
-            return false;
-        }
-        String wanted = String.valueOf(alertId);
-        for (String value : stored.split(",")) {
-            if (wanted.equals(value)) {
-                return true;
+        try {
+            String stored = this.settings.getString(FAILOVER_ACKED_ALERTS, "");
+            if (stored == null || stored.isEmpty()) {
+                return false;
             }
+            String wanted = String.valueOf(alertId);
+            for (String value : stored.split(",")) {
+                if (wanted.equals(value)) {
+                    return true;
+                }
+            }
+        } catch (Exception unused) {
         }
         return false;
     }
@@ -381,21 +384,36 @@ public class PreferenceHelper {
     public String getSharedPreferenceMacAddress() {
         try {
             String string = this.settings.getString(MAC_ADDRESS, "");
-            if (string == null || string.isEmpty()) {
-                return null;
+            if (string != null && !string.trim().isEmpty()) {
+                return string;
             }
-            return string;
+            AppInfoModel cachedInfo = getSharedPreferenceAppInfo();
+            if (cachedInfo != null && cachedInfo.getMac_address() != null && !cachedInfo.getMac_address().trim().isEmpty()) {
+                String cachedMac = cachedInfo.getMac_address().trim();
+                this.settings.edit().putString(MAC_ADDRESS, cachedMac).apply();
+                return cachedMac;
+            }
+            return null;
         } catch (Exception unused) {
             return null;
         }
     }
 
+    public boolean isParentPasswordConfigured() {
+        try {
+            String value = this.settings.getString(PARENT_CONTROL, "");
+            return value != null && value.matches("\\d{4}") && !"0000".equals(value);
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
     public String getSharedPreferenceParentPassword() {
         try {
-            String string = this.settings.getString(PARENT_CONTROL, "0000");
-            return (string == null || string.isEmpty()) ? "0000" : string;
+            String string = this.settings.getString(PARENT_CONTROL, "");
+            return string == null || string.isEmpty() || "0000".equals(string) ? "" : string;
         } catch (Exception unused) {
-            return "0000";
+            return "";
         }
     }
 

@@ -80,7 +80,9 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
+import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -164,6 +166,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
     public String stream_id = "";
     public boolean is_full = false;
     public Handler handler = new Handler();
+    public HeartbeatPeriodicHelper heartbeatHelper;
     public String categoryName = "";
     public boolean is_system_setting = false;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new LiveChannelMobileActivity$$ExternalSyntheticLambda0(this));
@@ -527,10 +530,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
     }
 
     private boolean isAdultChannel(String str, String str2) {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            return str2.contains("adult") || str2.contains("xxx") || str2.contains("porn");
-        }
-        return Constants.xxx_live_categories.contains(str);
+        String value = ((str == null ? "" : str) + " " + (str2 == null ? "" : str2)).toLowerCase(java.util.Locale.US);
+        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(str);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -592,12 +593,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             }
             this.channelAdapter.updateData(this.epgChannels, this.channel_pos);
             this.selectedChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -620,17 +617,13 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
                     }
                     this.is_full = true;
                     setFull();
-                } else if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+                } else if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
                     showChannelLockDlgFragment(ePGChannel, num.intValue(), 0);
                 } else {
                     this.channel_pos = num.intValue();
                     playSelectedChannel(ePGChannel);
-                    if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                        showEpgInfo(null);
-                    } else {
-                        this.handler.removeCallbacks(this.epgTicker);
-                        epgTimer(ePGChannel.getStream_id());
-                    }
+                    this.handler.removeCallbacks(this.epgTicker);
+                    epgTimer(ePGChannel.getStream_id());
                     String name = ePGChannel.getName();
                     this.channel_name = name;
                     this.txt_name.setText(name);
@@ -684,7 +677,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         if (this.epgChannels.size() <= 0 || this.channel_pos >= this.epgChannels.size()) {
             return;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -711,7 +704,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         if (this.epgChannels.size() <= 0 || this.channel_pos >= this.epgChannels.size()) {
             return;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -733,10 +726,17 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         if (ePGChannel != null) {
             this.preferenceHelper.setSharedPreferenceCategoryPos(this.category_pos);
             this.preferenceHelper.setSharedPreferenceChannelPos(this.channel_pos);
-            this.selectedChannel = ePGChannel;
-            this.stream_id = ePGChannel.getStream_id();
-            this.channel_name = this.selectedChannel.getName();
-            showFavImageIcon(this.selectedChannel.is_favorite());
+        this.selectedChannel = ePGChannel;
+        this.stream_id = ePGChannel.getStream_id();
+        this.channel_name = this.selectedChannel.getName();
+        HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+        if (currentHeartbeat != null) {
+            currentHeartbeat.stop();
+        }
+        HeartbeatPeriodicHelper nextHeartbeat = new HeartbeatPeriodicHelper();
+        this.heartbeatHelper = nextHeartbeat;
+        nextHeartbeat.start(this.preferenceHelper.getSharedPreferenceMacAddress(), this.channel_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+        showFavImageIcon(this.selectedChannel.is_favorite());
             if (this.preferenceHelper.getSharedPreferenceISM3U()) {
                 this.content_url = this.selectedChannel.getUrl();
             } else {
@@ -1350,15 +1350,18 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         this.recycler_channel.requestFocus();
         this.recycler_channel.scrollToPosition(this.channel_pos);
         this.epgAdapter = new EpgRecyclerAdapter(this, new ArrayList());
+        EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);
         if (this.epgChannels.size() > 0) {
             setFull();
-            if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
-                this.channel_pos = 0;
+            EPGChannel initialChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
+            if (isAdultChannel(initialChannel.getCategory_id(), initialChannel.getCategory_name())) {
+                showChannelLockDlgFragment(initialChannel, this.channel_pos, 2);
+                return;
             }
-            playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
+            playSelectedChannel(initialChannel);
             this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
             this.handler.removeCallbacks(this.epgTicker);
             epgTimer(this.stream_id);
@@ -1368,6 +1371,16 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             showFavImageIcon(((EPGChannel) this.epgChannels.get(this.channel_pos)).is_favorite());
             changeChannelInfo(this.channel_pos);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
+        if (currentHeartbeat != null) {
+            currentHeartbeat.stop();
+            this.heartbeatHelper = null;
+        }
+        super.onDestroy();
     }
 
     public void onPause() {

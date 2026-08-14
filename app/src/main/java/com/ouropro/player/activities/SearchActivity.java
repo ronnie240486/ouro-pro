@@ -71,6 +71,48 @@ public class SearchActivity extends AppCompatActivity {
         return Constants.xxx_vod_categories.contains(str2);
     }
 
+    private boolean isAdultChannel(String categoryId, String categoryName) {
+        String value = ((categoryId == null ? "" : categoryId) + " " + (categoryName == null ? "" : categoryName)).toLowerCase(java.util.Locale.US);
+        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(categoryId);
+    }
+
+    private void openLiveChannel(EPGChannel channel) {
+        RealmController.with().addToRecentChannels(channel.getName(), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$8);
+        saveCategoryAndChannelPosition(channel);
+        if (this.is_live) {
+            Intent intent = new Intent();
+            intent.putExtra("is_changed", "from_search");
+            setResult(-1, intent);
+            finish();
+        } else if (GetSharedInfo.isTVDevice(this)) {
+            Intent intent2 = new Intent(this, LiveActivity.class);
+            intent2.putExtra("is_full", true);
+            startActivity(intent2);
+        } else {
+            Intent intent3 = new Intent(this, LiveMobileActivity.class);
+            intent3.putExtra("is_full", true);
+            startActivity(intent3);
+        }
+    }
+
+    private void showLiveLockDlgFragment(final EPGChannel channel) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        Fragment existing = manager.findFragmentByTag("fragment_lock_live");
+        if (existing != null) {
+            Insets$$ExternalSyntheticOutline0.m(transaction, existing, (String) null);
+            return;
+        }
+        LockDlgFragment dialog = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
+        this.lockDlgFragment = dialog;
+        dialog.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() {
+            public void OnPinCorrect() { SearchActivity.this.openLiveChannel(channel); }
+            public void OnPinIncorrect() { Toast.makeText(SearchActivity.this, SearchActivity.this.wordModels.getPin_incorrect(), Toast.LENGTH_SHORT).show(); }
+            public void OnPutPinCode() { Toast.makeText(SearchActivity.this, "Configure o Controle Parental nas Configurações antes de desbloquear.", Toast.LENGTH_LONG).show(); }
+        });
+        dialog.show(manager, "fragment_lock_live");
+    }
+
     private String getMovieCategoryName(String str) {
         for (CategoryModel categoryModel : LTVApp.series_categories_filter) {
             if (categoryModel.getId().equalsIgnoreCase(str)) {
@@ -178,24 +220,11 @@ public class SearchActivity extends AppCompatActivity {
         if (!bool.booleanValue()) {
             return null;
         }
-        RealmController.with().addToRecentChannels(ePGChannel.getName(), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$8);
-        saveCategoryAndChannelPosition(ePGChannel);
-        if (this.is_live) {
-            Intent intent = new Intent();
-            intent.putExtra("is_changed", "from_search");
-            setResult(-1, intent);
-            finish();
+        if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+            showLiveLockDlgFragment(ePGChannel);
             return null;
         }
-        if (GetSharedInfo.isTVDevice(this)) {
-            Intent intent2 = new Intent(this, (Class<?>) LiveActivity.class);
-            intent2.putExtra("is_full", true);
-            startActivity(intent2);
-            return null;
-        }
-        Intent intent3 = new Intent(this, (Class<?>) LiveMobileActivity.class);
-        intent3.putExtra("is_full", true);
-        startActivity(intent3);
+        openLiveChannel(ePGChannel);
         return null;
     }
 

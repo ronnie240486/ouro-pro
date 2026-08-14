@@ -79,6 +79,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
+import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -155,6 +156,8 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
     public TextView txt_live;
     public TextView txt_movie;
     public TextView txt_name;
+    public String epgNowDisplay = "carregando EPG...";
+    public String epgNextDisplay = "aguardando programação...";
     public TextView txt_next_program;
     public TextView txt_next_time;
     public TextView txt_num;
@@ -686,7 +689,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(this.selectedChannel.is_favorite());
             changeChannelInfo(this.channel_pos);
         }
@@ -707,7 +710,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                     }
                     this.is_full = true;
                     setFull();
-                } else if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+                } else if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
                     showChannelLockDlgFragment(ePGChannel, num.intValue(), 0);
                 } else {
                     this.channel_pos = num.intValue();
@@ -722,7 +725,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
                     epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(ePGChannel.is_favorite());
             changeChannelInfo(this.pre_channel_pos);
         }
@@ -771,7 +774,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         } else {
             this.channel_pos = 0;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -788,7 +791,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         }
         this.handler.removeCallbacks(this.hideInfoTicker);
         mInfoHideTimer();
-        this.txt_name.setText(this.channel_name);
+        updateChannelDiagnosticText();
         this.recycler_channel.setSelectedPosition(this.channel_pos);
     }
 
@@ -799,7 +802,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         } else {
             this.channel_pos = this.epgChannels.size() - 1;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
@@ -811,7 +814,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
             epgTimer(this.stream_id);
         }
         changeChannelInfo(this.channel_pos);
-        this.txt_name.setText(this.channel_name);
+        updateChannelDiagnosticText();
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
         }
@@ -1342,7 +1345,23 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
     }
 
     /* JADX INFO: Access modifiers changed from: private */
+    private void updateChannelDiagnosticText() {
+        if (this.txt_name == null) {
+            return;
+        }
+        String title = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
+        this.txt_name.setMaxLines(1);
+        this.txt_name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        this.txt_name.setTextColor(Color.WHITE);
+        this.txt_name.setText(title);
+    }
+
     public void showEpgInfo(List<CatchUpEpg> list) {
+        if (this.recycler_epg != null) {
+            this.recycler_epg.setVisibility(View.VISIBLE);
+            this.recycler_epg.bringToFront();
+            this.recycler_epg.requestLayout();
+        }
         if (list == null || list.size() == 0) {
             this.epgAdapter.setEpgList(new ArrayList());
             setCurrentEpgEvent(new ArrayList());
@@ -1775,21 +1794,24 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         setFocusTopView(false);
         setFocusButtons(false);
         this.epgAdapter = new EpgRecyclerAdapter(this, new ArrayList());
+        EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);
         if (this.epgChannels.size() > 0) {
             setFull();
-            if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
-                this.channel_pos = 0;
+            EPGChannel initialChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
+            if (isAdultChannel(initialChannel.getCategory_id(), initialChannel.getCategory_name())) {
+                showChannelLockDlgFragment(initialChannel, this.channel_pos, 2);
+                return;
             }
-            playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
+            playSelectedChannel(initialChannel);
             this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
             this.handler.removeCallbacks(this.epgTicker);
             epgTimer(this.stream_id);
             String name = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelDiagnosticText();
             showFavImageIcon(((EPGChannel) this.epgChannels.get(this.channel_pos)).is_favorite());
             changeChannelInfo(this.channel_pos);
             this.recycler_channel.requestFocus();

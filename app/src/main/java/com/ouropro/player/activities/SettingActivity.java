@@ -30,6 +30,7 @@ import com.ouropro.player.R;
 import com.ouropro.player.adapter.SettingRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda0;
+import com.ouropro.player.apps.Constants;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda1;
 import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.apps.SideMenu;
@@ -45,8 +46,8 @@ import com.ouropro.player.dlgfragment.PayForTvDlgFragment;
 import com.ouropro.player.dlgfragment.SubtitleSettingDlgFragment;
 import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
-import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.improvements.InAppApkUpdateTask;
+import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LanguageModel;
 import com.ouropro.player.models.WordModels;
@@ -70,6 +71,7 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
+    private static final int UPDATE_INFO_REQUEST_CODE = 1400;
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
     public double api_version;
@@ -94,7 +96,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private String tv_mac_address = "";
     public SimpleDateFormat expire_format = new SimpleDateFormat("yyyy-MM-dd");
     public long expired_mils = 0;
-    private InAppApkUpdateTask updateTask;
 
     public class versionUpdate extends AsyncTask<String, Integer, String> {
         public File file;
@@ -127,8 +128,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             try {
                 httpURLConnection = (HttpURLConnection) new URL(strArr[0]).openConnection();
                 try {
-                    httpURLConnection.setConnectTimeout(60000);
+                    httpURLConnection.setConnectTimeout(30000);
+                    httpURLConnection.setReadTimeout(60000);
+                    httpURLConnection.setRequestProperty("Accept", "application/vnd.android.package-archive, application/octet-stream");
+                    httpURLConnection.setUseCaches(false);
                     httpURLConnection.connect();
+                    if (httpURLConnection.getResponseCode() < 200 || httpURLConnection.getResponseCode() >= 300) {
+                        return "HTTP " + httpURLConnection.getResponseCode();
+                    }
                     int contentLength = httpURLConnection.getContentLength();
                     inputStream = httpURLConnection.getInputStream();
                     try {
@@ -166,6 +173,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                                 }
                             }
                             inputStream.close();
+                            if (this.file == null || !this.file.exists() || this.file.length() < 1024L) {
+                                return "Arquivo de atualização inválido";
+                            }
+                            android.content.pm.PackageInfo packageInfo = SettingActivity.this.getPackageManager().getPackageArchiveInfo(this.file.getAbsolutePath(), android.content.pm.PackageManager.GET_META_DATA);
+                            if (packageInfo == null || !SettingActivity.this.getPackageName().equals(packageInfo.packageName)) {
+                                this.file.delete();
+                                return "O link não aponta para um APK OuroPro direto";
+                            }
                         } catch (Exception e2) {
                             e = e2;
                             try {
@@ -291,7 +306,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             String str2 = str;
             this.mProgressDialog.dismiss();
             if (str2 != null) {
-                Toast.makeText(SettingActivity.this.getApplicationContext(), SettingActivity.this.wordModels.getUpdate_failed(), 0).show();
+                Toast.makeText(SettingActivity.this.getApplicationContext(), str2, Toast.LENGTH_LONG).show();
             } else {
                 SettingActivity.this.startInstall(this.file);
             }
@@ -354,55 +369,51 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
-        String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
-        if (apkLink == null || apkLink.trim().isEmpty()) {
-            apkLink = "https://renciaapp.manus.space/api/v4/update.php";
+        try {
+            String payload = Security.getStringData(
+                    Utils.getDeviceId(this),
+                    LTVApp.version_name,
+                    false,
+                    this.preferenceHelper.getSharedPreferenceDeviceType()).trim();
+            GetDataRequest request = new GetDataRequest(this, UPDATE_INFO_REQUEST_CODE);
+            request.setOnGetResponseListener(this);
+            request.getResponse(Security.getJsonData(payload), Constants.second_response_url);
+        } catch (Exception error) {
+            startUpdateDownload("");
         }
-        if (!apkLink.startsWith("http://") && !apkLink.startsWith("https://")) {
-            Toast.makeText(this, "O link de atualização não é uma URL válida.", Toast.LENGTH_LONG).show();
+    }
+
+    private void startUpdateDownload(String serverLink) {
+        String apkLink = serverLink == null ? "" : serverLink.trim();
+        if (apkLink.isEmpty()) {
+            showUpdateError("O painel não retornou um link de APK atualizado");
             return;
         }
-        if (this.updateTask != null && this.updateTask.getStatus() == AsyncTask.Status.RUNNING) {
+        if (!(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
+            showUpdateError("O painel retornou um link de atualização inválido");
             return;
         }
-        final String downloadUrl = apkLink.trim();
-        this.updateTask = new InAppApkUpdateTask(this, new InAppApkUpdateTask.Listener() {
-            @Override
-            public void onStarted() {
-                if (SettingActivity.this.progress_bar != null) {
-                    SettingActivity.this.progress_bar.setVisibility(View.VISIBLE);
+        String cacheBustedLink = apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis();
+        new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
+            @Override public void onSuccess(File apk) {
+                startInstall(apk);
+            }
+            @Override public void onFailure(String message) {
+                if (message != null && message.startsWith("Seu APK já está na última versão")) {
+                    new AlertDialog.Builder(SettingActivity.this)
+                            .setTitle("Atualização")
+                            .setMessage(message)
+                            .setPositiveButton("OK", null)
+                            .show();
+                } else {
+                    Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
                 }
             }
+        }).execute(cacheBustedLink);
+    }
 
-            @Override
-            public void onProgress(int progress) {
-            }
-
-            @Override
-            public void onLatest(String message) {
-                if (SettingActivity.this.progress_bar != null) {
-                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
-                }
-                new AlertDialog.Builder(SettingActivity.this).setTitle("Atualização").setMessage(message).setPositiveButton("OK", null).show();
-            }
-
-            @Override
-            public void onReady(File file) {
-                if (SettingActivity.this.progress_bar != null) {
-                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
-                }
-                SettingActivity.this.startInstall(file);
-            }
-
-            @Override
-            public void onError(String message) {
-                if (SettingActivity.this.progress_bar != null) {
-                    SettingActivity.this.progress_bar.setVisibility(View.GONE);
-                }
-                Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-        });
-        this.updateTask.execute(downloadUrl);
+    private void showUpdateError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private void initView() {
@@ -806,14 +817,15 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     /* JADX INFO: Access modifiers changed from: private */
     public void startInstall(File file) {
         if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
-            Intent permissionIntent = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
+            Intent permissionIntent = new Intent("android.settings.MANAGE_UNKNOWN_APP_SOURCES");
+            permissionIntent.setData(Uri.parse("package:" + getPackageName()));
             startActivity(permissionIntent);
-            Toast.makeText(this, "Permita instalar aplicativos desconhecidos e toque em Atualizar Agora novamente.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Autorize a instalação por esta fonte e toque em Atualizar novamente.", Toast.LENGTH_LONG).show();
             return;
         }
         Intent intent = new Intent("android.intent.action.VIEW");
         if (Build.VERSION.SDK_INT > 24) {
-            intent.setDataAndType(FileProvider.getUriForFile(this, "com.ouropro.player.provider", file), "application/vnd.android.package-archive");
+            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName() + ".provider", file), "application/vnd.android.package-archive");
             intent.setFlags(268435456);
             intent.addFlags(1);
         } else {
@@ -831,6 +843,27 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     }
 
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
+        if (i == UPDATE_INFO_REQUEST_CODE) {
+            String freshLink = "";
+            try {
+                if (jSONObject != null && jSONObject.has("data")) {
+                    JSONObject decoded = new JSONObject(Security.getDecodedString(jSONObject.getString("data")));
+                    AppInfoModel freshInfo = new com.google.gson.Gson().fromJson(decoded.toString(), AppInfoModel.class);
+                    if (freshInfo != null) {
+                        this.appInfoModel = freshInfo;
+                        this.preferenceHelper.setSharedPreferenceAppInfo(freshInfo);
+                        if (freshInfo.getMac_address() != null && !freshInfo.getMac_address().trim().isEmpty()) {
+                            this.preferenceHelper.setSharedPreferenceMacAddress(freshInfo.getMac_address());
+                        }
+                        Utils.saveToFile(freshInfo);
+                        freshLink = freshInfo.getApk_link();
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            startUpdateDownload(freshLink);
+            return;
+        }
         if (jSONObject != null) {
             if (i != 2000) {
                 if (jSONObject.has("data")) {

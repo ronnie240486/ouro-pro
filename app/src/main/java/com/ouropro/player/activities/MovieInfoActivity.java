@@ -153,7 +153,9 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void getMovieInfo() {
-        RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_vod_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.stream_id).enqueue(new Callback<MovieInfoResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.1
+        String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        boolean allowLegacyCleartext = server != null && server.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
+        RetroClass.getAPIService(server, allowLegacyCleartext).get_vod_info(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.stream_id).enqueue(new Callback<MovieInfoResponse>() { // from class: com.ouropro.player.activities.MovieInfoActivity.1
             public void onFailure(Call<MovieInfoResponse> call, Throwable th) {
                 MovieInfoActivity.this.setNoDescriptionData();
             }
@@ -329,13 +331,9 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         if (!this.movieInfoResponse.getInfo().getCover_big().isEmpty()) {
             Glide.with(getApplicationContext()).load(this.movieInfoResponse.getInfo().getCover_big()).into(this.movie_bg);
         }
-        if (this.movieInfoResponse.getInfo().getYoutube_trailer().isEmpty()) {
-            this.btn_trailer.setVisibility(8);
-            this.btn_favorite.setNextFocusLeftId(R.id.btn_play);
-            this.btn_play.setNextFocusRightId(R.id.btn_fav);
-        } else {
-            this.btn_trailer.setVisibility(0);
-        }
+        this.btn_trailer.setVisibility(0);
+        this.btn_favorite.setNextFocusLeftId(R.id.btn_trailer);
+        this.btn_play.setNextFocusRightId(R.id.btn_trailer);
         if (this.movieInfoResponse.getInfo().getTmdb_id().isEmpty()) {
             return;
         }
@@ -352,9 +350,9 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         this.txt_duration.setText("N/A");
         this.txt_description.setText(this.wordModels.getNo_information());
         this.txt_added.setText("N/A");
-        this.btn_trailer.setVisibility(8);
-        this.btn_play.setNextFocusRightId(R.id.btn_fav);
-        this.btn_favorite.setNextFocusLeftId(R.id.btn_play);
+        this.btn_trailer.setVisibility(0);
+        this.btn_play.setNextFocusRightId(R.id.btn_trailer);
+        this.btn_favorite.setNextFocusLeftId(R.id.btn_trailer);
     }
 
     private void showExternalPlayerDialog(int i) {
@@ -365,6 +363,9 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void watchYoutubeVideo(String str) {
+        TrailerSearchActivity.open(this, this.currentMovie == null ? this.txt_name.getText().toString() : this.currentMovie.getName());
+        return;
+        /*
         if (!GetSharedInfo.isTVDevice(this)) {
             try {
                 Intent intent = new Intent("android.intent.action.VIEW", Uri.parse("vnd.youtube:" + str));
@@ -388,6 +389,7 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         intent3.putExtra("description", this.txt_description.getText().toString());
         intent3.putExtra("image_url", this.currentMovie.getStream_icon());
         startActivity(intent3);
+        */
     }
 
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
@@ -574,17 +576,7 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
                 }
                 break;
             case R.id.btn_trailer /* 2131427489 */:
-                MovieInfoResponse movieInfoResponse = this.movieInfoResponse;
-                if (movieInfoResponse == null) {
-                    Toast.makeText(this, this.wordModels.getNo_trailer(), 0).show();
-                } else {
-                    String youtube_trailer = movieInfoResponse.getInfo().getYoutube_trailer();
-                    if (youtube_trailer == null || youtube_trailer.isEmpty()) {
-                        Toast.makeText(this, this.wordModels.getNo_trailer(), 0).show();
-                    } else {
-                        watchYoutubeVideo(youtube_trailer);
-                    }
-                }
+                TrailerSearchActivity.open(this, this.currentMovie == null ? this.txt_name.getText().toString() : this.currentMovie.getName());
                 break;
         }
     }
@@ -619,11 +611,8 @@ public class MovieInfoActivity extends AppCompatActivity implements View.OnClick
         } catch (Exception unused) {
             Glide.with(getApplicationContext()).load(Integer.valueOf(R.drawable.default_bg)).error(R.drawable.default_bg).into(this.movie_logo);
         }
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            setNoDescriptionData();
-        } else {
-            getMovieInfo();
-        }
+        setNoDescriptionData();
+        getMovieInfo();
         this.btn_play.requestFocus();
     }
 

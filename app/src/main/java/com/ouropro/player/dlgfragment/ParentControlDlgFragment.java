@@ -32,6 +32,7 @@ public class ParentControlDlgFragment extends DialogFragment {
     public TextView str_password;
     public TextView txt_name;
     public String pin_code = "";
+    public boolean pinConfigured = false;
     public WordModels wordModels = new WordModels();
 
     private void initView(View view) {
@@ -86,7 +87,7 @@ public class ParentControlDlgFragment extends DialogFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public /* synthetic */ void lambda$initView$1(View view) {
-        if (this.et_password.getText().toString().isEmpty()) {
+        if (this.pinConfigured && this.et_password.getText().toString().isEmpty()) {
             this.et_password.setError("Password can't be empty!");
             return;
         }
@@ -102,7 +103,7 @@ public class ParentControlDlgFragment extends DialogFragment {
             this.et_confirm_password.setError("Confirm password can't be empty!");
             return;
         }
-        if (!this.pin_code.equalsIgnoreCase(this.et_password.getText().toString())) {
+        if (this.pinConfigured && !this.pin_code.equalsIgnoreCase(this.et_password.getText().toString())) {
             this.et_password.setError("Password is incorrect!");
         } else if (this.et_new_password.getText().toString().equalsIgnoreCase(this.et_confirm_password.getText().toString())) {
             updatePinCode();
@@ -148,6 +149,11 @@ public class ParentControlDlgFragment extends DialogFragment {
         this.sharedPreferenceHelper = preferenceHelper;
         preferenceHelper.getSharedPreferenceAppInfo();
         this.pin_code = this.sharedPreferenceHelper.getSharedPreferenceParentPassword();
+        this.pinConfigured = this.sharedPreferenceHelper.isParentPasswordConfigured();
+        if (!this.pinConfigured) {
+            this.et_password.setVisibility(View.GONE);
+            this.str_password.setVisibility(View.GONE);
+        }
         WordModels wordModel = GetSharedInfo.getWordModel(getContext());
         this.wordModels = wordModel;
         this.txt_name.setText(wordModel.getParent_control());

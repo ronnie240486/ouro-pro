@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -62,7 +63,7 @@ public class RadioActivity extends AppCompatActivity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(20), dp(14), dp(20), dp(14));
-        root.setBackgroundColor(PAGE);
+        root.setBackgroundColor(Color.TRANSPARENT);
 
         LinearLayout header = new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
@@ -108,7 +109,23 @@ public class RadioActivity extends AppCompatActivity {
         stationList.setAdapter(stationAdapter);
         content.addView(stationList, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
         root.addView(content);
-        setContentView(root);
+
+        FrameLayout screen = new FrameLayout(this);
+        screen.setBackgroundColor(PAGE);
+        ImageView background = new ImageView(this);
+        background.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        background.setAlpha(0.36f);
+        Glide.with(this)
+                .load("https://renciaapp-ldyffp73.manus.space/api/v4/bg.php")
+                .placeholder(R.drawable.background1)
+                .error(R.drawable.background1)
+                .into(background);
+        screen.addView(background, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        View scrim = new View(this);
+        scrim.setBackgroundColor(Color.argb(150, 18, 15, 25));
+        screen.addView(scrim, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        screen.addView(root, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(screen);
     }
 
     private void loadCatalog() {
