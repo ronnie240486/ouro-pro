@@ -25,6 +25,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.M3UAccountEndpoint;
 import com.ouropro.player.models.SeriesModel;
+import com.ouropro.player.models.EpisodeModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.utils.Utils;
 import org.json.JSONObject;
@@ -57,6 +58,19 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
     public boolean is_fav = false;
     public String series_background = "";
     public WordModels wordModels = new WordModels();
+
+    private String extractM3USeriesId(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "";
+        }
+        String lower = url.toLowerCase(java.util.Locale.ROOT);
+        int marker = lower.indexOf("/series/");
+        if (marker < 0) {
+            return "";
+        }
+        String[] parts = url.substring(marker + "/series/".length()).split("[/?#]");
+        return parts.length >= 3 ? parts[2].trim() : "";
+    }
 
     private void getSeriesInfo() {
         String configuredServer = this.preferenceHelper.getSharedPreferenceServerUrl();
@@ -273,6 +287,20 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
             this.currentSeries = RealmController.with().getSeriesById(this.stream_id);
         }
         getIntent().getStringExtra("category_id");
+        if (this.preferenceHelper.getSharedPreferenceISM3U()
+                && (this.currentSeries.getSeries_id() == null || this.currentSeries.getSeries_id().trim().isEmpty())) {
+            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(this.currentSeries.getName());
+            if (firstEpisode != null) {
+                String extractedId = extractM3USeriesId(firstEpisode.getUrl());
+                if (!extractedId.isEmpty()) {
+                    this.currentSeries.setSeries_id(extractedId);
+                }
+                if ((this.currentSeries.getStream_icon() == null || this.currentSeries.getStream_icon().trim().isEmpty())
+                        && firstEpisode.getStream_icon() != null) {
+                    this.currentSeries.setStream_icon(firstEpisode.getStream_icon());
+                }
+            }
+        }
         this.stream_id = this.currentSeries.getSeries_id();
         if (this.currentSeries.isIs_favorite()) {
             this.is_fav = true;

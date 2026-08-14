@@ -1363,6 +1363,13 @@ public class BaseActivity extends AppCompatActivity {
             SeriesModel series = new SeriesModel();
             series.setName(name);
             series.setCategory_name(group.get(0).getCategory_name());
+            for (EpisodeModel episode : group) {
+                String extractedSeriesId = extractM3USeriesId(episode == null ? "" : episode.getUrl());
+                if (extractedSeriesId != null && !extractedSeriesId.isEmpty()) {
+                    series.setSeries_id(extractedSeriesId);
+                    break;
+                }
+            }
             String originalPoster = "";
             for (EpisodeModel episode : group) {
                 if (episode != null && episode.getStream_icon() != null
@@ -1376,6 +1383,20 @@ public class BaseActivity extends AppCompatActivity {
             seriesModels.add(series);
         }
         return seriesModels;
+    }
+
+    private String extractM3USeriesId(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return "";
+        }
+        String lower = url.toLowerCase(Locale.ROOT);
+        int marker = lower.indexOf("/series/");
+        if (marker < 0) {
+            return "";
+        }
+        String remainder = url.substring(marker + "/series/".length());
+        String[] parts = remainder.split("[/?#]");
+        return parts.length >= 3 ? parts[2].trim() : "";
     }
 
     private void sanitizeM3UCatalog(Realm realm) {
