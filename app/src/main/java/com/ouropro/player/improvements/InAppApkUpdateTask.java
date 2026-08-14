@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -25,9 +26,19 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
     public static final class Result {
         final File file;
         final String error;
-        Result(File file, String error) { this.file = file; this.error = error; }
-        static Result success(File file) { return new Result(file, null); }
-        static Result failure(String error) { return new Result(null, error); }
+
+        Result(File file, String error) {
+            this.file = file;
+            this.error = error;
+        }
+
+        static Result success(File file) {
+            return new Result(file, null);
+        }
+
+        static Result failure(String error) {
+            return new Result(null, error);
+        }
     }
 
     private final Context context;
@@ -44,16 +55,42 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
         this.progress.setCancelable(true);
     }
 
-    @Override protected void onPreExecute() { progress.show(); }
+    @Override
+    protected void onPreExecute() {
+        progress.show();
+    }
 
-    @Override protected Result doInBackground(String... urls) {
-        if (urls == null || urls.length == 0 || urls[0] == null) return Result.failure("Link de atualização vazio");
+    @Override
+    protected Result doInBackground(String... urls) {
+        if (urls == null || urls.length == 0) {
+            return Result.failure("Link de atualização vazio");
+        }
+        String lastError = "Nenhum APK válido foi encontrado";
+        for (String candidate : urls) {
+            if (isCancelled()) {
+                return Result.failure("Download cancelado");
+            }
+            if (candidate == null || candidate.trim().isEmpty()) {
+                continue;
+            }
+            Result attempt = downloadAndValidate(candidate.trim());
+            if (attempt.file != null) {
+                return attempt;
+            }
+            if (attempt.error != null && !attempt.error.isEmpty()) {
+                lastError = attempt.error;
+            }
+        }
+        return Result.failure("Não foi possível baixar uma atualização válida. Verifique o link direto do APK no painel. Último erro: " + lastError);
+    }
+
+    private Result downloadAndValidate(String rawUrl) {
         HttpURLConnection connection = null;
         File apk = new File(context.getExternalFilesDir(null), "ouropro-update.apk");
         try {
-            URL url = new URL(urls[0].trim());
+            URL url = new URL(rawUrl);
             if (!("http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()))) {
-                return Result.failure("O link de atualização precisa ser HTTP ou HTTPS");
+                return Result.failure("O link precisa ser HTTP ou HTTPS");
             }
             connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(30000);
@@ -61,54 +98,79 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
             connection.setInstanceFollowRedirects(true);
             connection.setUseCaches(false);
             connection.setRequestProperty("Accept", "application/vnd.android.package-archive, application/octet-stream");
+            connection.setRequestProperty("Cache-Control", "no-cache");
             connection.connect();
             int code = connection.getResponseCode();
-            if (code < 200 || code >= 300) return Result.failure("Servidor de atualização respondeu HTTP " + code);
+            if (code < 200 || code >= 300) {
+                return Result.failure("Servidor respondeu HTTP " + code);
+            }
+            String contentType = connection.getContentType();
             int total = connection.getContentLength();
-            if (total > 0 && total > 120 * 1024 * 1024) return Result.failure("APK de atualização muito grande");
-            if (apk.exists() && !apk.delete()) return Result.failure("Não foi possível preparar o arquivo de atualização");
+            if (total > 0 && total > 120 * 1024 * 1024) {
+                return Result.failure("APK muito grande");
+            }
+            if (apk.exists() && !apk.delete()) {
+                return Result.failure("Não foi possível preparar o arquivo");
+            }
             try (InputStream input = new BufferedInputStream(connection.getInputStream());
                  BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(apk))) {
                 byte[] buffer = new byte[16384];
-                long copied = 0;
+                long copied = 0L;
                 int read;
                 while ((read = input.read(buffer)) != -1) {
-                    if (isCancelled()) return Result.failure("Download cancelado");
+                    if (isCancelled()) {
+                        return Result.failure("Download cancelado");
+                    }
                     copied += read;
-                    if (copied > 120L * 1024L * 1024L) return Result.failure("APK de atualização muito grande");
+                    if (copied > 120L * 1024L * 1024L) {
+                        return Result.failure("APK muito grande");
+                    }
                     output.write(buffer, 0, read);
-                    if (total > 0) publishProgress((int) Math.min(100, (copied * 100L) / total));
+                    if (total > 0) {
+                        publishProgress((int) Math.min(100L, (copied * 100L) / total));
+                    }
                 }
                 output.flush();
             }
             if (!isValidApk(apk)) {
                 apk.delete();
-                return Result.failure("O link não é um APK OuroPro direto. Use o arquivo .apk, não uma página do GitHub.");
+                String type = contentType == null ? "tipo desconhecido" : contentType;
+                return Result.failure("O servidor entregou " + type + ", não um APK OuroPro compatível");
             }
             return Result.success(apk);
         } catch (Exception e) {
-            if (apk.exists()) apk.delete();
+            if (apk.exists()) {
+                apk.delete();
+            }
             return Result.failure("Falha no download: " + e.getClass().getSimpleName());
         } finally {
-            if (connection != null) connection.disconnect();
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 
     private boolean isValidApk(File apk) throws Exception {
-        if (!apk.isFile() || apk.length() < 1024L) return false;
+        if (!apk.isFile() || apk.length() < 1024L) {
+            return false;
+        }
         try (FileInputStream input = new FileInputStream(apk)) {
-            if (input.read() != 'P' || input.read() != 'K') return false;
+            if (input.read() != 'P' || input.read() != 'K') {
+                return false;
+            }
         }
         try (ZipFile zip = new ZipFile(apk)) {
-            if (zip.getEntry("AndroidManifest.xml") == null) return false;
+            if (zip.getEntry("AndroidManifest.xml") == null) {
+                return false;
+            }
         }
-        PackageInfo packageInfo = context.getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), 0);
-        if (packageInfo == null || !context.getPackageName().equals(packageInfo.packageName)) {
+        PackageInfo downloaded = context.getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), 0);
+        if (downloaded == null || !context.getPackageName().equals(downloaded.packageName)) {
             return false;
         }
         try {
             PackageInfo installed = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            long downloadedCode = Build.VERSION.SDK_INT >= 28 ? packageInfo.getLongVersionCode() : packageInfo.versionCode;
+            long downloadedCode = Build.VERSION.SDK_INT >= 28 ? downloaded.getLongVersionCode() : downloaded.versionCode;
             long installedCode = Build.VERSION.SDK_INT >= 28 ? installed.getLongVersionCode() : installed.versionCode;
             return downloadedCode > installedCode;
         } catch (Exception ignored) {
@@ -116,12 +178,24 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
         }
     }
 
-    @Override protected void onProgressUpdate(Integer... values) {
-        if (values != null && values.length > 0) { progress.setIndeterminate(false); progress.setMax(100); progress.setProgress(values[0]); }
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        if (values != null && values.length > 0) {
+            progress.setIndeterminate(false);
+            progress.setMax(100);
+            progress.setProgress(values[0]);
+        }
     }
 
-    @Override protected void onPostExecute(Result result) {
-        if (progress.isShowing()) progress.dismiss();
-        if (result.file != null) listener.onSuccess(result.file); else listener.onFailure(result.error == null ? "Não foi possível atualizar" : result.error);
+    @Override
+    protected void onPostExecute(Result result) {
+        if (progress.isShowing()) {
+            progress.dismiss();
+        }
+        if (result.file != null) {
+            listener.onSuccess(result.file);
+        } else {
+            listener.onFailure(result.error == null ? "Não foi possível atualizar" : result.error);
+        }
     }
 }

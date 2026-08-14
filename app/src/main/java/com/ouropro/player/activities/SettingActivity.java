@@ -69,7 +69,7 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
-    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/RjvSytJpAKQuYJnl.apk";
+    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/oaXtRFQaJkdOZSpK.apk";
     private static final String LEGACY_UPDATE_APK_TOKEN = "HJpwLflhkVxTrahI";
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
@@ -376,6 +376,8 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         if (apkLink.isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://")) || apkLink.contains(LEGACY_UPDATE_APK_TOKEN)) {
             apkLink = VERIFIED_UPDATE_APK_URL;
         }
+        String cacheBustedLink = apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis();
+        String fallbackLink = VERIFIED_UPDATE_APK_URL + "?ouropro_fallback=" + System.currentTimeMillis();
         new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
             @Override public void onSuccess(File apk) {
                 startInstall(apk);
@@ -383,7 +385,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             @Override public void onFailure(String message) {
                 Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
             }
-        }).execute(apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis());
+        }).execute(cacheBustedLink, fallbackLink);
     }
 
     private void initView() {
