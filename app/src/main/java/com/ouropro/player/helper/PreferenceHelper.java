@@ -324,10 +324,16 @@ public class PreferenceHelper {
     public String getSharedPreferenceMacAddress() {
         try {
             String string = this.settings.getString(MAC_ADDRESS, "");
-            if (string == null || string.isEmpty()) {
-                return null;
+            if (string != null && !string.trim().isEmpty()) {
+                return string;
             }
-            return string;
+            AppInfoModel cachedInfo = getSharedPreferenceAppInfo();
+            if (cachedInfo != null && cachedInfo.getMac_address() != null && !cachedInfo.getMac_address().trim().isEmpty()) {
+                String cachedMac = cachedInfo.getMac_address().trim();
+                this.settings.edit().putString(MAC_ADDRESS, cachedMac).apply();
+                return cachedMac;
+            }
+            return null;
         } catch (Exception unused) {
             return null;
         }

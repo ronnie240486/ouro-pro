@@ -103,7 +103,17 @@ public final class InAppApkUpdateTask extends AsyncTask<String, Integer, InAppAp
             if (zip.getEntry("AndroidManifest.xml") == null) return false;
         }
         PackageInfo packageInfo = context.getPackageManager().getPackageArchiveInfo(apk.getAbsolutePath(), 0);
-        return packageInfo != null && context.getPackageName().equals(packageInfo.packageName);
+        if (packageInfo == null || !context.getPackageName().equals(packageInfo.packageName)) {
+            return false;
+        }
+        try {
+            PackageInfo installed = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            long downloadedCode = Build.VERSION.SDK_INT >= 28 ? packageInfo.getLongVersionCode() : packageInfo.versionCode;
+            long installedCode = Build.VERSION.SDK_INT >= 28 ? installed.getLongVersionCode() : installed.versionCode;
+            return downloadedCode > installedCode;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     @Override protected void onProgressUpdate(Integer... values) {

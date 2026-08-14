@@ -69,7 +69,8 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
-    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/HJpwLflhkVxTrahI.apk";
+    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/CdFDYfVMHXGkUTdp.apk";
+    private static final String LEGACY_UPDATE_APK_TOKEN = "HJpwLflhkVxTrahI";
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
     public double api_version;
@@ -368,11 +369,11 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
         String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
-        if (apkLink == null || apkLink.trim().isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
-            apkLink = VERIFIED_UPDATE_APK_URL;
+        if (apkLink == null) {
+            apkLink = "";
         }
-        String normalizedLink = apkLink.trim().toLowerCase(java.util.Locale.US);
-        if (!normalizedLink.endsWith(".apk") && !normalizedLink.contains(".apk?")) {
+        apkLink = apkLink.trim();
+        if (apkLink.isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://")) || apkLink.contains(LEGACY_UPDATE_APK_TOKEN)) {
             apkLink = VERIFIED_UPDATE_APK_URL;
         }
         new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
@@ -382,7 +383,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             @Override public void onFailure(String message) {
                 Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
             }
-        }).execute(apkLink.trim());
+        }).execute(apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis());
     }
 
     private void initView() {
