@@ -3,11 +3,15 @@ package com.ouropro.player.activities;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -31,9 +35,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
 
 /** Catálogo de rádios públicas por categoria, com reprodução direta via ExoPlayer. */
@@ -43,19 +50,24 @@ public class RadioActivity extends AppCompatActivity {
     private static final int CARD = Color.rgb(39, 33, 50);
     private static final int CARD_FOCUSED = Color.rgb(77, 58, 112);
     private static final int MUTED = Color.rgb(190, 182, 202);
+    private static final String FAVORITES_PREFS = "radio_favorites";
+    private static final String FAVORITES_KEY = "station_keys";
 
     private final List<RadioStation> allStations = new ArrayList<>();
+    private final Set<String> favoriteKeys = new HashSet<>();
+    private SharedPreferences favoritePreferences;
     private final List<RadioStation> visibleStations = new ArrayList<>();
     private final List<String> categories = new ArrayList<>();
     private StationAdapter stationAdapter;
     private LinearLayout categoryContainer;
     private TextView nowPlaying;
-    private ExoPlayer player;
     private String selectedCategory = "Todas";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.favoritePreferences = getSharedPreferences(FAVORITES_PREFS, MODE_PRIVATE);
+        this.favoriteKeys.addAll(this.favoritePreferences.getStringSet(FAVORITES_KEY, new HashSet<>()));
         buildScreen();
         loadCatalog();
         NullTextGuard.sanitize(this);
@@ -166,8 +178,9 @@ public class RadioActivity extends AppCompatActivity {
         }
         categories.clear();
         categories.add("Todas");
+        categories.add("Favoritas");
         categories.addAll(unique.keySet());
-        Collections.sort(categories.subList(1, categories.size()), String.CASE_INSENSITIVE_ORDER);
+        Collections.sort(categories.subList(2, categories.size()), String.CASE_INSENSITIVE_ORDER);
         rebuildCategoryButtons();
         applyCategory("Todas");
         NullTextGuard.sanitize(this);
@@ -178,7 +191,9 @@ public class RadioActivity extends AppCompatActivity {
         for (String category : categories) {
             int count = 0;
             for (RadioStation station : allStations) {
-                if ("Todas".equals(category) || category.equalsIgnoreCase(station.category)) {
+                if ("Todas".equals(category)
+                        || ("Favoritas".equals(category) && isFavorite(station))
+                        || category.equalsIgnoreCase(station.category)) {
                     count++;
                 }
             }
@@ -218,7 +233,9 @@ public class RadioActivity extends AppCompatActivity {
         selectedCategory = category;
         visibleStations.clear();
         for (RadioStation station : allStations) {
-            if ("Todas".equals(category) || category.equalsIgnoreCase(station.category)) {
+            if ("Todas".equals(category)
+                    || ("Favoritas".equals(category) && isFavorite(station))
+                    || category.equalsIgnoreCase(station.category)) {
                 visibleStations.add(station);
             }
         }
@@ -228,18 +245,37 @@ public class RadioActivity extends AppCompatActivity {
 
     private void play(RadioStation station) {
         try {
-            if (player != null) {
-                player.release();
+            Intent intent = new Intent(this, RadioPlaybackService.class)
+                    .setAction(RadioPlaybackService.ACTION_PLAY)
+                    .putExtra(RadioPlaybackService.EXTRA_URL, station.streamUrl)
+                    .putExtra(RadioPlaybackService.EXTRA_TITLE, station.name);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
             }
-            player = new ExoPlayer.Builder(this).build();
-            player.setMediaItem(MediaItem.fromUri(station.streamUrl));
-            player.prepare();
-            player.play();
             nowPlaying.setText("Tocando: " + station.name);
         } catch (Exception error) {
             nowPlaying.setText("Não foi possível abrir: " + station.name);
             Toast.makeText(this, "Esta rádio não respondeu; tente outra estação", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String favoriteKey(RadioStation station) {
+        return station.streamUrl == null || station.streamUrl.trim().isEmpty() ? station.name : station.streamUrl;
+    }
+
+    private boolean isFavorite(RadioStation station) {
+        return this.favoriteKeys.contains(favoriteKey(station));
+    }
+
+    private void toggleFavorite(RadioStation station) {
+        String key = favoriteKey(station);
+        if (!this.favoriteKeys.add(key)) {
+            this.favoriteKeys.remove(key);
+        }
+        this.favoritePreferences.edit().putStringSet(FAVORITES_KEY, new HashSet<>(this.favoriteKeys)).apply();
+        applyCategory(this.selectedCategory);
     }
 
     private GradientDrawable cardBackground(boolean selected, boolean focused) {
@@ -255,10 +291,6 @@ public class RadioActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (player != null) {
-            player.release();
-            player = null;
-        }
         super.onDestroy();
     }
 
@@ -327,11 +359,20 @@ public class RadioActivity extends AppCompatActivity {
             TextView location = text("", 10, MUTED);
             location.setSingleLine(true);
             details.addView(location, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(22)));
+
+            ImageButton favorite = new ImageButton(RadioActivity.this);
+            favorite.setBackgroundColor(Color.TRANSPARENT);
+            favorite.setPadding(dp(6), dp(6), dp(6), dp(6));
+            favorite.setFocusable(true);
+            favorite.setFocusableInTouchMode(true);
+            favorite.setClickable(true);
+            card.addView(favorite, new LinearLayout.LayoutParams(dp(48), dp(60)));
+
             RecyclerView.LayoutParams compactParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(94));
             compactParams.setMargins(dp(4), dp(4), dp(4), dp(4));
             card.setLayoutParams(compactParams);
             if (android.os.Build.VERSION.SDK_INT >= 21) card.setElevation(dp(6));
-            return new Holder(card, logo, name, location);
+            return new Holder(card, logo, name, location, favorite);
         }
 
         @Override
@@ -340,6 +381,10 @@ public class RadioActivity extends AppCompatActivity {
             holder.name.setText(station.name);
             String location = station.city.isEmpty() ? station.country : station.city + " • " + station.country;
             holder.location.setText(location.isEmpty() ? "Rádio online" : location);
+            boolean favorite = isFavorite(station);
+            holder.favorite.setImageResource(favorite ? R.drawable.ic_star_selected : R.drawable.ic_star);
+            holder.favorite.setContentDescription(favorite ? "Remover dos favoritos" : "Adicionar aos favoritos");
+            holder.favorite.setOnClickListener(v -> toggleFavorite(station));
             Glide.with(RadioActivity.this)
                     .load(station.logoUrl)
                     .placeholder(R.drawable.radio_icon_transparent)
@@ -360,13 +405,15 @@ public class RadioActivity extends AppCompatActivity {
             final ImageView logo;
             final TextView name;
             final TextView location;
+            final ImageButton favorite;
 
-            Holder(LinearLayout card, ImageView logo, TextView name, TextView location) {
+            Holder(LinearLayout card, ImageView logo, TextView name, TextView location, ImageButton favorite) {
                 super(card);
                 this.card = card;
                 this.logo = logo;
                 this.name = name;
                 this.location = location;
+                this.favorite = favorite;
             }
         }
     }

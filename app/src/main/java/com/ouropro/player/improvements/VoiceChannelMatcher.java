@@ -65,26 +65,51 @@ public final class VoiceChannelMatcher {
         return candidate;
     }
 
-    /** Retorna um canal somente quando nome ou número completo coincide uma única vez. */
+    /** Retorna um canal com correspondência exata ou por todos os tokens, somente se for único. */
     public static EPGChannel findExactMatch(Iterable<EPGChannel> channels, String rawQuery) {
         if (channels == null) {
             return null;
         }
         String query = VoiceCommand.normalize(rawQuery);
+        if (query.isEmpty()) {
+            return null;
+        }
         EPGChannel result = null;
+        int bestScore = 0;
         int count = 0;
+        String[] queryTokens = query.split(" ");
         for (EPGChannel channel : channels) {
             if (channel == null) {
                 continue;
             }
             String name = VoiceCommand.normalize(channel.getName());
             String number = VoiceCommand.normalize(channel.getNum());
+            int score = 0;
             if (query.equals(name) || (!number.isEmpty() && query.equals(number))) {
+                score = 100;
+            } else if (name.contains(query)) {
+                score = 90;
+            } else {
+                boolean allTokensPresent = true;
+                for (String token : queryTokens) {
+                    if (token.length() > 0 && !name.contains(token)) {
+                        allTokensPresent = false;
+                        break;
+                    }
+                }
+                if (allTokensPresent && queryTokens.length > 0) {
+                    score = 80;
+                }
+            }
+            if (score > bestScore) {
                 result = channel;
+                bestScore = score;
+                count = 1;
+            } else if (score > 0 && score == bestScore) {
                 count++;
             }
         }
-        return count == 1 ? result : null;
+        return bestScore > 0 && count == 1 ? result : null;
     }
 
     /** Retorna todos os canais cujo nome ou número contém a consulta normalizada. */
