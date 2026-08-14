@@ -580,12 +580,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             this.selectedChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
             this.recycler_category.scrollToPosition(this.category_pos);
             this.categoryAdapter.setCategoryPosition(this.category_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -633,12 +629,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
                 } else {
                     this.channel_pos = num.intValue();
                     playSelectedChannel(ePGChannel);
-                    if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                        showEpgInfo(null);
-                    } else {
-                        this.handler.removeCallbacks(this.epgTicker);
-                        epgTimer(ePGChannel.getStream_id());
-                    }
+                    this.handler.removeCallbacks(this.epgTicker);
+                    epgTimer(ePGChannel.getStream_id());
                     String name = ePGChannel.getName();
                     this.channel_name = name;
                     this.txt_name.setText(name);
@@ -650,12 +642,8 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             controlFav(ePGChannel, num.intValue());
             showFavImageIcon(ePGChannel.is_favorite());
         } else if (!this.is_full) {
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(ePGChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(ePGChannel.getStream_id());
             String name2 = ePGChannel.getName();
             this.channel_name = name2;
             this.txt_name.setText(name2);

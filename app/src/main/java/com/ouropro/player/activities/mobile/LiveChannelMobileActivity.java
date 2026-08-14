@@ -590,12 +590,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
             }
             this.channelAdapter.updateData(this.epgChannels, this.channel_pos);
             this.selectedChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
             this.txt_name.setText(name);
@@ -623,12 +619,8 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
                 } else {
                     this.channel_pos = num.intValue();
                     playSelectedChannel(ePGChannel);
-                    if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                        showEpgInfo(null);
-                    } else {
-                        this.handler.removeCallbacks(this.epgTicker);
-                        epgTimer(ePGChannel.getStream_id());
-                    }
+                    this.handler.removeCallbacks(this.epgTicker);
+                    epgTimer(ePGChannel.getStream_id());
                     String name = ePGChannel.getName();
                     this.channel_name = name;
                     this.txt_name.setText(name);
