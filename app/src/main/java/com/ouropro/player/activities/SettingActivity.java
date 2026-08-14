@@ -30,6 +30,7 @@ import com.ouropro.player.R;
 import com.ouropro.player.adapter.SettingRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda0;
+import com.ouropro.player.apps.Constants;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda1;
 import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.apps.SideMenu;
@@ -72,6 +73,7 @@ import pl.droidsonroids.gif.GifImageView;
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
     private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/oaXtRFQaJkdOZSpK.apk";
     private static final String LEGACY_UPDATE_APK_TOKEN = "HJpwLflhkVxTrahI";
+    private static final int UPDATE_INFO_REQUEST_CODE = 1400;
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
     public double api_version;
@@ -369,11 +371,22 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
-        String apkLink = this.appInfoModel == null ? "" : this.appInfoModel.getApk_link();
-        if (apkLink == null) {
-            apkLink = "";
+        try {
+            String payload = Security.getStringData(
+                    Utils.getDeviceId(this),
+                    LTVApp.version_name,
+                    false,
+                    this.preferenceHelper.getSharedPreferenceDeviceType()).trim();
+            GetDataRequest request = new GetDataRequest(this, UPDATE_INFO_REQUEST_CODE);
+            request.setOnGetResponseListener(this);
+            request.getResponse(Security.getJsonData(payload), Constants.second_response_url);
+        } catch (Exception error) {
+            startUpdateDownload("");
         }
-        apkLink = apkLink.trim();
+    }
+
+    private void startUpdateDownload(String serverLink) {
+        String apkLink = serverLink == null ? "" : serverLink.trim();
         if (apkLink.isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://")) || apkLink.contains(LEGACY_UPDATE_APK_TOKEN)) {
             apkLink = VERIFIED_UPDATE_APK_URL;
         }
@@ -824,6 +837,27 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     }
 
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
+        if (i == UPDATE_INFO_REQUEST_CODE) {
+            String freshLink = "";
+            try {
+                if (jSONObject != null && jSONObject.has("data")) {
+                    JSONObject decoded = new JSONObject(Security.getDecodedString(jSONObject.getString("data")));
+                    AppInfoModel freshInfo = new com.google.gson.Gson().fromJson(decoded.toString(), AppInfoModel.class);
+                    if (freshInfo != null) {
+                        this.appInfoModel = freshInfo;
+                        this.preferenceHelper.setSharedPreferenceAppInfo(freshInfo);
+                        if (freshInfo.getMac_address() != null && !freshInfo.getMac_address().trim().isEmpty()) {
+                            this.preferenceHelper.setSharedPreferenceMacAddress(freshInfo.getMac_address());
+                        }
+                        Utils.saveToFile(freshInfo);
+                        freshLink = freshInfo.getApk_link();
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            startUpdateDownload(freshLink);
+            return;
+        }
         if (jSONObject != null) {
             if (i != 2000) {
                 if (jSONObject.has("data")) {
