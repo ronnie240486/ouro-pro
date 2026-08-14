@@ -1,10 +1,17 @@
 package com.ouropro.player.apps;
 
 import android.accounts.NetworkErrorException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.fragment.app.FragmentActivity;
 import com.ouropro.player.helper.GetSharedInfo;
@@ -21,6 +28,7 @@ import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.improvements.M3USeriesRebuilder;
 import com.ouropro.player.improvements.M3UAccountEndpoint;
+import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
@@ -71,6 +79,28 @@ public class BaseActivity extends AppCompatActivity {
     public boolean is_stop = false;
     public int error_account = 0;
     private final LTVApp model = LTVApp.getInstance();
+    private boolean failoverReceiverRegistered;
+    private final BroadcastReceiver failoverReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || !PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC.equals(intent.getAction())) {
+                return;
+            }
+            String playlistUrl = intent.getStringExtra(PlaylistFailoverManager.EXTRA_PLAYLIST_URL);
+            if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+                return;
+            }
+            preferenceHelper = new PreferenceHelper(BaseActivity.this);
+            preferenceHelper.setSharedPreferencePlaylistPosition(intent.getIntExtra(PlaylistFailoverManager.EXTRA_PLAYLIST_POSITION, 0));
+            preferenceHelper.setSharedPreferenceISM3U(true);
+            setStop(false);
+            if (BaseActivity.isBusy()) {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> reloadM3UData(playlistUrl, wordModels), 10000L);
+            } else {
+                reloadM3UData(playlistUrl, wordModels);
+            }
+        }
+    };
 
     /* JADX INFO: renamed from: com.ouropro.player.apps.BaseActivity$10, reason: invalid class name */
     public class AnonymousClass10 implements Callback<List<SeriesModel>> {
@@ -1685,6 +1715,23 @@ public class BaseActivity extends AppCompatActivity {
         RealmConfiguration realmConfigurationBuild = new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1L).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build();
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
+        try {
+            ContextCompat.registerReceiver(this, this.failoverReceiver, new IntentFilter(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC), ContextCompat.RECEIVER_NOT_EXPORTED);
+            this.failoverReceiverRegistered = true;
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (this.failoverReceiverRegistered) {
+            try {
+                unregisterReceiver(this.failoverReceiver);
+            } catch (Exception ignored) {
+            }
+            this.failoverReceiverRegistered = false;
+        }
+        super.onDestroy();
     }
 
     private void fetchM3UAccountMetadata(String playlistUrl) {
