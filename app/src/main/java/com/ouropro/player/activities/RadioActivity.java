@@ -39,7 +39,7 @@ public class RadioActivity extends AppCompatActivity {
     private static final int GOLD = Color.rgb(255, 211, 42);
     private static final int PAGE = Color.rgb(18, 15, 25);
     private static final int CARD = Color.rgb(39, 33, 50);
-    private static final int CARD_FOCUSED = Color.rgb(82, 63, 105);
+    private static final int CARD_FOCUSED = Color.rgb(77, 58, 112);
     private static final int MUTED = Color.rgb(190, 182, 202);
 
     private final List<RadioStation> allStations = new ArrayList<>();
@@ -103,7 +103,7 @@ public class RadioActivity extends AppCompatActivity {
         RecyclerView stationList = new RecyclerView(this);
         stationList.setClipToPadding(false);
         stationList.setPadding(dp(2), dp(10), 0, dp(8));
-        stationList.setLayoutManager(new GridLayoutManager(this, 2));
+        stationList.setLayoutManager(new GridLayoutManager(this, 3));
         stationAdapter = new StationAdapter();
         stationList.setAdapter(stationAdapter);
         content.addView(stationList, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
@@ -166,7 +166,7 @@ public class RadioActivity extends AppCompatActivity {
             card.setContentDescription("Categoria " + category);
 
             ImageView icon = new ImageView(this);
-            icon.setImageResource(R.drawable.radio_icon_user);
+            icon.setImageResource(R.drawable.radio_icon_transparent);
             icon.setPadding(dp(6), dp(6), dp(6), dp(6));
             card.addView(icon, new LinearLayout.LayoutParams(dp(36), dp(36)));
 
@@ -218,9 +218,12 @@ public class RadioActivity extends AppCompatActivity {
 
     private GradientDrawable cardBackground(boolean selected, boolean focused) {
         GradientDrawable background = new GradientDrawable();
-        background.setColor(selected || focused ? CARD_FOCUSED : CARD);
-        background.setCornerRadius(dp(12));
-        background.setStroke(dp(focused ? 2 : 1), focused ? GOLD : Color.rgb(67, 57, 78));
+            background.setColors(selected || focused
+                    ? new int[]{Color.rgb(94, 67, 132), Color.rgb(48, 35, 74)}
+                    : new int[]{Color.rgb(54, 44, 68), Color.rgb(28, 24, 38)});
+            background.setOrientation(GradientDrawable.Orientation.TL_BR);
+            background.setCornerRadius(dp(14));
+            background.setStroke(dp(focused ? 2 : 1), focused ? GOLD : Color.rgb(81, 66, 98));
         return background;
     }
 
@@ -281,23 +284,27 @@ public class RadioActivity extends AppCompatActivity {
             card.setBackground(cardBackground(false, false));
 
             ImageView logo = new ImageView(RadioActivity.this);
-            logo.setImageResource(R.drawable.radio_icon_user);
-            logo.setPadding(dp(8), dp(8), dp(8), dp(8));
-            card.addView(logo, new LinearLayout.LayoutParams(dp(58), dp(58)));
+            logo.setImageResource(R.drawable.radio_icon_transparent);
+            logo.setPadding(dp(6), dp(6), dp(6), dp(6));
+            card.addView(logo, new LinearLayout.LayoutParams(dp(44), dp(44)));
 
             LinearLayout details = new LinearLayout(RadioActivity.this);
             details.setOrientation(LinearLayout.VERTICAL);
             details.setGravity(Gravity.CENTER_VERTICAL);
             card.addView(details, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
 
-            TextView name = text("", 15, Color.WHITE);
+            TextView name = text("", 13, Color.WHITE);
             name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             name.setMaxLines(2);
             details.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
 
-            TextView location = text("", 11, MUTED);
+            TextView location = text("", 10, MUTED);
             location.setSingleLine(true);
             details.addView(location, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(22)));
+            RecyclerView.LayoutParams compactParams = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(94));
+            compactParams.setMargins(dp(4), dp(4), dp(4), dp(4));
+            card.setLayoutParams(compactParams);
+            if (android.os.Build.VERSION.SDK_INT >= 21) card.setElevation(dp(6));
             return new Holder(card, logo, name, location);
         }
 
@@ -309,8 +316,8 @@ public class RadioActivity extends AppCompatActivity {
             holder.location.setText(location.isEmpty() ? "Rádio online" : location);
             Glide.with(RadioActivity.this)
                     .load(station.logoUrl)
-                    .placeholder(R.drawable.radio_icon_user)
-                    .error(R.drawable.radio_icon_user)
+                    .placeholder(R.drawable.radio_icon_transparent)
+                    .error(R.drawable.radio_icon_transparent)
                     .into(holder.logo);
             holder.card.setBackground(cardBackground(false, false));
             holder.card.setOnFocusChangeListener((v, focused) -> v.setBackground(cardBackground(false, focused)));

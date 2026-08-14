@@ -414,7 +414,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.microphoneButton.bringToFront();
 
         this.radioIconButton = new ImageButton(this);
-        this.radioIconButton.setImageResource(R.drawable.radio_icon_user);
+        this.radioIconButton.setImageResource(R.drawable.radio_icon_transparent);
         this.radioIconButton.setContentDescription("Abrir Rádios");
         this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
         int radioPadding = dpRadio(8);
@@ -428,8 +428,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             view.setScaleY(focused ? 1.15f : 1.0f);
         });
         FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(
-                dpRadio(56), dpRadio(56), Gravity.BOTTOM | Gravity.END);
-        radioParams.setMargins(0, 0, marginEnd + dpRadio(62), marginBottom);
+                dpRadio(42), dpRadio(42), Gravity.BOTTOM | Gravity.END);
+        radioParams.setMargins(0, 0, marginEnd + dpRadio(48), marginBottom);
         content.addView(this.radioIconButton, radioParams);
         this.radioIconButton.bringToFront();
         if (!VoiceCommandController.isAvailable(this)) {
@@ -645,7 +645,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
         ImageView icon = new ImageView(this);
         icon.setId(View.generateViewId());
-        icon.setImageResource(R.drawable.radio_icon_user);
+        icon.setImageResource(R.drawable.radio_icon_transparent);
         icon.setPadding(dpRadio(8), dpRadio(8), dpRadio(8), dpRadio(8));
         radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(58), dpRadio(58)));
         ConstraintLayout.LayoutParams iconParams = (ConstraintLayout.LayoutParams) icon.getLayoutParams();
