@@ -1,11 +1,13 @@
 {
-  "total": 1273,
+  "total": 1526,
   "pop": 205,
   "rock": 200,
-  "gospel": 704,
+  "gospel": 789,
+  "hard_rock_brazil": 168,
+  "gospel_brazil": 85,
   "brazil_pop": 205,
   "brazil_rock": 164,
   "us_rock": 36,
   "brazil_gospel": 59,
-  "logos": 983
+  "logos": 1152
 }
