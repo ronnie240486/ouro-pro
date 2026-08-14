@@ -1363,7 +1363,16 @@ public class BaseActivity extends AppCompatActivity {
             SeriesModel series = new SeriesModel();
             series.setName(name);
             series.setCategory_name(group.get(0).getCategory_name());
-            series.setStream_icon(group.get(0).getStream_icon());
+            String originalPoster = "";
+            for (EpisodeModel episode : group) {
+                if (episode != null && episode.getStream_icon() != null
+                        && !episode.getStream_icon().trim().isEmpty()
+                        && !"null".equalsIgnoreCase(episode.getStream_icon().trim())) {
+                    originalPoster = episode.getStream_icon().trim();
+                    break;
+                }
+            }
+            series.setStream_icon(originalPoster);
             seriesModels.add(series);
         }
         return seriesModels;
