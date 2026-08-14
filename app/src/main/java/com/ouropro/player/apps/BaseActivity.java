@@ -29,6 +29,7 @@ import com.ouropro.player.improvements.M3USeriesNaming;
 import com.ouropro.player.improvements.M3USeriesRebuilder;
 import com.ouropro.player.improvements.M3UAccountEndpoint;
 import com.ouropro.player.improvements.PlaylistFailoverManager;
+import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
@@ -60,6 +61,12 @@ import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class BaseActivity extends AppCompatActivity {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
+    }
+
     private static final int M3U_SERIES_SCHEMA_VERSION = 4;
     private static final String M3U_MIGRATION_PREFS = "ouropro_migrations";
     public static boolean busy;

@@ -37,6 +37,7 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
@@ -445,7 +446,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             this.ly_movie.setNextFocusDownId(this.microphoneButton.getId());
         }
         if (!VoiceCommandController.isAvailable(this)) {
-            this.microphoneButton.setVisibility(View.GONE);
+            this.voiceCommandController = null;
             return;
         }
         this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
@@ -470,6 +471,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
         if (this.voiceCommandController != null) {
             this.voiceCommandController.start();
+        } else {
+            Toast.makeText(this, "O reconhecimento de voz não está disponível nesta TV Box", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -749,5 +752,12 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         refreshSeriesInBackground();
         refreshM3USeriesInBackground();
         startBootstrapPlaylistSync();
+        NullTextGuard.sanitize(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
     }
 }

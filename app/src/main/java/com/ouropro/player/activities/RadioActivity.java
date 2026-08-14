@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.ouropro.player.R;
+import com.ouropro.player.improvements.NullTextGuard;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -57,6 +58,13 @@ public class RadioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         buildScreen();
         loadCatalog();
+        NullTextGuard.sanitize(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
     }
 
     private void buildScreen() {
@@ -162,6 +170,7 @@ public class RadioActivity extends AppCompatActivity {
         Collections.sort(categories.subList(1, categories.size()), String.CASE_INSENSITIVE_ORDER);
         rebuildCategoryButtons();
         applyCategory("Todas");
+        NullTextGuard.sanitize(this);
     }
 
     private void rebuildCategoryButtons() {

@@ -18,6 +18,7 @@ import com.ouropro.player.models.ResumeSeriesModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.improvements.M3USeriesNaming;
+import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -44,6 +45,12 @@ import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class BaseTVActivity extends FragmentActivity {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
+    }
+
     public static boolean busy;
     private HashMap<String, String> categoryHashMap;
     private HashMap<String, List<EpisodeModel>> episodeModelHashMap;

@@ -88,6 +88,7 @@ import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.improvements.EpgReminderStore;
+import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceButtonFactory;
@@ -2166,6 +2167,13 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
             openVoiceChannel(voiceQuery);
         }
+        NullTextGuard.sanitize(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
     }
 
     private void applyVoiceChannelSearch(String query) {
