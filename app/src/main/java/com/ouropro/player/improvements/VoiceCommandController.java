@@ -85,6 +85,9 @@ public final class VoiceCommandController implements RecognitionListener {
     }
 
     public void onError(int error) {
+        if (!listening) {
+            return;
+        }
         listening = false;
         String message;
         switch (error) {

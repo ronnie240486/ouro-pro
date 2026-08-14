@@ -2307,6 +2307,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
         RealmResults<EPGChannel> globalMatches = RealmController.with().getLiveChannelsByKey(query, true);
         EPGChannel channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
+        if (channel == null && query != null && query.trim().contains(" ")) {
+            String firstToken = query.trim().split("\\s+")[0];
+            globalMatches = RealmController.with().getLiveChannelsByKey(firstToken, true);
+            channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
+        }
         if (channel == null) {
             applyVoiceChannelSearch(query);
             return;
