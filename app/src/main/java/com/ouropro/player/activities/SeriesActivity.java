@@ -40,6 +40,7 @@ import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.improvements.SeriesCatalogLoader;
+import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
 import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.SubTitleUserModel;
@@ -466,7 +467,7 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
         new Thread(() -> {
             io.realm.Realm backgroundRealm = io.realm.Realm.getDefaultInstance();
             try {
-                backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(copy));
+                SeriesCatalogDeduplicator.upsert(backgroundRealm, copy);
             } finally {
                 backgroundRealm.close();
             }

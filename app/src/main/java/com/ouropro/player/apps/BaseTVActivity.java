@@ -17,7 +17,8 @@ import com.ouropro.player.models.ResumeModel;
 import com.ouropro.player.models.ResumeSeriesModel;
 import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
-import com.ouropro.player.improvements.M3USeriesNaming;
+import com.ouropro.player.improvements.StreamingM3UImporter;
+import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
 import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
@@ -964,7 +965,7 @@ public class BaseTVActivity extends FragmentActivity {
             }
         }
         int i = 5;
-        this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(arrayList, i));
+        SeriesCatalogDeduplicator.upsert(this.realm, arrayList);
         if (sharedPreferenceSeriesFavNames.size() > 0) {
             Iterator<String> it2 = sharedPreferenceSeriesFavNames.iterator();
             while (it2.hasNext()) {
@@ -1349,6 +1350,7 @@ public class BaseTVActivity extends FragmentActivity {
         RealmConfiguration realmConfigurationBuild = new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1L).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build();
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
+        SeriesCatalogDeduplicator.deduplicate(this.realm);
     }
 
     private void fetchM3UAccountMetadata(String playlistUrl) {

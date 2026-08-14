@@ -31,6 +31,7 @@ import com.ouropro.player.improvements.M3UAccountEndpoint;
 import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.StreamingM3UImporter;
+import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -67,7 +68,7 @@ public class BaseActivity extends AppCompatActivity {
         NullTextGuard.sanitize(this);
     }
 
-    private static final int M3U_SERIES_SCHEMA_VERSION = 5;
+    private static final int M3U_SERIES_SCHEMA_VERSION = 6;
     private static final String M3U_MIGRATION_PREFS = "ouropro_migrations";
     public static boolean busy;
     private HashMap<String, String> categoryHashMap;
@@ -742,7 +743,7 @@ public class BaseActivity extends AppCompatActivity {
                                 streamRealm.executeTransaction(realm -> realm.insertOrUpdate(allEpisodes));
                                 ArrayList<SeriesModel> series = buildSeriesFromEpisodes(allEpisodes);
                                 if (!series.isEmpty()) {
-                                    streamRealm.executeTransaction(realm -> realm.insertOrUpdate(series));
+                                    SeriesCatalogDeduplicator.upsert(streamRealm, series);
                                     for (SeriesModel item : series) {
                                         seriesCategoryNames.add(item.getCategory_name());
                                     }
@@ -1151,11 +1152,9 @@ public class BaseActivity extends AppCompatActivity {
             series.setStream_icon(originalPoster);
             seriesModels.add(series);
         }
-        this.realm.executeTransaction(realm -> {
-            // Não apagar séries locais: isso preserva capas recuperadas do catálogo,
-            // favoritos, histórico e registros que ainda não foram reprocessados.
-            realm.insertOrUpdate(seriesModels);
-        });
+        // Não apagar séries locais: o upsert preserva capas, favoritos,
+        // histórico e registros válidos, removendo apenas cópias redundantes.
+        SeriesCatalogDeduplicator.upsert(this.realm, seriesModels);
         for (String favoriteName : favoriteNames) {
             this.realm.executeTransaction(realm -> {
                 SeriesModel favorite = (SeriesModel) Insets$$ExternalSyntheticOutline0.m(realm, SeriesModel.class, "name", favoriteName);
@@ -1348,7 +1347,7 @@ public class BaseActivity extends AppCompatActivity {
                 });
                 ArrayList<SeriesModel> series = buildSeriesFromEpisodes(episodes);
                 if (!series.isEmpty()) {
-                    backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(series));
+                    SeriesCatalogDeduplicator.upsert(backgroundRealm, series);
                     saveM3UVisibleCategories(channels, movies, series);
                     getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
                             .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
@@ -1796,6 +1795,7 @@ public class BaseActivity extends AppCompatActivity {
         RealmConfiguration realmConfigurationBuild = new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1L).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build();
         Realm.setDefaultConfiguration(realmConfigurationBuild);
         this.realm = Realm.getInstance(realmConfigurationBuild);
+        SeriesCatalogDeduplicator.deduplicate(this.realm);
         try {
             IntentFilter failoverFilter = new IntentFilter();
             failoverFilter.addAction(PlaylistFailoverManager.ACTION_PLAYLIST_FAILOVER_SYNC);

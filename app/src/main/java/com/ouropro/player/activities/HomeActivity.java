@@ -46,6 +46,7 @@ import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.improvements.SeriesCatalogLoader;
 import com.ouropro.player.improvements.SeriesPosterRepair;
+import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
 import com.ouropro.player.models.EPGChannel;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SeriesModel;
@@ -136,7 +137,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         new Thread(() -> {
             io.realm.Realm backgroundRealm = io.realm.Realm.getDefaultInstance();
             try {
-                backgroundRealm.executeTransaction(realm -> realm.insertOrUpdate(copy));
+                SeriesCatalogDeduplicator.upsert(backgroundRealm, copy);
             } finally {
                 backgroundRealm.close();
             }
