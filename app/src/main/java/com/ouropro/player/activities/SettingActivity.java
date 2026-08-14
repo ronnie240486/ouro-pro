@@ -69,7 +69,7 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
-    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/CdFDYfVMHXGkUTdp.apk";
+    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/RjvSytJpAKQuYJnl.apk";
     private static final String LEGACY_UPDATE_APK_TOKEN = "HJpwLflhkVxTrahI";
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
