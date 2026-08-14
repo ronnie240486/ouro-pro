@@ -57,6 +57,8 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
     public String stream_id = "";
     public boolean is_fav = false;
     public String series_background = "";
+    public String resolved_series_id = "";
+    public String resolved_stream_icon = "";
     public WordModels wordModels = new WordModels();
 
     private String extractM3USeriesId(String url) {
@@ -287,8 +289,23 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
             this.currentSeries = RealmController.with().getSeriesById(this.stream_id);
         }
         getIntent().getStringExtra("category_id");
-        // SeriesModel pode ser um objeto gerenciado pelo Realm; não o altere fora de transação.
-        this.stream_id = this.currentSeries.getSeries_id();
+        // Use cópias simples para enriquecer a tela; nunca altere SeriesModel gerenciado fora de transação.
+        this.resolved_series_id = this.currentSeries.getSeries_id();
+        this.resolved_stream_icon = this.currentSeries.getStream_icon();
+        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
+            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(this.currentSeries.getName());
+            if (firstEpisode != null) {
+                String extractedId = extractM3USeriesId(firstEpisode.getUrl());
+                if (!extractedId.isEmpty()) {
+                    this.resolved_series_id = extractedId;
+                }
+                if (firstEpisode.getStream_icon() != null && !firstEpisode.getStream_icon().trim().isEmpty()
+                        && !"null".equalsIgnoreCase(firstEpisode.getStream_icon().trim())) {
+                    this.resolved_stream_icon = firstEpisode.getStream_icon().trim();
+                }
+            }
+        }
+        this.stream_id = this.resolved_series_id;
         if (this.currentSeries.isIs_favorite()) {
             this.is_fav = true;
             this.image_fav.setImageResource(R.drawable.ic_star_selected);
@@ -318,7 +335,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         }
         this.txt_duration.setText("");
         try {
-            Glide.with((FragmentActivity) this).load(this.currentSeries.getStream_icon()).error(R.drawable.default_series).into(this.movie_logo);
+            Glide.with((FragmentActivity) this).load(this.resolved_stream_icon).error(R.drawable.default_series).into(this.movie_logo);
         } catch (Exception unused2) {
             Glide.with((FragmentActivity) this).load(Integer.valueOf(R.drawable.default_series)).error(R.drawable.default_series).into(this.movie_logo);
         }
