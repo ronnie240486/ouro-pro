@@ -402,14 +402,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (content == null) {
             return;
         }
-        int marginEnd = dpRadio(24);
-        int marginBottom = dpRadio(24);
+        int marginBottom = dpRadio(18);
+        int gap = dpRadio(12);
+        int buttonSize = dpRadio(52);
         this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM | Gravity.END);
-        params.setMargins(0, 0, marginEnd, marginBottom);
+        this.microphoneButton.setFocusable(true);
+        this.microphoneButton.setFocusableInTouchMode(true);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        params.setMargins(gap, 0, 0, marginBottom);
         content.addView(this.microphoneButton, params);
         this.microphoneButton.bringToFront();
 
@@ -417,21 +417,33 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.radioIconButton.setImageResource(R.drawable.ic_radio);
         this.radioIconButton.setContentDescription("Abrir Rádios");
         this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
-        int radioPadding = dpRadio(8);
+        int radioPadding = dpRadio(5);
         this.radioIconButton.setPadding(radioPadding, radioPadding, radioPadding, radioPadding);
         this.radioIconButton.setFocusable(true);
+        this.radioIconButton.setFocusableInTouchMode(true);
         this.radioIconButton.setClickable(true);
         this.radioIconButton.setElevation(dpRadio(6));
         this.radioIconButton.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
         this.radioIconButton.setOnFocusChangeListener((view, focused) -> {
-            view.setScaleX(focused ? 1.15f : 1.0f);
-            view.setScaleY(focused ? 1.15f : 1.0f);
+            view.setScaleX(focused ? 1.12f : 1.0f);
+            view.setScaleY(focused ? 1.12f : 1.0f);
         });
-        FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(
-                dpRadio(42), dpRadio(42), Gravity.BOTTOM | Gravity.END);
-        radioParams.setMargins(0, 0, marginEnd + dpRadio(48), marginBottom);
+        FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        radioParams.setMargins(0, 0, gap, marginBottom);
         content.addView(this.radioIconButton, radioParams);
         this.radioIconButton.bringToFront();
+        this.radioIconButton.setNextFocusRightId(this.microphoneButton.getId());
+        this.microphoneButton.setNextFocusLeftId(this.radioIconButton.getId());
+        this.radioIconButton.setNextFocusUpId(this.ly_live == null ? View.NO_ID : this.ly_live.getId());
+        this.microphoneButton.setNextFocusUpId(this.ly_movie == null ? View.NO_ID : this.ly_movie.getId());
+        this.radioIconButton.setNextFocusDownId(this.ly_account == null ? View.NO_ID : this.ly_account.getId());
+        this.microphoneButton.setNextFocusDownId(this.ly_change == null ? View.NO_ID : this.ly_change.getId());
+        if (this.ly_live != null) {
+            this.ly_live.setNextFocusDownId(this.radioIconButton.getId());
+        }
+        if (this.ly_movie != null) {
+            this.ly_movie.setNextFocusDownId(this.microphoneButton.getId());
+        }
         if (!VoiceCommandController.isAvailable(this)) {
             this.microphoneButton.setVisibility(View.GONE);
             return;

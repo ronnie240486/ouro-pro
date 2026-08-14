@@ -3,9 +3,11 @@ package com.ouropro.player.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -85,6 +87,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.improvements.EpgReminderBinder;
+import com.ouropro.player.improvements.EpgReminderStore;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceButtonFactory;
@@ -194,6 +197,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public int move_pos = 0;
     public int error_count = 0;
     public String stream_id = "";
+    private Handler tvReminderHandler = new Handler();
+    private Runnable tvReminderRunnable;
+    private String scheduledTvReminderKey = "";
+    private CountDownTimer tvReminderCountdown;
     public String key = "";
     public boolean is_full = false;
     public Handler handler = new Handler();
@@ -1271,8 +1278,12 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (this.visibleEpgPanel == null) {
             RecyclerView panel = new RecyclerView(this);
             panel.setId(View.generateViewId());
-            panel.setFocusable(false);
-            panel.setClickable(false);
+            panel.setFocusable(true);
+            panel.setFocusableInTouchMode(true);
+            panel.setClickable(true);
+            panel.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+            panel.setNextFocusUpId(R.id.recycler_channel);
+            panel.setNextFocusLeftId(R.id.recycler_channel);
             panel.setBackgroundColor(Color.TRANSPARENT);
             panel.setLayoutManager(new LinearLayoutManager(this));
             panel.setAdapter(this.epgAdapter);
@@ -1287,8 +1298,104 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.visibleEpgPanel = panel;
         }
         this.visibleEpgPanel.setVisibility(View.VISIBLE);
+        if (this.recycler_channel != null) {
+            this.recycler_channel.setNextFocusDownId(this.visibleEpgPanel.getId());
+        }
+        this.visibleEpgPanel.setNextFocusUpId(this.recycler_channel == null ? View.NO_ID : this.recycler_channel.getId());
         this.visibleEpgPanel.bringToFront();
         this.visibleEpgPanel.requestLayout();
+        this.visibleEpgPanel.setOnFocusChangeListener((view, hasFocus) -> {
+            if (hasFocus && this.epgAdapter != null && this.epgAdapter.getItemCount() > 0) {
+                view.post(() -> {
+                    RecyclerView.ViewHolder holder = this.visibleEpgPanel.findViewHolderForAdapterPosition(0);
+                    if (holder != null && holder.itemView.findViewById(R.id.epg_bell) != null) {
+                        holder.itemView.findViewById(R.id.epg_bell).requestFocus();
+                    }
+                });
+            }
+        });
+    }
+
+    private void scheduleTvReminder(List<CatchUpEpg> list) {
+        if (this.tvReminderHandler == null) {
+            return;
+        }
+        String currentStream = this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id();
+        if (currentStream == null || currentStream.trim().isEmpty() || list == null) {
+            clearTvReminderSchedule();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        CatchUpEpg nextReminder = null;
+        for (CatchUpEpg program : list) {
+            if (program == null || !EpgReminderStore.isScheduled(this, currentStream, program)) {
+                continue;
+            }
+            long startMillis = program.getStart_timestamp() * 1000L;
+            long stopMillis = program.getStop_timestamp() * 1000L;
+            if (stopMillis <= now || startMillis <= 0L) {
+                continue;
+            }
+            if (nextReminder == null || startMillis < nextReminder.getStart_timestamp() * 1000L) {
+                nextReminder = program;
+            }
+        }
+        if (nextReminder == null) {
+            clearTvReminderSchedule();
+            return;
+        }
+        String reminderKey = currentStream + "|" + nextReminder.getStart_timestamp();
+        if (reminderKey.equals(this.scheduledTvReminderKey) && this.tvReminderRunnable != null) {
+            return;
+        }
+        clearTvReminderSchedule();
+        this.scheduledTvReminderKey = reminderKey;
+        long delay = Math.max(0L, nextReminder.getStart_timestamp() * 1000L - now - 10000L);
+        CatchUpEpg reminderProgram = nextReminder;
+        this.tvReminderRunnable = () -> showTvReminder(reminderProgram, currentStream);
+        this.tvReminderHandler.postDelayed(this.tvReminderRunnable, delay);
+    }
+
+    private void clearTvReminderSchedule() {
+        if (this.tvReminderHandler != null && this.tvReminderRunnable != null) {
+            this.tvReminderHandler.removeCallbacks(this.tvReminderRunnable);
+        }
+        this.tvReminderRunnable = null;
+        this.scheduledTvReminderKey = "";
+        if (this.tvReminderCountdown != null) {
+            this.tvReminderCountdown.cancel();
+            this.tvReminderCountdown = null;
+        }
+    }
+
+    private void showTvReminder(CatchUpEpg program, String streamId) {
+        if (isFinishing() || program == null || !EpgReminderStore.isScheduled(this, streamId, program)) {
+            return;
+        }
+        TextView message = new TextView(this);
+        message.setTextColor(Color.WHITE);
+        message.setTextSize(18.0f);
+        message.setPadding(32, 24, 32, 8);
+        message.setText("O programa começa em 10 segundos");
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Lembrete EPG").setView(message).setPositiveButton("Ir agora", (d, which) -> EpgReminderStore.setScheduled(this, streamId, program, false)).setNegativeButton("Descartar", (d, which) -> EpgReminderStore.setScheduled(this, streamId, program, false)).create();
+        dialog.setOnDismissListener(d -> {
+            EpgReminderStore.setScheduled(this, streamId, program, false);
+            clearTvReminderSchedule();
+        });
+        dialog.setOnShowListener(d -> {
+            this.tvReminderCountdown = new CountDownTimer(10000L, 1000L) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    message.setText("O programa começa em " + Math.max(1, (int) Math.ceil(millisUntilFinished / 1000.0d)) + " segundos");
+                }
+
+                @Override
+                public void onFinish() {
+                    message.setText("Começando agora");
+                }
+            }.start();
+        });
+        dialog.show();
     }
 
     private void updateChannelEpgText(String nowText, String nextText) {
@@ -1465,6 +1572,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     LiveActivity.this.playSelectedChannel(ePGChannel);
                     LiveActivity liveActivity2 = LiveActivity.this;
                     liveActivity2.recycler_channel.setSelectedPosition(liveActivity2.channel_pos);
+                    liveActivity2.recycler_channel.requestFocus();
                     LiveActivity liveActivity3 = LiveActivity.this;
                     liveActivity3.handler.removeCallbacks(liveActivity3.epgTicker);
                     LiveActivity liveActivity4 = LiveActivity.this;
@@ -1499,6 +1607,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 liveActivity12.updateChannelEpgText("carregando EPG...", "aguardando programação...");
                 LiveActivity liveActivity13 = LiveActivity.this;
                 liveActivity13.recycler_channel.setSelectedPosition(liveActivity13.channel_pos);
+                liveActivity13.recycler_channel.requestFocus();
             }
 
             public void OnPinIncorrect() {
@@ -1527,6 +1636,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.epgAdapter.setEpgList(list);
             setCurrentEpgEvent(list);
         }
+        scheduleTvReminder(list);
     }
 
     private void showFavImageIcon(boolean z) {

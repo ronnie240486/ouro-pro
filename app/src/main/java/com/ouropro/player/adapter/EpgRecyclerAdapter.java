@@ -73,9 +73,6 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgRecyclerAdapter.
         Insets$$ExternalSyntheticOutline0.m(this.context, textColor, holder.txt_name);
         Insets$$ExternalSyntheticOutline0.m(this.context, textColor, holder.txt_time);
 
-        if (position == 0) {
-            holder.itemView.requestFocus();
-        }
         if (this.bellClickListener == null) {
             holder.epg_bell.setVisibility(View.GONE);
             return;
@@ -83,6 +80,7 @@ public class EpgRecyclerAdapter extends RecyclerView.Adapter<EpgRecyclerAdapter.
 
         holder.epg_bell.setVisibility(View.VISIBLE);
         holder.epg_bell.setFocusable(true);
+        holder.epg_bell.setFocusableInTouchMode(true);
         holder.epg_bell.setClickable(true);
         boolean scheduled = this.bellClickListener.isScheduled(program);
         holder.epg_bell.setColorFilter(scheduled ? Color.rgb(255, 211, 42) : Color.WHITE);
