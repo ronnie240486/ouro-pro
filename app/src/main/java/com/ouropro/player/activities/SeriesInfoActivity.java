@@ -171,6 +171,9 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void watchYoutubeVideo(String str) {
+        TrailerSearchActivity.open(this, this.currentSeries == null ? this.txt_name.getText().toString() : this.currentSeries.getName());
+        return;
+        /*
         if (!GetSharedInfo.isTVDevice(this)) {
             try {
                 Intent intent = new Intent("android.intent.action.VIEW", Uri.parse("vnd.youtube:" + str));
@@ -194,6 +197,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         intent3.putExtra("description", this.currentSeries.getPlot());
         intent3.putExtra("image_url", this.currentSeries.getStream_icon());
         startActivity(intent3);
+        */
     }
 
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
@@ -249,12 +253,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
                 goToSeason();
                 break;
             case R.id.btn_trailer /* 2131427489 */:
-                String youtube = this.currentSeries.getYoutube();
-                if (youtube == null || youtube.isEmpty()) {
-                    Toast.makeText(this, this.wordModels.getNo_trailer(), 0).show();
-                } else {
-                    watchYoutubeVideo(youtube);
-                }
+                watchYoutubeVideo(this.currentSeries == null ? "" : this.currentSeries.getYoutube());
                 break;
         }
     }
@@ -310,13 +309,9 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         }
         setSeriesInfo();
         getSeriesInfo();
-        if (this.currentSeries.getYoutube().isEmpty()) {
-            this.btn_trailer.setVisibility(8);
-            this.btn_play.setNextFocusRightId(R.id.btn_fav);
-            this.btn_favorite.setNextFocusLeftId(R.id.btn_play);
-        } else {
-            this.btn_trailer.setVisibility(0);
-        }
+        this.btn_trailer.setVisibility(0);
+        this.btn_play.setNextFocusRightId(R.id.btn_trailer);
+        this.btn_favorite.setNextFocusLeftId(R.id.btn_trailer);
         this.btn_back.setFocusable(false);
         this.btn_play.requestFocus();
     }
