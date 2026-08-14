@@ -44,6 +44,7 @@ import com.ouropro.player.dlgfragment.PayForTvDlgFragment;
 import com.ouropro.player.dlgfragment.SubtitleSettingDlgFragment;
 import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
+import com.ouropro.player.improvements.InAppApkUpdateTask;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LanguageModel;
@@ -370,7 +371,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             Toast.makeText(this, "Nenhuma atualização foi configurada no painel.", Toast.LENGTH_LONG).show();
             return;
         }
-        new versionUpdate().execute(apkLink.trim());
+        new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
+            @Override public void onSuccess(File apk) {
+                startInstall(apk);
+            }
+            @Override public void onFailure(String message) {
+                Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        }).execute(apkLink.trim());
     }
 
     private void initView() {

@@ -414,7 +414,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.microphoneButton.bringToFront();
 
         this.radioIconButton = new ImageButton(this);
-        this.radioIconButton.setImageResource(R.drawable.radio_icon_transparent);
+        this.radioIconButton.setImageResource(R.drawable.ic_radio);
         this.radioIconButton.setContentDescription("Abrir Rádios");
         this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
         int radioPadding = dpRadio(8);
@@ -645,7 +645,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
         ImageView icon = new ImageView(this);
         icon.setId(View.generateViewId());
-        icon.setImageResource(R.drawable.radio_icon_transparent);
+        icon.setImageResource(R.drawable.ic_radio);
         icon.setPadding(dpRadio(8), dpRadio(8), dpRadio(8), dpRadio(8));
         radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(58), dpRadio(58)));
         ConstraintLayout.LayoutParams iconParams = (ConstraintLayout.LayoutParams) icon.getLayoutParams();
