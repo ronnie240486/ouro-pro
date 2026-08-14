@@ -198,6 +198,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public int move_pos = 0;
     public int error_count = 0;
     public String stream_id = "";
+    private String activeEpgStreamId = "";
     private Handler tvReminderHandler = new Handler();
     private Runnable tvReminderRunnable;
     private String scheduledTvReminderKey = "";
@@ -455,15 +456,26 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
     /* JADX INFO: Access modifiers changed from: private */
     public void getShortEpg(String str) {
-        try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
+                final String requestStreamId = str == null ? "" : str.trim();
+        this.activeEpgStreamId = requestStreamId;
+        showEpgInfo(null);
+        updateChannelEpgText("Carregando EPG...", "Aguardando programação...");
+try {
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), requestStreamId).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
-                    LiveActivity.this.loadXmlTvEpg(str);
+                    if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        LiveActivity.this.loadXmlTvEpg(requestStreamId);
+                    }
                 }
 
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
+                    if (!requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        return;
+                    }
                     if (response.body() == null || response.body().getEpg_listings() == null || response.body().getEpg_listings().size() <= 0) {
-                        LiveActivity.this.loadXmlTvEpg(str);
+                        if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        LiveActivity.this.loadXmlTvEpg(requestStreamId);
+                    }
                         return;
                     }
                     LiveActivity.this.showEpgInfo(response.body().getEpg_listings());
@@ -471,11 +483,14 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 }
             });
                 } catch (Exception unused) {
-            loadXmlTvEpg(str);
+            if (requestStreamId.equals(this.activeEpgStreamId)) {
+                loadXmlTvEpg(requestStreamId);
+            }
         }
     }
 
     private void loadXmlTvEpg(String streamId) {
+        final String requestStreamId = streamId == null ? "" : streamId.trim();
         XmlTvEpgLoader.load(
                 this.preferenceHelper.getSharedPreferenceServerUrl(),
                 this.preferenceHelper.getSharedPreferenceISM3U(),
@@ -488,6 +503,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     @Override
                     public void onLoaded(List<CatchUpEpg> programs) {
                         runOnUiThread(() -> {
+                            if (!requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                                return;
+                            }
                             showEpgInfo(programs);
                             epgEventList = programs;
                         });
@@ -495,7 +513,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
                     @Override
                     public void onError(Throwable error) {
-                        runOnUiThread(() -> showEpgInfo(null));
+                        runOnUiThread(() -> {
+                            if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                                showEpgInfo(null);
+                            }
+                        });
                     }
                 });
     }
@@ -1735,6 +1757,22 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         EPGChannel ePGChannel2;
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+                    && this.recycler_channel != null
+                    && this.recycler_channel.hasFocus()
+                    && this.epgAdapter != null
+                    && this.epgAdapter.getItemCount() > 0) {
+                ensureVisibleEpgPanel();
+                focusFirstEpgBell();
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP
+                    && this.visibleEpgPanel != null
+                    && this.visibleEpgPanel.hasFocus()
+                    && this.recycler_channel != null) {
+                this.recycler_channel.requestFocus();
+                return true;
+            }
             if (keyCode == 4) {
                 if (this.ly_control.getVisibility() == 0) {
                     this.ly_control.setVisibility(8);

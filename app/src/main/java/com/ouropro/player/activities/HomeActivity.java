@@ -218,6 +218,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.txt_setting.setText(this.wordModels.getSettings());
         this.txt_reload.setText(this.wordModels.getReload_portal());
         this.txt_exit.setText(this.wordModels.getExit());
+        this.image_live.setImageResource(R.drawable.icon_live);
+        this.image_movie.setImageResource(R.drawable.movie_icon);
+        this.image_series.setImageResource(R.drawable.icon_series);
+        this.image_account.setImageResource(R.drawable.account_icon);
+        this.image_change.setImageResource(R.drawable.change_m3u_icon);
+        this.image_setting.setImageResource(R.drawable.ic_setting);
+        this.image_reload.setImageResource(R.drawable.reload_icon);
+        this.image_exit.setImageResource(R.drawable.exit_icon);
         try {
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/live_tv").error(R.drawable.icon_live).into(this.image_live);
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/movies").error(R.drawable.movie_icon).into(this.image_movie);
@@ -437,8 +445,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.microphoneButton.setNextFocusLeftId(this.radioIconButton.getId());
         this.radioIconButton.setNextFocusUpId(this.ly_live == null ? View.NO_ID : this.ly_live.getId());
         this.microphoneButton.setNextFocusUpId(this.ly_movie == null ? View.NO_ID : this.ly_movie.getId());
-        this.radioIconButton.setNextFocusDownId(this.ly_account == null ? View.NO_ID : this.ly_account.getId());
-        this.microphoneButton.setNextFocusDownId(this.ly_change == null ? View.NO_ID : this.ly_change.getId());
+        this.radioIconButton.setNextFocusDownId(View.NO_ID);
+        this.microphoneButton.setNextFocusDownId(View.NO_ID);
         if (this.ly_live != null) {
             this.ly_live.setNextFocusDownId(this.radioIconButton.getId());
         }
