@@ -441,6 +441,14 @@ public class RealmController {
         return (SeriesModel) Insets$$ExternalSyntheticOutline0.m(this.realm, SeriesModel.class, "name", str);
     }
 
+    /** Returns a detached copy safe for screen enrichment and local setters. */
+    public SeriesModel copySeries(SeriesModel managedSeries) {
+        if (managedSeries == null || !managedSeries.isValid()) {
+            return null;
+        }
+        return this.realm.copyFromRealm(managedSeries);
+    }
+
     public RealmResults<SeriesModel> getSeriesModelsByCategory(CategoryModel categoryModel, String str, boolean z, int i) {
         String id;
         String str2 = z ? "category_name" : "category_id";

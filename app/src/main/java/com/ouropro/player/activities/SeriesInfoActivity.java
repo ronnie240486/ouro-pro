@@ -283,13 +283,22 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
         this.wordModels = GetSharedInfo.getWordModel(this);
         initView();
         this.stream_id = getIntent().getStringExtra("series_id");
+        if (this.stream_id == null) {
+            this.stream_id = "";
+        }
+        SeriesModel managedSeries;
         if (this.preferenceHelper.getSharedPreferenceISM3U() || this.stream_id.isEmpty()) {
-            this.currentSeries = RealmController.with().getSeriesByName(getIntent().getStringExtra("name"));
+            managedSeries = RealmController.with().getSeriesByName(getIntent().getStringExtra("name"));
         } else {
-            this.currentSeries = RealmController.with().getSeriesById(this.stream_id);
+            managedSeries = RealmController.with().getSeriesById(this.stream_id);
+        }
+        this.currentSeries = RealmController.with().copySeries(managedSeries);
+        if (this.currentSeries == null) {
+            finish();
+            return;
         }
         getIntent().getStringExtra("category_id");
-        // Use cópias simples para enriquecer a tela; nunca altere SeriesModel gerenciado fora de transação.
+        // A tela trabalha somente com cópia destacada; nunca altera objeto gerenciado fora de transação.
         this.resolved_series_id = this.currentSeries.getSeries_id();
         this.resolved_stream_icon = this.currentSeries.getStream_icon();
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
