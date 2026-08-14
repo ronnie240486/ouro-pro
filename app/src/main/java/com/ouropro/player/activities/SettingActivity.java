@@ -172,6 +172,11 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                             if (this.file == null || !this.file.exists() || this.file.length() < 1024L) {
                                 return "Arquivo de atualização inválido";
                             }
+                            android.content.pm.PackageInfo packageInfo = SettingActivity.this.getPackageManager().getPackageArchiveInfo(this.file.getAbsolutePath(), android.content.pm.PackageManager.GET_META_DATA);
+                            if (packageInfo == null || !SettingActivity.this.getPackageName().equals(packageInfo.packageName)) {
+                                this.file.delete();
+                                return "O link não aponta para um APK OuroPro direto";
+                            }
                         } catch (Exception e2) {
                             e = e2;
                             try {
@@ -297,7 +302,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             String str2 = str;
             this.mProgressDialog.dismiss();
             if (str2 != null) {
-                Toast.makeText(SettingActivity.this.getApplicationContext(), SettingActivity.this.wordModels.getUpdate_failed(), 0).show();
+                Toast.makeText(SettingActivity.this.getApplicationContext(), str2, Toast.LENGTH_LONG).show();
             } else {
                 SettingActivity.this.startInstall(this.file);
             }
