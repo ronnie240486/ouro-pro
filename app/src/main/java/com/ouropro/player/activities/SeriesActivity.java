@@ -645,6 +645,22 @@ public class SeriesActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (!isFinishing() && this.categoryModels != null
+                    && this.category_pos >= 0 && this.category_pos < this.categoryModels.size()) {
+                CategoryModel currentCategory = this.categoryModels.get(this.category_pos);
+                this.seriesModels = RealmController.with().getSeriesModelsByCategory(
+                        currentCategory, "", this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
+                if (this.seriesAdapter != null) {
+                    this.seriesAdapter.updateData(this.seriesModels);
+                }
+            }
+        }, 1200L);
+    }
+
+    @Override
     protected void onDestroy() {
         if (this.voiceCommandController != null) {
             this.voiceCommandController.destroy();

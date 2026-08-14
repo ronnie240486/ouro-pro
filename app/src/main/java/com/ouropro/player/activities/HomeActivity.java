@@ -147,7 +147,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         final long localSeriesCount = RealmController.with().realm.where(SeriesModel.class).count();
         final boolean recoverCatalog = localSeriesCount < 100;
         final String configuredServerForKey = this.preferenceHelper.getSharedPreferenceServerUrl();
-        final String posterRepairKey = "series_posters_repaired_v2_" + Integer.toHexString(
+        final String posterRepairKey = "series_posters_repaired_v3_" + Integer.toHexString(
                 Utils.getUserId(configuredServerForKey == null ? "" : configuredServerForKey).hashCode());
         final boolean repairPosters = this.preferenceHelper.getSharedPreferenceISM3U()
                 && !getSharedPreferences("ouropro_migrations", MODE_PRIVATE)

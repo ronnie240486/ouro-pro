@@ -57,7 +57,7 @@ public final class SeriesPosterRepair {
                 .replaceAll("\\p{M}+", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("(?i)\\b(?:s|t)\\s*0*\\d{1,2}\\s*e\\s*0*\\d{1,3}\\b", " ")
-                .replaceAll("[^a-z0-9]+", " ")
+                .replaceAll("[^\\p{L}\\p{N}]+", " ")
                 .trim();
         return normalized.replaceAll("\\s+", " ");
     }
