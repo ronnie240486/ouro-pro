@@ -91,13 +91,18 @@ public final class VoiceChannelMatcher {
                 score = 90;
             } else {
                 boolean allTokensPresent = true;
+                int meaningfulTokens = 0;
                 for (String token : queryTokens) {
-                    if (token.length() > 0 && !name.contains(token)) {
+                    if (token.isEmpty() || isConnector(token)) {
+                        continue;
+                    }
+                    meaningfulTokens++;
+                    if (!name.contains(token)) {
                         allTokensPresent = false;
                         break;
                     }
                 }
-                if (allTokensPresent && queryTokens.length > 0) {
+                if (allTokensPresent && meaningfulTokens > 0) {
                     score = 80;
                 }
             }
@@ -110,6 +115,10 @@ public final class VoiceChannelMatcher {
             }
         }
         return bestScore > 0 && count == 1 ? result : null;
+    }
+
+    private static boolean isConnector(String token) {
+        return "e".equals(token) || "and".equals(token) || "&".equals(token);
     }
 
     /** Retorna todos os canais cujo nome ou número contém a consulta normalizada. */

@@ -531,7 +531,8 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
 
         EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(
                 RealmController.with().getLiveChannelsByKey(query, true), query);
-        if ("channel".equals(preferredType) || channel != null) {
+        boolean hasQuality = VoiceCommand.normalize(query).matches(".*\\b(full hd|fhd|hd|sd)\\b.*");
+        if ("channel".equals(preferredType) || channel != null || hasQuality) {
             Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
             intent.putExtra("voice_query", query);
             startActivity(intent);

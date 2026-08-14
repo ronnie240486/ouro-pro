@@ -2301,15 +2301,34 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
     }
 
+    private boolean hasVoiceQuality(String query) {
+        String normalized = VoiceCommand.normalize(query);
+        return normalized.matches(".*\\b(full hd|fhd|hd|sd)\\b.*");
+    }
+
+    private String voiceBaseToken(String query) {
+        String normalized = VoiceCommand.normalize(query);
+        for (String token : normalized.split("\\s+")) {
+            if (!token.isEmpty() && !"full".equals(token) && !"hd".equals(token) && !"fhd".equals(token) && !"sd".equals(token)) {
+                return token;
+            }
+        }
+        return normalized;
+    }
+
     private void openVoiceChannel(String query) {
         if (this.et_search != null && this.et_search.length() > 0) {
             this.et_search.setText("");
         }
-        RealmResults<EPGChannel> globalMatches = RealmController.with().getLiveChannelsByKey(query, true);
+        if (!hasVoiceQuality(query)) {
+            applyVoiceChannelSearch(query);
+            return;
+        }
+        String baseToken = voiceBaseToken(query);
+        RealmResults<EPGChannel> globalMatches = RealmController.with().getLiveChannelsByKey(baseToken, true);
         EPGChannel channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
-        if (channel == null && query != null && query.trim().contains(" ")) {
-            String firstToken = query.trim().split("\\s+")[0];
-            globalMatches = RealmController.with().getLiveChannelsByKey(firstToken, true);
+        if (channel == null) {
+            globalMatches = RealmController.with().getAllLiveChannels();
             channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
         }
         if (channel == null) {

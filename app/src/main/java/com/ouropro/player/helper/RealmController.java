@@ -308,6 +308,11 @@ public class RealmController {
         return result.findAll();
     }
 
+    /** Catálogo completo para resolução determinística de comandos de voz. */
+    public RealmResults<EPGChannel> getAllLiveChannels() {
+        return this.realm.where(EPGChannel.class).findAll();
+    }
+
     public MovieModel getMovieById(String str) {
         return (MovieModel) Insets$$ExternalSyntheticOutline0.m(this.realm, MovieModel.class, "stream_id", str);
     }
