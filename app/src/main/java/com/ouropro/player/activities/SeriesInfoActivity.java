@@ -287,20 +287,7 @@ public class SeriesInfoActivity extends AppCompatActivity implements View.OnClic
             this.currentSeries = RealmController.with().getSeriesById(this.stream_id);
         }
         getIntent().getStringExtra("category_id");
-        if (this.preferenceHelper.getSharedPreferenceISM3U()
-                && (this.currentSeries.getSeries_id() == null || this.currentSeries.getSeries_id().trim().isEmpty())) {
-            EpisodeModel firstEpisode = RealmController.with().getFirstEpisodeBySeriesName(this.currentSeries.getName());
-            if (firstEpisode != null) {
-                String extractedId = extractM3USeriesId(firstEpisode.getUrl());
-                if (!extractedId.isEmpty()) {
-                    this.currentSeries.setSeries_id(extractedId);
-                }
-                if ((this.currentSeries.getStream_icon() == null || this.currentSeries.getStream_icon().trim().isEmpty())
-                        && firstEpisode.getStream_icon() != null) {
-                    this.currentSeries.setStream_icon(firstEpisode.getStream_icon());
-                }
-            }
-        }
+        // SeriesModel pode ser um objeto gerenciado pelo Realm; não o altere fora de transação.
         this.stream_id = this.currentSeries.getSeries_id();
         if (this.currentSeries.isIs_favorite()) {
             this.is_fav = true;
