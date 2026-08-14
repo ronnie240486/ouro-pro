@@ -71,8 +71,6 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
-    private static final String VERIFIED_UPDATE_APK_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663162366914/oaXtRFQaJkdOZSpK.apk";
-    private static final String LEGACY_UPDATE_APK_TOKEN = "HJpwLflhkVxTrahI";
     private static final int UPDATE_INFO_REQUEST_CODE = 1400;
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
@@ -387,11 +385,15 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     private void startUpdateDownload(String serverLink) {
         String apkLink = serverLink == null ? "" : serverLink.trim();
-        if (apkLink.isEmpty() || !(apkLink.startsWith("https://") || apkLink.startsWith("http://")) || apkLink.contains(LEGACY_UPDATE_APK_TOKEN)) {
-            apkLink = VERIFIED_UPDATE_APK_URL;
+        if (apkLink.isEmpty()) {
+            showUpdateError("O painel não retornou um link de APK atualizado");
+            return;
+        }
+        if (!(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
+            showUpdateError("O painel retornou um link de atualização inválido");
+            return;
         }
         String cacheBustedLink = apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis();
-        String fallbackLink = VERIFIED_UPDATE_APK_URL + "?ouropro_fallback=" + System.currentTimeMillis();
         new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
             @Override public void onSuccess(File apk) {
                 startInstall(apk);
@@ -407,7 +409,11 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                     Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
                 }
             }
-        }).execute(cacheBustedLink, fallbackLink);
+        }).execute(cacheBustedLink);
+    }
+
+    private void showUpdateError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private void initView() {
