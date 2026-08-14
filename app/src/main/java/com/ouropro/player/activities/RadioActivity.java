@@ -88,6 +88,19 @@ public class RadioActivity extends AppCompatActivity {
         header.addView(nowPlaying, new LinearLayout.LayoutParams(0, dp(52), 1));
         root.addView(header);
 
+        ImageView movieVisual = new ImageView(this);
+        movieVisual.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        movieVisual.setBackgroundColor(CARD);
+        movieVisual.setAlpha(0.86f);
+        Glide.with(this)
+                .load("https://renciaapp.manus.space/api/v4/icon/movies")
+                .placeholder(R.drawable.movie_icon)
+                .error(R.drawable.movie_icon)
+                .into(movieVisual);
+        LinearLayout.LayoutParams movieVisualParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(86));
+        movieVisualParams.setMargins(0, dp(4), 0, dp(12));
+        root.addView(movieVisual, movieVisualParams);
+
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.HORIZONTAL);
         content.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
