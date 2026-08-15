@@ -66,6 +66,7 @@
         <activity android:exported="false" android:name="com.ouropro.player.activities.ChangePlaylistActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.HomeActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.RadioActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:exported="false" android:name="com.ouropro.player.activities.ContinueWatchingActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <service android:exported="false" android:name="com.ouropro.player.activities.RadioPlaybackService" android:foregroundServiceType="mediaPlayback" android:stopWithTask="false"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.TrailerSearchActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="true" android:label="@string/app_name" android:name="com.ouropro.player.MainActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar">

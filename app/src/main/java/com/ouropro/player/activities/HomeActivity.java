@@ -100,6 +100,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public WordModels wordModels = new WordModels();
     private ImageButton microphoneButton;
     private ImageButton radioIconButton;
+    private TextView continueWatchingButton;
     private VoiceCommandController voiceCommandController;
     private static final int VOICE_PERMISSION_REQUEST = 906;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new HomeActivity$$ExternalSyntheticLambda0(this));
@@ -365,6 +366,63 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 Toast.makeText(HomeActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean hasResumeItems() {
+        try {
+            return (this.preferenceHelper.getSharedPreferenceResumeModel() != null && !this.preferenceHelper.getSharedPreferenceResumeModel().isEmpty())
+                    || (this.preferenceHelper.getSharedPreferenceSeriesResumeModel() != null && !this.preferenceHelper.getSharedPreferenceSeriesResumeModel().isEmpty());
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
+    private void setupContinueWatchingButton() {
+        FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
+        if (content == null || this.preferenceHelper == null) {
+            return;
+        }
+        TextView button = new TextView(this);
+        button.setId(View.generateViewId());
+        button.setText("Continuar assistindo");
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(GetSharedInfo.isTVDevice(this) ? 16.0f : 14.0f);
+        button.setGravity(Gravity.CENTER);
+        button.setTypeface(null, android.graphics.Typeface.BOLD);
+        button.setFocusable(true);
+        button.setClickable(true);
+        button.setContentDescription("Continuar assistindo: retomar filmes e séries");
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.rgb(36, 31, 49));
+        background.setCornerRadius(dpRadio(8));
+        background.setStroke(dpRadio(1), Color.rgb(255, 211, 42));
+        button.setBackground(background);
+        button.setOnClickListener(view -> startActivity(new Intent(this, ContinueWatchingActivity.class)));
+        button.setOnFocusChangeListener((view, focused) -> {
+            view.setScaleX(focused ? 1.05f : 1.0f);
+            view.setScaleY(focused ? 1.05f : 1.0f);
+        });
+        int width = dpRadio(GetSharedInfo.isTVDevice(this) ? 220 : 190);
+        int height = dpRadio(GetSharedInfo.isTVDevice(this) ? 48 : 42);
+        int bottom = dpRadio(GetSharedInfo.isTVDevice(this) ? 108 : 92);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        params.setMargins(0, 0, 0, bottom);
+        content.addView(button, params);
+        button.bringToFront();
+        this.continueWatchingButton = button;
+        updateContinueWatchingButton();
+        if (this.radioIconButton != null) {
+            button.setNextFocusDownId(this.radioIconButton.getId());
+        }
+        if (this.microphoneButton != null) {
+            button.setNextFocusRightId(this.microphoneButton.getId());
+        }
+    }
+
+    private void updateContinueWatchingButton() {
+        if (this.continueWatchingButton != null) {
+            this.continueWatchingButton.setVisibility(hasResumeItems() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void requestVoicePermissionAndStart() {
@@ -675,6 +733,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.preferenceHelper = new PreferenceHelper(this);
         initView();
         setupMicrophoneButton();
+        setupContinueWatchingButton();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
         LTVApp.instance.versionCheck();
@@ -691,6 +750,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+        updateContinueWatchingButton();
         NullTextGuard.sanitize(this);
     }
 }
