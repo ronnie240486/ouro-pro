@@ -556,24 +556,16 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void addEpisodeToSeries(EpisodeModel episodeModel) {
-        if (episodeModel == null) {
-            return;
+        String series_name = episodeModel.getSeries_name();
+        if (series_name == null || series_name.equals("null")) {
+            series_name = "All";
         }
-        String seriesName = episodeModel.getSeries_name();
-        if (seriesName == null || seriesName.trim().isEmpty() || seriesName.equalsIgnoreCase("null")) {
-            seriesName = "All";
+        List<EpisodeModel> list = this.episodeModelHashMap.get(series_name);
+        if (list == null) {
+            list = new ArrayList<>();
         }
-        String categoryName = episodeModel.getCategory_name();
-        if (categoryName == null || categoryName.trim().isEmpty() || categoryName.equalsIgnoreCase("null")) {
-            categoryName = "";
-        }
-        String groupKey = categoryName.trim() + "|" + seriesName.trim();
-        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(groupKey);
-        if (arrayList == null) {
-            arrayList = new ArrayList<>();
-        }
-        arrayList.add(episodeModel);
-        this.episodeModelHashMap.put(groupKey, arrayList);
+        list.add(episodeModel);
+        this.episodeModelHashMap.put(series_name, list);
     }
 
     private void addMovieToCategory(MovieModel movieModel) {
@@ -647,142 +639,17 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchM3UItems(final String str) {
-        new Thread(() -> {
-            final Realm streamRealm = Realm.getDefaultInstance();
-            final ArrayList<EPGChannel> allChannels = new ArrayList<>();
-            final ArrayList<MovieModel> allMovies = new ArrayList<>();
-            final ArrayList<EpisodeModel> allEpisodes = new ArrayList<>();
-            final TreeSet<String> liveCategoryNames = new TreeSet<>();
-            final TreeSet<String> movieCategoryNames = new TreeSet<>();
-            final TreeSet<String> seriesCategoryNames = new TreeSet<>();
-            final int[] channelNumber = {0};
-            final int[] movieNumber = {0};
-            final ArrayList<M3UItem> m3uChannels = new ArrayList<>();
-            final ArrayList<M3UItem> m3uMovies = new ArrayList<>();
-            final ArrayList<M3UItem> m3uSeries = new ArrayList<>();
-            try {
-                streamRealm.executeTransaction(this::sanitizeM3UCatalog);
-                preferenceHelper.setSharedPreferenceM3UEpgUrl("");
-                LTVApp.getInstance().setM3UChannelsItems(m3uChannels);
-                LTVApp.getInstance().setM3UVideosItems(m3uMovies);
-                LTVApp.getInstance().setM3USeriesItems(m3uSeries);
-                new StreamingM3UImporter().execute(str, new StreamingM3UImporter.Listener() {
-                    @Override
-                    public void onSourceInfo(String xmlTvUrl) {
-                        preferenceHelper.setSharedPreferenceM3UEpgUrl(xmlTvUrl);
-                    }
-
-                    @Override
-                    public void onBatch(List<M3UItem> batch) {
-                        if (is_stop || batch == null || batch.isEmpty()) {
-                            return;
-                        }
-                        ArrayList<EPGChannel> channels = new ArrayList<>();
-                        ArrayList<MovieModel> movies = new ArrayList<>();
-                        ArrayList<EpisodeModel> episodes = new ArrayList<>();
-
-                        for (M3UItem item : batch) {
-                            int type = getMediaType(item);
-                            if (type == 0) {
-                                EPGChannel channel = EPGChannel.fromM3UItem(item);
-                                if (channel != null) {
-                                    channel.setNum(String.valueOf(++channelNumber[0]));
-                                    channels.add(channel);
-                                    allChannels.add(channel);
-                                    liveCategoryNames.add(channel.getCategory_name());
-                                    m3uChannels.add(item);
-                                }
-                            } else if (type == 1) {
-                                MovieModel movie = MovieModel.fromM3UItem(item);
-                                if (movie != null) {
-                                    movie.setNum(++movieNumber[0]);
-                                    movies.add(movie);
-                                    allMovies.add(movie);
-                                    movieCategoryNames.add(movie.getCategory_name());
-                                    m3uMovies.add(item);
-                                }
-                            } else if (type == 2) {
-                                EpisodeModel episode = EpisodeModel.fromM3UItem(item);
-                                if (episode != null) {
-                                    episodes.add(episode);
-                                    allEpisodes.add(episode);
-                                    seriesCategoryNames.add(episode.getCategory_name());
-                                    m3uSeries.add(item);
-                                }
-                            }
-                        }
-                        // Os lotes só são acumulados em memória. A escrita única no
-                        // onComplete evita que o Realm legado sem chave primária crie
-                        // uma cópia por lote.
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        try {
-                            if (!allChannels.isEmpty()) {
-                                streamRealm.executeTransaction(realm -> {
-                                    realm.where(EPGChannel.class).findAll().deleteAllFromRealm();
-                                    realm.insertOrUpdate(allChannels);
-                                });
-                            }
-                            if (!allMovies.isEmpty()) {
-                                MovieCatalogDeduplicator.upsert(streamRealm, allMovies);
-                            }
-                            if (!allEpisodes.isEmpty()) {
-                                streamRealm.executeTransaction(realm -> {
-                                    realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
-                                    realm.insertOrUpdate(allEpisodes);
-                                });
-                                ArrayList<SeriesModel> series = buildSeriesFromEpisodes(allEpisodes);
-                                if (!series.isEmpty()) {
-                                    SeriesCatalogDeduplicator.upsert(streamRealm, series);
-                                    for (SeriesModel item : series) {
-                                        seriesCategoryNames.add(item.getCategory_name());
-                                    }
-                                    saveM3UVisibleCategoryNames(liveCategoryNames, movieCategoryNames, seriesCategoryNames);
-                                }
-                            }
-                            preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
-                            getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
-                                    .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
-                            runOnUiThread(() -> {
-                                if (!m3uVisibleNavigationSent && !is_stop) {
-                                    m3uVisibleNavigationSent = true;
-                                    doNextTask(true);
-                                }
-                                setBusy(false);
-                            });
-                        } catch (Exception error) {
-                            onError(error);
-                        } finally {
-                            streamRealm.close();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Exception error) {
-                        runOnUiThread(() -> {
-                            if (!m3uVisibleNavigationSent && !is_stop) {
-                                doNextTask(false);
-                                Toast.makeText(getApplicationContext(), wordModels.getUser_incorrect(), Toast.LENGTH_SHORT).show();
-                            }
-                            setBusy(false);
-                        });
-                        try {
-                            streamRealm.close();
-                        } catch (Exception ignored) {
-                        }
-                    }
-                });
-            } catch (Exception error) {
-                streamRealm.close();
-                runOnUiThread(() -> {
-                    if (!m3uVisibleNavigationSent && !is_stop) doNextTask(false);
-                    setBusy(false);
-                });
-            }
-        }, "ouropro-m3u-stream").start();
+    private void fetchM3UItems(String str) {
+        NetworkTask<Void, Void, List<M3UItem>> networkTask = this.fetchM3uItemsTask;
+        if (networkTask != null && !networkTask.isComplete()) {
+            this.fetchM3uItemsTask.abort();
+        }
+        FetchM3uItemsTask fetchM3uItemsTask = new FetchM3uItemsTask(str, null);
+        this.fetchM3uItemsTask = fetchM3uItemsTask;
+        fetchM3uItemsTask.setOnCompleteListener(new BaseActivity$$ExternalSyntheticLambda4(this, 2));
+        this.fetchM3uItemsTask.setOnGenericExceptionListener(new BaseActivity$$ExternalSyntheticLambda4(this, 3));
+        this.fetchM3uItemsTask.setOnNetworkUnavailableListener(new BaseActivity$$ExternalSyntheticLambda4(this, 4));
+        this.fetchM3uItemsTask.execute();
     }
 
     private String getCategoryNameFromKey(String str) {
@@ -1111,64 +978,46 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void getSeriesFromEpisodes(List<EpisodeModel> list) {
-        List<String> favoriteNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
-        List<ResumeSeriesModel> recentSeries = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
+        int i;
+        List<EpisodeModel> list2;
+        List<String> sharedPreferenceSeriesFavNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
+        List<ResumeSeriesModel> sharedPreferenceRecentSeriesNames = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
         this.episodeModelHashMap = new HashMap<>();
-        if (list != null) {
-            for (EpisodeModel episode : list) {
-                addEpisodeToSeries(episode);
+        Iterator<EpisodeModel> it = list.iterator();
+        while (it.hasNext()) {
+            addEpisodeToSeries(it.next());
+        }
+        ArrayList arrayList = new ArrayList();
+        this.episodeModelHashMap.keySet();
+        Iterator it2 = new TreeSet(this.episodeModelHashMap.keySet()).iterator();
+        while (true) {
+            i = 0;
+            if (!it2.hasNext()) {
+                break;
+            }
+            String str = (String) it2.next();
+            if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
+                SeriesModel seriesModel = new SeriesModel();
+                seriesModel.setName(str);
+                seriesModel.setCategory_name(list2.get(0).getCategory_name());
+                seriesModel.setStream_icon(list2.get(0).getStream_icon());
+                arrayList.add(seriesModel);
             }
         }
-        ArrayList<SeriesModel> seriesModels = new ArrayList<>();
-        for (String name : new TreeSet<>(this.episodeModelHashMap.keySet())) {
-            List<EpisodeModel> episodes = this.episodeModelHashMap.get(name);
-            if (name == null || episodes == null || episodes.isEmpty()) {
-                continue;
+        this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(arrayList, 2));
+        if (sharedPreferenceSeriesFavNames.size() > 0) {
+            Iterator<String> it3 = sharedPreferenceSeriesFavNames.iterator();
+            while (it3.hasNext()) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda7(it3.next(), 13));
             }
-            EpisodeModel firstEpisode = episodes.get(0);
-            String displayName = firstEpisode.getSeries_name();
-            if (displayName == null || displayName.trim().isEmpty() || displayName.equalsIgnoreCase("null")) {
-                displayName = name;
+        }
+        if (sharedPreferenceRecentSeriesNames.size() > 0) {
+            Iterator<ResumeSeriesModel> it4 = sharedPreferenceRecentSeriesNames.iterator();
+            while (it4.hasNext()) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda6(it4.next(), i));
             }
-            SeriesModel series = new SeriesModel();
-            series.setName(displayName);
-            series.setCategory_name(firstEpisode.getCategory_name());
-            String originalPoster = "";
-            for (EpisodeModel episode : episodes) {
-                if (episode != null && episode.getStream_icon() != null
-                        && !episode.getStream_icon().trim().isEmpty()
-                        && !"null".equalsIgnoreCase(episode.getStream_icon().trim())) {
-                    originalPoster = episode.getStream_icon().trim();
-                    break;
-                }
-            }
-            series.setStream_icon(originalPoster);
-            seriesModels.add(series);
         }
-        // Não apagar séries locais: o upsert preserva capas, favoritos,
-        // histórico e registros válidos, removendo apenas cópias redundantes.
-        SeriesCatalogDeduplicator.upsert(this.realm, seriesModels);
-        for (String favoriteName : favoriteNames) {
-            this.realm.executeTransaction(realm -> {
-                SeriesModel favorite = (SeriesModel) Insets$$ExternalSyntheticOutline0.m(realm, SeriesModel.class, "name", favoriteName);
-                if (favorite != null) {
-                    favorite.setIs_favorite(true);
-                }
-            });
-        }
-        for (ResumeSeriesModel recent : recentSeries) {
-            this.realm.executeTransaction(realm -> {
-                SeriesModel item = realm.where(SeriesModel.class).equalTo("name", recent.getName()).findFirst();
-                if (item != null) {
-                    item.setIs_recent(true);
-                    item.setSeason_pos(recent.getSeason_pos());
-                    item.setEpisode_pos(recent.getEpisode_pos());
-                }
-            });
-        }
-        getSeriesCategoryModels(seriesModels);
-        getSharedPreferences(M3U_MIGRATION_PREFS, MODE_PRIVATE)
-                .edit().putInt("series_schema", M3U_SERIES_SCHEMA_VERSION).apply();
+        getSeriesCategoryModels(arrayList);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -1267,39 +1116,15 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$fetchM3UItems$3(final List list) {
+    public /* synthetic */ void lambda$fetchM3UItems$3(List list) {
         if (list.size() == 0) {
             doNextTask(false);
             Toast.makeText(getApplicationContext(), this.wordModels.getUser_incorrect(), 0).show();
-            setBusy(false);
-            return;
+        } else if (!this.is_stop) {
+            prepareData(list);
+            getChannelModels();
         }
-        if (this.is_stop) {
-            setBusy(false);
-            return;
-        }
-        // O índice completo é preparado fora da UI e publicado por tipo. Assim,
-        // canais e filmes aparecem antes da reconstrução pesada de episódios/séries.
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    prepareData(list);
-                    publishM3UVisibleCatalog();
-                } catch (final Exception exception) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!is_stop) {
-                                doNextTask(false);
-                                Toast.makeText(getApplicationContext(), wordModels.getUser_incorrect(), 0).show();
-                            }
-                            setBusy(false);
-                        }
-                    });
-                }
-            }
-        }, "ouropro-m3u-progressive-index").start();
+        setBusy(false);
     }
 
     private void publishM3UVisibleCatalog() throws Exception {
@@ -1577,10 +1402,8 @@ public class BaseActivity extends AppCompatActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getEpisodeModels$15(List list, Realm realm) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
         realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
+        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
         realm.insertOrUpdate(list);
     }
 
@@ -1658,9 +1481,7 @@ public class BaseActivity extends AppCompatActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getSeriesFromEpisodes$18(List list, Realm realm) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
+        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
         realm.insertOrUpdate(list);
     }
 

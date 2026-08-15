@@ -496,24 +496,16 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private void addEpisodeToSeries(EpisodeModel episodeModel) {
-        if (episodeModel == null) {
-            return;
+        String series_name = episodeModel.getSeries_name();
+        if (series_name == null || series_name.equals("null")) {
+            series_name = "All";
         }
-        String seriesName = episodeModel.getSeries_name();
-        if (seriesName == null || seriesName.trim().isEmpty() || seriesName.equalsIgnoreCase("null")) {
-            seriesName = "All";
+        List<EpisodeModel> list = this.episodeModelHashMap.get(series_name);
+        if (list == null) {
+            list = new ArrayList<>();
         }
-        String categoryName = episodeModel.getCategory_name();
-        if (categoryName == null || categoryName.trim().isEmpty() || categoryName.equalsIgnoreCase("null")) {
-            categoryName = "";
-        }
-        String groupKey = categoryName.trim() + "|" + seriesName.trim();
-        List<EpisodeModel> arrayList = this.episodeModelHashMap.get(groupKey);
-        if (arrayList == null) {
-            arrayList = new ArrayList<>();
-        }
-        arrayList.add(episodeModel);
-        this.episodeModelHashMap.put(groupKey, arrayList);
+        list.add(episodeModel);
+        this.episodeModelHashMap.put(series_name, list);
     }
 
     private void addMovieToCategory(MovieModel movieModel) {
@@ -919,12 +911,6 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private void getSeriesFromEpisodes(List<EpisodeModel> list) {
-        if (list == null || list.isEmpty()) {
-            if (!this.is_stop) {
-                doNextTask(true);
-            }
-            return;
-        }
         List<EpisodeModel> list2;
         List<String> sharedPreferenceSeriesFavNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
         List<ResumeSeriesModel> sharedPreferenceRecentSeriesNames = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
@@ -935,48 +921,29 @@ public class BaseTVActivity extends FragmentActivity {
         }
         ArrayList arrayList = new ArrayList();
         this.episodeModelHashMap.keySet();
-        for (String str : (TreeSet<String>) (TreeSet) new TreeSet(this.episodeModelHashMap.keySet())) {
+        Iterator it2 = new TreeSet(this.episodeModelHashMap.keySet()).iterator();
+        while (it2.hasNext()) {
+            String str = (String) it2.next();
             if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
-                EpisodeModel firstEpisode = list2.get(0);
-                String displayName = firstEpisode.getSeries_name();
-                if (displayName == null || displayName.trim().isEmpty() || displayName.equalsIgnoreCase("null")) {
-                    displayName = str;
-                }
                 SeriesModel seriesModel = new SeriesModel();
-                seriesModel.setName(displayName);
-                seriesModel.setCategory_name(firstEpisode.getCategory_name());
-                String originalPoster = "";
-                for (EpisodeModel episode : list2) {
-                    if (episode != null && episode.getStream_icon() != null
-                            && !episode.getStream_icon().trim().isEmpty()
-                            && !"null".equalsIgnoreCase(episode.getStream_icon().trim())) {
-                        originalPoster = episode.getStream_icon().trim();
-                        break;
-                    }
-                }
-                seriesModel.setStream_icon(originalPoster);
-                for (EpisodeModel episode : list2) {
-                    String extractedId = extractM3USeriesId(episode == null ? "" : episode.getUrl());
-                    if (!extractedId.isEmpty()) {
-                        seriesModel.setSeries_id(extractedId);
-                        break;
-                    }
-                }
+                seriesModel.setName(str);
+                seriesModel.setCategory_name(list2.get(0).getCategory_name());
+                seriesModel.setStream_icon(list2.get(0).getStream_icon());
                 arrayList.add(seriesModel);
             }
         }
         int i = 5;
-        SeriesCatalogDeduplicator.upsert(this.realm, arrayList);
+        this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(arrayList, i));
         if (sharedPreferenceSeriesFavNames.size() > 0) {
-            Iterator<String> it2 = sharedPreferenceSeriesFavNames.iterator();
-            while (it2.hasNext()) {
-                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda7(it2.next(), 15));
+            Iterator<String> it3 = sharedPreferenceSeriesFavNames.iterator();
+            while (it3.hasNext()) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda7(it3.next(), 15));
             }
         }
         if (sharedPreferenceRecentSeriesNames.size() > 0) {
-            Iterator<ResumeSeriesModel> it3 = sharedPreferenceRecentSeriesNames.iterator();
-            while (it3.hasNext()) {
-                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda6(it3.next(), i));
+            Iterator<ResumeSeriesModel> it4 = sharedPreferenceRecentSeriesNames.iterator();
+            while (it4.hasNext()) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda6(it4.next(), i));
             }
         }
         getSeriesCategoryModels(arrayList);
@@ -1159,10 +1126,8 @@ public class BaseTVActivity extends FragmentActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getEpisodeModels$15(List list, Realm realm) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
         realm.where(EpisodeModel.class).findAll().deleteAllFromRealm();
+        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
         realm.insertOrUpdate(list);
     }
 
@@ -1240,9 +1205,7 @@ public class BaseTVActivity extends FragmentActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     public static /* synthetic */ void lambda$getSeriesFromEpisodes$18(List list, Realm realm) {
-        if (list == null || list.isEmpty()) {
-            return;
-        }
+        realm.where(SeriesModel.class).findAll().deleteAllFromRealm();
         realm.insertOrUpdate(list);
     }
 

@@ -793,8 +793,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.txt_version.setText("");
         this.txt_version.setVisibility(View.GONE);
         this.ly_live.requestFocus();
-        refreshSeriesInBackground();
-        refreshM3USeriesInBackground();
+        // O catálogo segue o fluxo original do 6.1; não reescrever séries em segundo plano.
         startBootstrapPlaylistSync();
         NullTextGuard.sanitize(this);
     }
