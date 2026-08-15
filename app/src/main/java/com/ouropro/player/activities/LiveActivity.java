@@ -1314,7 +1314,8 @@ try {
         this.visibleEpgPanel.setNextFocusUpId(R.id.recycler_channel);
         this.visibleEpgPanel.setNextFocusLeftId(R.id.recycler_channel);
         if (this.recycler_channel != null) {
-            this.recycler_channel.setNextFocusDownId(this.visibleEpgPanel.getId());
+            // A seta para baixo permanece na lista de canais; o EPG entra pela direita.
+            this.recycler_channel.setNextFocusDownId(View.NO_ID);
         }
         this.visibleEpgPanel.bringToFront();
         this.visibleEpgPanel.requestLayout();
@@ -1745,15 +1746,6 @@ try {
         EPGChannel ePGChannel2;
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
-            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN
-                    && this.recycler_channel != null
-                    && this.recycler_channel.hasFocus()
-                    && this.epgAdapter != null
-                    && this.epgAdapter.getItemCount() > 0) {
-                ensureVisibleEpgPanel();
-                focusFirstEpgBell();
-                return true;
-            }
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP
                     && this.visibleEpgPanel != null
                     && this.visibleEpgPanel.hasFocus()
@@ -1929,10 +1921,6 @@ try {
                                             }
                                             break;
                                         case 20:
-                                            if (!this.is_full && this.recycler_channel != null && this.recycler_channel.hasFocus() && this.visibleEpgPanel != null && this.visibleEpgPanel.getVisibility() == View.VISIBLE && this.epgAdapter != null && this.epgAdapter.getItemCount() > 0 && this.recycler_channel.getSelectedPosition() >= this.epgChannels.size() - 1) {
-                                                focusFirstEpgBell();
-                                                return true;
-                                            }
                                             if (!this.is_full) {
                                                 if (this.txt_home.hasFocus() || this.txt_live.hasFocus() || this.txt_movie.hasFocus()) {
                                                     setFocusTopView(false);
@@ -1985,8 +1973,10 @@ try {
                                                     return true;
                                                 }
                                             } else if (this.recycler_channel.hasFocus()) {
-                                                setFocusButtons(true);
-                                                this.btn_catch_up.requestFocus();
+                                                if (this.epgAdapter != null && this.epgAdapter.getItemCount() > 0) {
+                                                    ensureVisibleEpgPanel();
+                                                    focusFirstEpgBell();
+                                                }
                                                 return true;
                                             }
                                             break;

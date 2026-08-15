@@ -425,6 +425,25 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    private void setupHomeDownNavigation() {
+        if (this.radioIconButton == null) {
+            return;
+        }
+        ConstraintLayout[] anchors = new ConstraintLayout[]{this.ly_live, this.ly_movie, this.ly_series, this.ly_account, this.ly_change, this.ly_reload, this.ly_setting, this.ly_exit};
+        for (ConstraintLayout anchor : anchors) {
+            if (anchor != null) {
+                anchor.setNextFocusDownId(this.radioIconButton.getId());
+            }
+        }
+        if (this.continueWatchingButton != null) {
+            this.continueWatchingButton.setNextFocusDownId(this.radioIconButton.getId());
+        }
+        if (this.microphoneButton != null) {
+            this.radioIconButton.setNextFocusRightId(this.microphoneButton.getId());
+            this.microphoneButton.setNextFocusLeftId(this.radioIconButton.getId());
+        }
+    }
+
     private void requestVoicePermissionAndStart() {
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
@@ -734,6 +753,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         initView();
         setupMicrophoneButton();
         setupContinueWatchingButton();
+        setupHomeDownNavigation();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
         LTVApp.instance.versionCheck();
