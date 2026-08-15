@@ -41,7 +41,8 @@ public final class StreamingM3UImporter {
     public void execute(String playlistUrl, Listener listener) {
         try {
             File file = cachedFile(playlistUrl);
-            boolean cached = file.exists() && isToday(file);
+            File completeMarker = new File(file.getAbsolutePath() + ".complete");
+            boolean cached = file.exists() && completeMarker.exists() && isToday(file);
             InputStream source;
             FileOutputStream copy = null;
             if (cached) {
@@ -55,7 +56,16 @@ public final class StreamingM3UImporter {
                 source = new TeeInputStream(source, copy);
             }
             try {
-                readItems(source, listener);
+                int parsedItems = readItems(source, listener);
+                if (parsedItems == 0) {
+                    if (cached) {
+                        file.delete();
+                        completeMarker.delete();
+                        execute(playlistUrl, listener);
+                        return;
+                    }
+                    throw new IOException("M3U sem itens válidos");
+                }
             } finally {
                 try {
                     source.close();
@@ -66,17 +76,24 @@ public final class StreamingM3UImporter {
                 }
             }
             LTVApp.instance.setM3uDate(new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(new Date()));
+            try {
+                completeMarker.createNewFile();
+            } catch (IOException ignored) {
+            }
             listener.onComplete();
         } catch (Exception error) {
+            File failedFile = cachedFile(playlistUrl);
+            new File(failedFile.getAbsolutePath() + ".complete").delete();
             listener.onError(error);
         }
     }
 
-    private void readItems(InputStream source, Listener listener) throws IOException {
+    private int readItems(InputStream source, Listener listener) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(source, StandardCharsets.UTF_8), 64 * 1024);
         String line;
         String extinf = null;
         ArrayList<M3UItem> batch = new ArrayList<>(BATCH_SIZE);
+        int parsedItems = 0;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
             if (line.isEmpty()) {
@@ -103,6 +120,7 @@ public final class StreamingM3UImporter {
             M3UItem item = parseItem(extinf, line);
             extinf = null;
             if (item != null) {
+                parsedItems++;
                 batch.add(item);
                 if (batch.size() >= BATCH_SIZE) {
                     listener.onBatch(new ArrayList<>(batch));
@@ -113,6 +131,7 @@ public final class StreamingM3UImporter {
         if (!batch.isEmpty()) {
             listener.onBatch(batch);
         }
+        return parsedItems;
     }
 
     private M3UItem parseItem(String extinf, String streamUrl) {
