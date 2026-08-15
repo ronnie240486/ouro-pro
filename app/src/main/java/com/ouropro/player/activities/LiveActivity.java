@@ -461,7 +461,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         showEpgInfo(null);
         updateChannelEpgText("Carregando EPG...", "Aguardando programação...");
 try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), requestStreamId).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), requestStreamId).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
                     if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
                         LiveActivity.this.loadXmlTvEpg(requestStreamId);
@@ -711,8 +711,15 @@ try {
     }
 
     private boolean isAdultChannel(String str, String str2) {
-        String value = ((str == null ? "" : str) + " " + (str2 == null ? "" : str2)).toLowerCase(java.util.Locale.US);
-        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(str);
+        String category = str2 == null ? "" : str2.toLowerCase(java.util.Locale.US);
+        boolean adultName = category.contains("adult") || category.contains("xxx") || category.contains("porn");
+        if (!adultName && (category.contains("notic") || category.contains("news"))) {
+            return false;
+        }
+        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
+            return adultName;
+        }
+        return Constants.xxx_live_categories.contains(str);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
