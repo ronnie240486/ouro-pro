@@ -669,7 +669,9 @@ public class BaseTVActivity extends FragmentActivity {
 
     private void getEpisodeModels() {
         RealmResults realmResultsFindAll = this.realm.where(EpisodeModel.class).findAll();
-        if (realmResultsFindAll.size() != 0) {
+        int sourceEpisodeCount = LTVApp.getInstance().getM3USeriesItems() == null ? 0 : LTVApp.getInstance().getM3USeriesItems().size();
+        boolean realmIsSmallerThanLoadedM3U = sourceEpisodeCount > 0 && realmResultsFindAll.size() < sourceEpisodeCount;
+        if (realmResultsFindAll.size() != 0 && !realmIsSmallerThanLoadedM3U) {
             if (System.currentTimeMillis() / 1000 <= (((long) this.preferenceHelper.getSharedPreferenceUpdatePeriod()) * Constants.date_mils) + this.preferenceHelper.getSharedPreferenceLastPlaylistDate()) {
                 if (this.is_stop) {
                     return;
@@ -1198,7 +1200,8 @@ public class BaseTVActivity extends FragmentActivity {
         if (this.is_stop) {
             return;
         }
-        doNextTask(true);
+        // Não liberar a Home como se a lista estivesse completa quando o download falhou.
+        doNextTask(false);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
