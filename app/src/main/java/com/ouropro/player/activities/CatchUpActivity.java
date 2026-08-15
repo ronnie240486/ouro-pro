@@ -221,10 +221,61 @@ public class CatchUpActivity extends AppCompatActivity {
     }
 
     private void goToLivePage() {
+        goToLivePage(false);
+    }
+
+    private void goToLivePage(boolean selectChannel) {
         Intent intent = new Intent();
-        intent.putExtra("is_changed", "");
+        if (selectChannel) {
+            saveTargetChannelPosition();
+            intent.putExtra("is_changed", "from_search");
+            intent.putExtra("go_to_channel", true);
+            intent.putExtra("target_stream_id", this.selectedChannel == null ? "" : this.selectedChannel.getStream_id());
+        } else {
+            intent.putExtra("is_changed", "");
+        }
         setResult(-1, intent);
         finish();
+    }
+
+    private void saveTargetChannelPosition() {
+        if (this.selectedChannel == null || this.preferenceHelper == null) {
+            return;
+        }
+        List<com.ouropro.player.models.CategoryModel> categories = this.preferenceHelper.getSharedLiveCategoryModels();
+        if (categories == null || categories.isEmpty()) {
+            return;
+        }
+        boolean isM3u = this.preferenceHelper.getSharedPreferenceISM3U();
+        String targetCategory = isM3u ? this.selectedChannel.getCategory_name() : this.selectedChannel.getCategory_id();
+        if (targetCategory == null) {
+            targetCategory = "";
+        }
+        if (isM3u && targetCategory.contains("!@#%")) {
+            targetCategory = targetCategory.split("!@#%", 2)[0];
+        }
+        for (int categoryIndex = 0; categoryIndex < categories.size(); categoryIndex++) {
+            com.ouropro.player.models.CategoryModel category = categories.get(categoryIndex);
+            if (category == null) {
+                continue;
+            }
+            String categoryKey = isM3u ? category.getName() : category.getId();
+            if (isM3u && categoryKey != null && categoryKey.contains("!@#%")) {
+                categoryKey = categoryKey.split("!@#%", 2)[0];
+            }
+            if (categoryKey == null || !categoryKey.equalsIgnoreCase(targetCategory)) {
+                continue;
+            }
+            io.realm.RealmResults<com.ouropro.player.models.EPGChannel> channels = RealmController.with().getLiveChannelsByCategory(category, "", isM3u, this.preferenceHelper.getSharedPreferenceLiveOrder());
+            for (int channelIndex = 0; channelIndex < channels.size(); channelIndex++) {
+                com.ouropro.player.models.EPGChannel channel = channels.get(channelIndex);
+                if (channel != null && this.selectedChannel.getStream_id() != null && this.selectedChannel.getStream_id().equalsIgnoreCase(channel.getStream_id())) {
+                    this.preferenceHelper.setSharedPreferenceCategoryPos(categoryIndex);
+                    this.preferenceHelper.setSharedPreferenceChannelPos(channelIndex);
+                    return;
+                }
+            }
+        }
     }
 
     private boolean isReminderScheduled(CatchUpEpg program) {
@@ -285,6 +336,15 @@ public class CatchUpActivity extends AppCompatActivity {
         backdrop.setAlpha(0.12f);
         modalRoot.addView(backdrop, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         modalRoot.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        ImageView clockIcon = new ImageView(this);
+        clockIcon.setImageResource(R.drawable.ic_clock_black_24dp);
+        clockIcon.setColorFilter(gold, android.graphics.PorterDuff.Mode.SRC_IN);
+        clockIcon.setAlpha(0.96f);
+        int iconSize = 52 * density;
+        LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(iconSize, iconSize);
+        iconParams.gravity = Gravity.CENTER_HORIZONTAL;
+        content.addView(clockIcon, iconParams);
 
         TextView header = new TextView(this);
         header.setText("LEMBRETE DO EPG");
@@ -347,6 +407,8 @@ public class CatchUpActivity extends AppCompatActivity {
             button.setGravity(Gravity.CENTER);
             button.setTypeface(null, android.graphics.Typeface.BOLD);
             button.setPadding(20 * density, 12 * density, 20 * density, 12 * density);
+            button.setFocusable(true);
+            button.setFocusableInTouchMode(true);
             GradientDrawable buttonBackground = new GradientDrawable();
             buttonBackground.setColor(Color.rgb(102, 72, 150));
             buttonBackground.setCornerRadius(10 * density);
@@ -354,6 +416,11 @@ public class CatchUpActivity extends AppCompatActivity {
         }
         discard.setText("DESCARTAR");
         goNow.setText("IR AGORA");
+        GradientDrawable goNowBackground = new GradientDrawable();
+        goNowBackground.setColor(gold);
+        goNowBackground.setCornerRadius(10 * density);
+        goNow.setBackground(goNowBackground);
+        goNow.setTextColor(dark);
         LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
         buttonParams.setMargins(6 * density, 0, 6 * density, 0);
         buttons.addView(discard, new LinearLayout.LayoutParams(buttonParams));
@@ -365,16 +432,18 @@ public class CatchUpActivity extends AppCompatActivity {
         discard.setOnClickListener(v -> clearActiveReminder(program));
         goNow.setOnClickListener(v -> {
             clearActiveReminder(program);
-            goToLivePage();
+            goToLivePage(true);
         });
         dialog.setOnShowListener(d -> {
             Window window = dialog.getWindow();
             if (window != null) {
-                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                window.setDimAmount(0.78f);
                 android.view.WindowManager.LayoutParams attributes = window.getAttributes();
                 attributes.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.82f);
                 window.setAttributes(attributes);
             }
+            goNow.requestFocus();
             this.reminderTimer = new CountDownTimer(10000L, 1000L) {
                 @Override
                 public void onTick(long millisUntilFinished) {
