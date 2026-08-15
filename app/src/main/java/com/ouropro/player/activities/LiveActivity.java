@@ -1660,9 +1660,6 @@ try {
     /* JADX INFO: Access modifiers changed from: private */
     public void showEpgInfo(List<CatchUpEpg> list) {
         ensureVisibleEpgPanel();
-        if (this.recycler_epg != null) {
-            this.recycler_epg.setVisibility(View.GONE);
-        }
         if (list == null || list.size() == 0) {
             this.epgAdapter.setEpgList(new ArrayList());
             setCurrentEpgEvent(new ArrayList());
