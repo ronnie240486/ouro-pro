@@ -93,6 +93,7 @@ import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.ParentalContentGuard;
 import com.ouropro.player.improvements.EpgReminderBinder;
+import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceCommandController;
@@ -259,6 +260,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         }
 
         public void onPlayerError(PlaybackException playbackException) {
+            PlaylistFailoverManager.reportPlaybackFailure(LiveMobileActivity.this);
             if (playbackException.errorCode == 1002) {
                 LiveMobileActivity.this.releaseMediaPlayer();
                 LiveMobileActivity liveMobileActivity = LiveMobileActivity.this;

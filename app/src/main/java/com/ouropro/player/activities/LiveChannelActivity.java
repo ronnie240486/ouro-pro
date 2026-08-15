@@ -80,6 +80,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.improvements.EpgReminderBinder;
+import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -272,6 +273,7 @@ public class LiveChannelActivity extends AppCompatActivity implements View.OnCli
         }
 
         public void onPlayerError(PlaybackException playbackException) {
+            PlaylistFailoverManager.reportPlaybackFailure(LiveChannelActivity.this);
             if (playbackException.errorCode == 1002) {
                 LiveChannelActivity.this.releaseMediaPlayer();
                 LiveChannelActivity liveChannelActivity = LiveChannelActivity.this;

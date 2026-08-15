@@ -1,13 +1,18 @@
 package com.ouropro.player.improvements;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.ouropro.player.apps.BaseActivity;
+import com.ouropro.player.apps.BaseTVActivity;
 import com.ouropro.player.apps.Constants;
 import com.ouropro.player.apps.LTVApp;
+import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.WordModels;
@@ -27,6 +32,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /** Consulta o failover definido pelo painel sem decidir a troca localmente. */
 public final class PlaylistFailoverManager {
@@ -40,6 +46,7 @@ public final class PlaylistFailoverManager {
     public static final String EXTRA_EXPIRATION_MESSAGE = "expiration_modal_message";
     private static final String NOTIFICATIONS_URL = "https://renciaapp.manus.space/api/v5/list-notifications";
     private static final String ACK_URL = "https://renciaapp.manus.space/api/v5/list-notifications/ack";
+    private static final String PLAYBACK_FAILURE_URL = "https://renciaapp.manus.space/api/v5/playback-failure";
     private static final long POLL_INTERVAL_MS = 60000L;
     private static final Gson GSON = new Gson();
     private static PlaylistFailoverManager instance;
@@ -47,6 +54,7 @@ public final class PlaylistFailoverManager {
     private final Context context;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean running;
+    private volatile boolean playbackFailureInFlight;
     private final Runnable poller = new Runnable() {
         @Override
         public void run() {
@@ -73,7 +81,8 @@ public final class PlaylistFailoverManager {
             return;
         }
         instance.running = true;
-        instance.handler.postDelayed(instance.poller, 3000L);
+        instance.poll();
+        instance.handler.postDelayed(instance.poller, POLL_INTERVAL_MS);
     }
 
     private void poll() {
@@ -117,7 +126,8 @@ public final class PlaylistFailoverManager {
         long transitionId = payload.optLong("failover_transition_id", 0L);
         boolean syncRequired = payload.optBoolean("playlist_sync_required", false);
         boolean transitionAlreadyProcessed = transitionId > 0L && transitionId == preferenceHelper.getSharedPreferenceFailoverTransitionId();
-        if (syncRequired && transitionId > 0L && !transitionAlreadyProcessed) {
+        boolean primaryRestored = "primary_restored".equalsIgnoreCase(payload.optString("failover_state", ""));
+        if ((syncRequired || primaryRestored) && transitionId > 0L && !transitionAlreadyProcessed) {
             int activeListNumber = payload.optInt("active_list_number", 0);
             requestFreshPlaylistConfig(mac, activeListNumber, transitionId, payload.optString("playlist_sync_message", ""), payload);
             return;
@@ -148,10 +158,90 @@ public final class PlaylistFailoverManager {
             intent.putExtra(EXTRA_PLAYLIST_URL, activeUrl.getUrl());
             intent.putExtra(EXTRA_PLAYLIST_POSITION, position);
             intent.putExtra(EXTRA_MESSAGE, message);
-            context.sendBroadcast(intent);
+            reloadActivePlaylist(activeUrl.getUrl(), position);
             showAndAcknowledgeNotifications(mac, notificationPayload, message);
         });
         request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
+    }
+
+    private void reloadActivePlaylist(String playlistUrl, int position) {
+        Activity activity = ForegroundActivityTracker.get();
+        if (activity == null || playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            return;
+        }
+        PreferenceHelper helper = new PreferenceHelper(activity);
+        helper.setSharedPreferencePlaylistPosition(Math.max(0, position));
+        WordModels words = GetSharedInfo.getWordModel(activity);
+        String url = playlistUrl.trim();
+        boolean xtream = url.toLowerCase(Locale.ROOT).contains("username");
+        if (activity instanceof BaseTVActivity) {
+            BaseTVActivity base = (BaseTVActivity) activity;
+            if (xtream) {
+                base.goToLogin(url, words);
+            } else {
+                helper.setSharedPreferenceISM3U(true);
+                base.reloadM3UData(url, words);
+            }
+        } else if (activity instanceof BaseActivity) {
+            BaseActivity base = (BaseActivity) activity;
+            if (xtream) {
+                base.goToLogin(url, words);
+            } else {
+                helper.setSharedPreferenceISM3U(true);
+                base.reloadM3UData(url, words);
+            }
+        }
+    }
+
+    public static void reportPlaybackFailure(Context context) {
+        if (context == null) {
+            return;
+        }
+        if (instance == null) {
+            start(context);
+        }
+        instance.sendPlaybackFailure();
+    }
+
+    private void sendPlaybackFailure() {
+        if (playbackFailureInFlight) {
+            return;
+        }
+        PreferenceHelper helper = new PreferenceHelper(context);
+        String mac = helper.getSharedPreferenceMacAddress();
+        if (mac == null || mac.trim().isEmpty()) {
+            return;
+        }
+        playbackFailureInFlight = true;
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) new URL(PLAYBACK_FAILURE_URL).openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(7000);
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                JSONObject body = new JSONObject();
+                body.put("mac", mac.trim());
+                body.put("active_list_number", helper.getSharedPreferencePlaylistPosition() + 1);
+                try (OutputStream outputStream = connection.getOutputStream()) {
+                    outputStream.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                int code = connection.getResponseCode();
+                String response = code >= 200 && code < 300 ? read(connection.getInputStream()) : "";
+                if (code >= 200 && code < 300 && new JSONObject(response).optBoolean("switch_applied", false)) {
+                    poll();
+                }
+            } catch (Exception ignored) {
+            } finally {
+                playbackFailureInFlight = false;
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
     }
 
     private AppInfoModel decodeAppInfo(JSONObject response) {
@@ -189,14 +279,24 @@ public final class PlaylistFailoverManager {
             if (helper.hasShownExpirationModal(key)) {
                 return;
             }
-            android.content.Intent intent = new android.content.Intent(ACTION_EXPIRATION_NOTICE);
-            intent.setPackage(context.getPackageName());
-            intent.putExtra(EXTRA_EXPIRATION_KEY, key);
-            intent.putExtra(EXTRA_EXPIRATION_TITLE, title);
-            intent.putExtra(EXTRA_EXPIRATION_MESSAGE, message);
-            context.sendBroadcast(intent);
+            showExpirationDialog(key, title, message);
         } catch (Exception ignored) {
         }
+    }
+
+    private void showExpirationDialog(String key, String title, String message) {
+        handler.post(() -> {
+            Activity activity = ForegroundActivityTracker.get();
+            if (activity == null) {
+                return;
+            }
+            new PreferenceHelper(context).markExpirationModalShown(key);
+            new AlertDialog.Builder(activity)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton("OK", null)
+                    .show();
+        });
     }
 
     private void showAndAcknowledgeNotifications(String mac, JSONObject payload, String preferredMessage) {
@@ -211,7 +311,8 @@ public final class PlaylistFailoverManager {
         if (notifications != null) {
             for (int i = 0; i < notifications.length(); i++) {
                 JSONObject notification = notifications.optJSONObject(i);
-                if (notification == null || notification.optBoolean("acknowledged", false)) {
+                if (notification == null || notification.optBoolean("acknowledged", false)
+                        || !"failure".equalsIgnoreCase(notification.optString("status", ""))) {
                     continue;
                 }
                 long id = notification.optLong("id", 0L);
@@ -222,7 +323,6 @@ public final class PlaylistFailoverManager {
                     message = notification.optString("message", "");
                 }
                 idsToAck.add(id);
-                helper.markFailoverAlertAcknowledged(id);
             }
         }
         showMessage(message);
@@ -255,7 +355,10 @@ public final class PlaylistFailoverManager {
                 try (OutputStream outputStream = connection.getOutputStream()) {
                     outputStream.write(body.toString().getBytes(StandardCharsets.UTF_8));
                 }
-                connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    new PreferenceHelper(context).markFailoverAlertAcknowledged(alertId);
+                }
             } catch (Exception ignored) {
                 // A falha no ack não interrompe a reprodução.
             } finally {

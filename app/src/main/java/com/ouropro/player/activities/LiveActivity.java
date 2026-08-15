@@ -87,6 +87,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.improvements.EpgReminderBinder;
+import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.improvements.EpgReminderStore;
 import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.ParentalContentGuard;
@@ -302,6 +303,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
 
         public void onPlayerError(PlaybackException playbackException) {
+            PlaylistFailoverManager.reportPlaybackFailure(LiveActivity.this);
             if (playbackException.errorCode == 1002) {
                 LiveActivity.this.releaseMediaPlayer();
                 LiveActivity liveActivity = LiveActivity.this;
