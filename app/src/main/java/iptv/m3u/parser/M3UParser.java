@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-/* JADX INFO: loaded from: classes2.dex */
+/* loaded from: classes2.dex */
 public class M3UParser {
     private static final String ATTR_CHANNEL_ID = "id";
     private static final String ATTR_CHANNEL_NAME = "channel_name";
@@ -32,7 +32,7 @@ public class M3UParser {
     private M3UHandler mHandler = null;
     private M3UItem mTempItem = null;
 
-    /* JADX INFO: renamed from: iptv.m3u.parser.M3UParser$1, reason: invalid class name */
+    /* renamed from: iptv.m3u.parser.M3UParser$1, reason: invalid class name */
     public static /* synthetic */ class AnonymousClass1 {
         public static final /* synthetic */ int[] $SwitchMap$iptv$m3u$parser$M3UParser$Status;
 
@@ -107,130 +107,124 @@ public class M3UParser {
 
     private Map<String, String> parseAttributes(String str) {
         String str2;
-        int i;
-        char cCharAt;
-        HashMap map = new HashMap();
+        HashMap hashMap = new HashMap();
         if (str != null && !str.equals("")) {
             Status status = Status.READY;
             StringBuffer stringBuffer = new StringBuffer();
-            char cCharAt2 = str.charAt(0);
-            if (cCharAt2 == '-' || Character.isDigit(cCharAt2)) {
-                stringBuffer.append(cCharAt2);
-                int i2 = 0;
+            char charAt = str.charAt(0);
+            if (charAt == '-' || Character.isDigit(charAt)) {
+                stringBuffer.append(charAt);
+                int i = 0;
                 while (true) {
-                    i2++;
-                    if (i2 >= str.length()) {
+                    i++;
+                    if (i >= str.length()) {
                         break;
                     }
-                    char cCharAt3 = str.charAt(i2);
-                    if (!Character.isDigit(cCharAt3)) {
+                    char charAt2 = str.charAt(i);
+                    if (!Character.isDigit(charAt2)) {
                         break;
                     }
-                    stringBuffer.append(cCharAt3);
+                    stringBuffer.append(charAt2);
                 }
-                putAttr(map, "duration", stringBuffer.toString());
+                putAttr(hashMap, "duration", stringBuffer.toString());
                 str = shrink(str.replaceFirst(stringBuffer.toString(), ""));
                 reset(stringBuffer);
             }
-            int length = 0;
+            int i2 = 0;
             loop0: while (true) {
                 boolean z = false;
                 str2 = "";
-                while (true) {
-                    if (length >= str.length()) {
-                        break loop0;
-                    }
-                    i = length + 1;
-                    cCharAt = str.charAt(length);
-                    int i3 = AnonymousClass1.$SwitchMap$iptv$m3u$parser$M3UParser$Status[status.ordinal()];
-                    if (i3 != 1) {
-                        if (i3 != 2) {
-                            if (i3 != 3) {
-                                if (i3 == 4) {
+                while (i2 < str.length()) {
+                    int i3 = i2 + 1;
+                    char charAt3 = str.charAt(i2);
+                    int i4 = AnonymousClass1.$SwitchMap$iptv$m3u$parser$M3UParser$Status[status.ordinal()];
+                    if (i4 != 1) {
+                        if (i4 != 2) {
+                            if (i4 != 3) {
+                                if (i4 == 4) {
                                     if (z) {
-                                        break;
-                                    }
-                                    if (Character.isWhitespace(cCharAt)) {
+                                        while (charAt3 != '\"' && i3 < str.length()) {
+                                            stringBuffer.append(charAt3);
+                                            charAt3 = str.charAt(i3);
+                                            i3++;
+                                        }
                                         if (stringBuffer.length() > 0) {
-                                            putAttr(map, str2, stringBuffer.toString());
+                                            putAttr(hashMap, str2, stringBuffer.toString());
+                                            reset(stringBuffer);
+                                        }
+                                        status = Status.READY;
+                                        i2 = i3;
+                                    } else if (Character.isWhitespace(charAt3)) {
+                                        if (stringBuffer.length() > 0) {
+                                            putAttr(hashMap, str2, stringBuffer.toString());
                                             reset(stringBuffer);
                                         }
                                         status = Status.READY;
                                         str2 = "";
                                     } else {
-                                        stringBuffer.append(cCharAt);
+                                        stringBuffer.append(charAt3);
                                     }
                                 }
-                            } else if (!Character.isWhitespace(cCharAt)) {
-                                if (cCharAt == '\"') {
+                            } else if (!Character.isWhitespace(charAt3)) {
+                                if (charAt3 == '\"') {
                                     z = true;
                                 } else {
-                                    stringBuffer.append(cCharAt);
+                                    stringBuffer.append(charAt3);
                                 }
                                 status = Status.READING_VALUE;
                             }
-                        } else if (cCharAt == '=') {
-                            StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m(str2);
-                            sbM.append(stringBuffer.toString());
-                            String strShrink = shrink(sbM.toString());
+                        } else if (charAt3 == '=') {
+                            StringBuilder m = Insets$$ExternalSyntheticOutline0.m(str2);
+                            m.append(stringBuffer.toString());
+                            String shrink = shrink(m.toString());
                             reset(stringBuffer);
-                            str2 = strShrink;
+                            str2 = shrink;
                             status = Status.KEY_READY;
                         } else {
-                            stringBuffer.append(cCharAt);
+                            stringBuffer.append(charAt3);
                         }
-                    } else if (!Character.isWhitespace(cCharAt)) {
-                        if (cCharAt == ',') {
-                            putAttr(map, ATTR_CHANNEL_NAME, str.substring(i));
-                            length = str.length();
+                    } else if (!Character.isWhitespace(charAt3)) {
+                        if (charAt3 == ',') {
+                            putAttr(hashMap, ATTR_CHANNEL_NAME, str.substring(i3));
+                            i2 = str.length();
                         } else {
-                            stringBuffer.append(cCharAt);
+                            stringBuffer.append(charAt3);
                             status = Status.READING_KEY;
                         }
                     }
-                    length = i;
+                    i2 = i3;
                 }
-                while (cCharAt != '\"' && i < str.length()) {
-                    stringBuffer.append(cCharAt);
-                    cCharAt = str.charAt(i);
-                    i++;
-                }
-                if (stringBuffer.length() > 0) {
-                    putAttr(map, str2, stringBuffer.toString());
-                    reset(stringBuffer);
-                }
-                status = Status.READY;
-                length = i;
+                break loop0;
             }
             if (!str2.equals("") && stringBuffer.length() > 0) {
-                putAttr(map, str2, stringBuffer.toString());
+                putAttr(hashMap, str2, stringBuffer.toString());
                 reset(stringBuffer);
             }
         }
-        return map;
+        return hashMap;
     }
 
     private M3UHead parseHead(String str) {
-        Map<String, String> attributes = parseAttributes(str);
+        Map<String, String> parseAttributes = parseAttributes(str);
         M3UHead m3UHead = new M3UHead();
-        m3UHead.setName(getAttr(attributes, ATTR_NAME));
-        m3UHead.setType(getAttr(attributes, ATTR_TYPE));
-        m3UHead.setDLNAExtras(getAttr(attributes, ATTR_DLNA_EXTRAS));
-        m3UHead.setPlugin(getAttr(attributes, ATTR_PLUGIN));
+        m3UHead.setName(getAttr(parseAttributes, ATTR_NAME));
+        m3UHead.setType(getAttr(parseAttributes, ATTR_TYPE));
+        m3UHead.setDLNAExtras(getAttr(parseAttributes, ATTR_DLNA_EXTRAS));
+        m3UHead.setPlugin(getAttr(parseAttributes, ATTR_PLUGIN));
         return m3UHead;
     }
 
     private M3UItem parseItem(String str) {
-        Map<String, String> attributes = parseAttributes(str);
+        Map<String, String> parseAttributes = parseAttributes(str);
         M3UItem m3UItem = new M3UItem();
-        m3UItem.setChannelID(getAttr(attributes, "id"));
-        m3UItem.setChannelName(getAttr(attributes, ATTR_CHANNEL_NAME));
-        m3UItem.setDuration(convert2int(getAttr(attributes, "duration")));
-        m3UItem.setLogoURL(getAttr(attributes, ATTR_LOGO));
-        m3UItem.setGroupTitle(getAttr(attributes, ATTR_GROUP_TITLE));
-        m3UItem.setType(getAttr(attributes, ATTR_TYPE));
-        m3UItem.setDLNAExtras(getAttr(attributes, ATTR_DLNA_EXTRAS));
-        m3UItem.setPlugin(getAttr(attributes, ATTR_PLUGIN));
+        m3UItem.setChannelID(getAttr(parseAttributes, "id"));
+        m3UItem.setChannelName(getAttr(parseAttributes, ATTR_CHANNEL_NAME));
+        m3UItem.setDuration(convert2int(getAttr(parseAttributes, "duration")));
+        m3UItem.setLogoURL(getAttr(parseAttributes, ATTR_LOGO));
+        m3UItem.setGroupTitle(getAttr(parseAttributes, ATTR_GROUP_TITLE));
+        m3UItem.setType(getAttr(parseAttributes, ATTR_TYPE));
+        m3UItem.setDLNAExtras(getAttr(parseAttributes, ATTR_DLNA_EXTRAS));
+        m3UItem.setPlugin(getAttr(parseAttributes, ATTR_PLUGIN));
         return m3UItem;
     }
 
@@ -271,18 +265,18 @@ public class M3UParser {
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(str), StandardCharsets.UTF_8));
             while (true) {
-                String strShrink = shrink(bufferedReader.readLine());
-                if (strShrink == null) {
+                String shrink = shrink(bufferedReader.readLine());
+                if (shrink == null) {
                     flush(m3UHandler);
                     bufferedReader.close();
                     return;
-                } else if (strShrink.startsWith(PREFIX_EXTM3U)) {
-                    m3UHandler.onReadEXTM3U(parseHead(shrink(strShrink.replaceFirst(PREFIX_EXTM3U, ""))));
-                } else if (strShrink.startsWith(PREFIX_EXTINF)) {
+                } else if (shrink.startsWith(PREFIX_EXTM3U)) {
+                    m3UHandler.onReadEXTM3U(parseHead(shrink(shrink.replaceFirst(PREFIX_EXTM3U, ""))));
+                } else if (shrink.startsWith(PREFIX_EXTINF)) {
                     flush(m3UHandler);
-                    this.mTempItem = parseItem(shrink(strShrink.replaceFirst(PREFIX_EXTINF, "")));
-                } else if (!strShrink.startsWith(PREFIX_COMMENT) && !strShrink.equals("")) {
-                    updateURL(strShrink);
+                    this.mTempItem = parseItem(shrink(shrink.replaceFirst(PREFIX_EXTINF, "")));
+                } else if (!shrink.startsWith(PREFIX_COMMENT) && !shrink.equals("")) {
+                    updateURL(shrink);
                 }
             }
         } catch (FileNotFoundException e) {
