@@ -133,7 +133,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
     public String resolution = "1920x1080";
     public WordModels wordModels = new WordModels();
     private final Runnable mUpdateTimeTask = new Runnable() { // from class: com.ouropro.player.activities.MoviePlayerActivity.2
-        @Override // java.lang.Runnable
         public void run() {
             try {
                 ExoPlayer exoPlayer = MoviePlayerActivity.this.player;
@@ -161,92 +160,57 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         private PlayerEventListener() {
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioAttributesChanged(AudioAttributes audioAttributes) {
-            Player.Listener.CC.$default$onAudioAttributesChanged(this, audioAttributes);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioSessionIdChanged(int i) {
-            Player.Listener.CC.$default$onAudioSessionIdChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAvailableCommandsChanged(Player.Commands commands) {
-            Player.Listener.CC.$default$onAvailableCommandsChanged(this, commands);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(CueGroup cueGroup) {
-            Player.Listener.CC.$default$onCues(this, cueGroup);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(List list) {
-            Player.Listener.CC.$default$onCues(this, list);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceInfoChanged(DeviceInfo deviceInfo) {
-            Player.Listener.CC.$default$onDeviceInfoChanged(this, deviceInfo);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceVolumeChanged(int i, boolean z) {
-            Player.Listener.CC.$default$onDeviceVolumeChanged(this, i, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onEvents(Player player, Player.Events events) {
-            Player.Listener.CC.$default$onEvents(this, player, events);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsPlayingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsPlayingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(long j) {
-            Player.Listener.CC.$default$onMaxSeekToPreviousPositionChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaItemTransition(MediaItem mediaItem, int i) {
-            Player.Listener.CC.$default$onMediaItemTransition(this, mediaItem, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onMediaMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMetadata(Metadata metadata) {
-            Player.Listener.CC.$default$onMetadata(this, metadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayWhenReadyChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayWhenReadyChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-            Player.Listener.CC.$default$onPlaybackParametersChanged(this, playbackParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlaybackStateChanged(int i) {
             if (i == 4) {
                 MoviePlayerActivity.this.releaseMediaPlayer();
@@ -268,12 +232,9 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackSuppressionReasonChanged(int i) {
-            Player.Listener.CC.$default$onPlaybackSuppressionReasonChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlayerError(PlaybackException playbackException) {
             if (playbackException.errorCode == 1002) {
                 MoviePlayerActivity.this.image_forward.setVisibility(8);
@@ -296,94 +257,58 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerErrorChanged(PlaybackException playbackException) {
-            Player.Listener.CC.$default$onPlayerErrorChanged(this, playbackException);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerStateChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayerStateChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onPlaylistMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, positionInfo, positionInfo2, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRenderedFirstFrame() {
-            Player.Listener.CC.$default$onRenderedFirstFrame(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRepeatModeChanged(int i) {
-            Player.Listener.CC.$default$onRepeatModeChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekBackIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekBackIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekForwardIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekForwardIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekProcessed() {
-            Player.Listener.CC.$default$onSeekProcessed(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onShuffleModeEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onShuffleModeEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSkipSilenceEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onSkipSilenceEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSurfaceSizeChanged(int i, int i2) {
-            Player.Listener.CC.$default$onSurfaceSizeChanged(this, i, i2);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTimelineChanged(Timeline timeline, int i) {
-            Player.Listener.CC.$default$onTimelineChanged(this, timeline, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTrackSelectionParametersChanged(TrackSelectionParameters trackSelectionParameters) {
-            Player.Listener.CC.$default$onTrackSelectionParametersChanged(this, trackSelectionParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTracksChanged(Tracks tracks) {
-            Player.Listener.CC.$default$onTracksChanged(this, tracks);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVideoSizeChanged(VideoSize videoSize) {
-            Player.Listener.CC.$default$onVideoSizeChanged(this, videoSize);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVolumeChanged(float f) {
-            Player.Listener.CC.$default$onVolumeChanged(this, f);
         }
     }
 
@@ -628,407 +553,247 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         this.player.addListener(new PlayerEventListener());
         this.player.addAnalyticsListener(new EventLogger());
         this.player.addAnalyticsListener(new AnalyticsListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity.1
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioAttributesChanged(AnalyticsListener.EventTime eventTime, AudioAttributes audioAttributes) {
-                AnalyticsListener.CC.$default$onAudioAttributesChanged(this, eventTime, audioAttributes);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioCodecError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onAudioCodecError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j2) {
-                AnalyticsListener.CC.$default$onAudioDecoderInitialized(this, eventTime, str2, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j2, long j3) {
-                AnalyticsListener.CC.$default$onAudioDecoderInitialized(this, eventTime, str2, j2, j3);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderReleased(AnalyticsListener.EventTime eventTime, String str2) {
-                AnalyticsListener.CC.$default$onAudioDecoderReleased(this, eventTime, str2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDisabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onAudioDisabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioEnabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onAudioEnabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format) {
-                AnalyticsListener.CC.$default$onAudioInputFormatChanged(this, eventTime, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
-                AnalyticsListener.CC.$default$onAudioInputFormatChanged(this, eventTime, format, decoderReuseEvaluation);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioPositionAdvancing(AnalyticsListener.EventTime eventTime, long j2) {
-                AnalyticsListener.CC.$default$onAudioPositionAdvancing(this, eventTime, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioSessionIdChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onAudioSessionIdChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioSinkError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onAudioSinkError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioUnderrun(AnalyticsListener.EventTime eventTime, int i, long j2, long j3) {
-                AnalyticsListener.CC.$default$onAudioUnderrun(this, eventTime, i, j2, j3);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAvailableCommandsChanged(AnalyticsListener.EventTime eventTime, Player.Commands commands) {
-                AnalyticsListener.CC.$default$onAvailableCommandsChanged(this, eventTime, commands);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onBandwidthEstimate(AnalyticsListener.EventTime eventTime, int i, long j2, long j3) {
-                AnalyticsListener.CC.$default$onBandwidthEstimate(this, eventTime, i, j2, j3);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onCues(AnalyticsListener.EventTime eventTime, CueGroup cueGroup) {
-                AnalyticsListener.CC.$default$onCues(this, eventTime, cueGroup);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onCues(AnalyticsListener.EventTime eventTime, List list) {
-                AnalyticsListener.CC.$default$onCues(this, eventTime, list);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderDisabled(AnalyticsListener.EventTime eventTime, int i, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onDecoderDisabled(this, eventTime, i, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderEnabled(AnalyticsListener.EventTime eventTime, int i, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onDecoderEnabled(this, eventTime, i, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderInitialized(AnalyticsListener.EventTime eventTime, int i, String str2, long j2) {
-                AnalyticsListener.CC.$default$onDecoderInitialized(this, eventTime, i, str2, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderInputFormatChanged(AnalyticsListener.EventTime eventTime, int i, Format format) {
-                AnalyticsListener.CC.$default$onDecoderInputFormatChanged(this, eventTime, i, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDeviceInfoChanged(AnalyticsListener.EventTime eventTime, DeviceInfo deviceInfo) {
-                AnalyticsListener.CC.$default$onDeviceInfoChanged(this, eventTime, deviceInfo);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDeviceVolumeChanged(AnalyticsListener.EventTime eventTime, int i, boolean z) {
-                AnalyticsListener.CC.$default$onDeviceVolumeChanged(this, eventTime, i, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDownstreamFormatChanged(AnalyticsListener.EventTime eventTime, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onDownstreamFormatChanged(this, eventTime, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysLoaded(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysLoaded(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysRemoved(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysRemoved(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysRestored(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysRestored(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionAcquired(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmSessionAcquired(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionAcquired(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onDrmSessionAcquired(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionManagerError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onDrmSessionManagerError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionReleased(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmSessionReleased(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDroppedVideoFrames(AnalyticsListener.EventTime eventTime, int i, long j2) {
-                AnalyticsListener.CC.$default$onDroppedVideoFrames(this, eventTime, i, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onEvents(Player player, AnalyticsListener.Events events) {
-                AnalyticsListener.CC.$default$onEvents(this, player, events);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onIsLoadingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onIsLoadingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onIsPlayingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onIsPlayingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadCanceled(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadCanceled(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadCompleted(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadCompleted(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadError(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException iOException, boolean z) {
-                AnalyticsListener.CC.$default$onLoadError(this, eventTime, loadEventInfo, mediaLoadData, iOException, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadStarted(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadStarted(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onLoadingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(AnalyticsListener.EventTime eventTime, long j2) {
-                AnalyticsListener.CC.$default$onMaxSeekToPreviousPositionChanged(this, eventTime, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMediaItemTransition(AnalyticsListener.EventTime eventTime, MediaItem mediaItem, int i) {
-                AnalyticsListener.CC.$default$onMediaItemTransition(this, eventTime, mediaItem, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMediaMetadataChanged(AnalyticsListener.EventTime eventTime, MediaMetadata mediaMetadata) {
-                AnalyticsListener.CC.$default$onMediaMetadataChanged(this, eventTime, mediaMetadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMetadata(AnalyticsListener.EventTime eventTime, Metadata metadata) {
-                AnalyticsListener.CC.$default$onMetadata(this, eventTime, metadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayWhenReadyChanged(AnalyticsListener.EventTime eventTime, boolean z, int i) {
-                AnalyticsListener.CC.$default$onPlayWhenReadyChanged(this, eventTime, z, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackParametersChanged(AnalyticsListener.EventTime eventTime, PlaybackParameters playbackParameters) {
-                AnalyticsListener.CC.$default$onPlaybackParametersChanged(this, eventTime, playbackParameters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackStateChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPlaybackStateChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackSuppressionReasonChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPlaybackSuppressionReasonChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerError(AnalyticsListener.EventTime eventTime, PlaybackException playbackException) {
-                AnalyticsListener.CC.$default$onPlayerError(this, eventTime, playbackException);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerErrorChanged(AnalyticsListener.EventTime eventTime, PlaybackException playbackException) {
-                AnalyticsListener.CC.$default$onPlayerErrorChanged(this, eventTime, playbackException);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerReleased(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onPlayerReleased(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerStateChanged(AnalyticsListener.EventTime eventTime, boolean z, int i) {
-                AnalyticsListener.CC.$default$onPlayerStateChanged(this, eventTime, z, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaylistMetadataChanged(AnalyticsListener.EventTime eventTime, MediaMetadata mediaMetadata) {
-                AnalyticsListener.CC.$default$onPlaylistMetadataChanged(this, eventTime, mediaMetadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPositionDiscontinuity(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPositionDiscontinuity(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPositionDiscontinuity(AnalyticsListener.EventTime eventTime, Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-                AnalyticsListener.CC.$default$onPositionDiscontinuity(this, eventTime, positionInfo, positionInfo2, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onRenderedFirstFrame(AnalyticsListener.EventTime eventTime, Object obj, long j2) {
-                AnalyticsListener.CC.$default$onRenderedFirstFrame(this, eventTime, obj, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onRepeatModeChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onRepeatModeChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekBackIncrementChanged(AnalyticsListener.EventTime eventTime, long j2) {
-                AnalyticsListener.CC.$default$onSeekBackIncrementChanged(this, eventTime, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekForwardIncrementChanged(AnalyticsListener.EventTime eventTime, long j2) {
-                AnalyticsListener.CC.$default$onSeekForwardIncrementChanged(this, eventTime, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekProcessed(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onSeekProcessed(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekStarted(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onSeekStarted(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onShuffleModeChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onShuffleModeChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSkipSilenceEnabledChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onSkipSilenceEnabledChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSurfaceSizeChanged(AnalyticsListener.EventTime eventTime, int i, int i2) {
-                AnalyticsListener.CC.$default$onSurfaceSizeChanged(this, eventTime, i, i2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTimelineChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onTimelineChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTrackSelectionParametersChanged(AnalyticsListener.EventTime eventTime, TrackSelectionParameters trackSelectionParameters) {
-                AnalyticsListener.CC.$default$onTrackSelectionParametersChanged(this, eventTime, trackSelectionParameters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTracksChanged(AnalyticsListener.EventTime eventTime, Tracks tracks) {
-                AnalyticsListener.CC.$default$onTracksChanged(this, eventTime, tracks);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onUpstreamDiscarded(AnalyticsListener.EventTime eventTime, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onUpstreamDiscarded(this, eventTime, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoCodecError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onVideoCodecError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j2) {
-                AnalyticsListener.CC.$default$onVideoDecoderInitialized(this, eventTime, str2, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j2, long j3) {
-                AnalyticsListener.CC.$default$onVideoDecoderInitialized(this, eventTime, str2, j2, j3);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderReleased(AnalyticsListener.EventTime eventTime, String str2) {
-                AnalyticsListener.CC.$default$onVideoDecoderReleased(this, eventTime, str2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDisabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onVideoDisabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoEnabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onVideoEnabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoFrameProcessingOffset(AnalyticsListener.EventTime eventTime, long j2, int i) {
-                AnalyticsListener.CC.$default$onVideoFrameProcessingOffset(this, eventTime, j2, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format) {
-                AnalyticsListener.CC.$default$onVideoInputFormatChanged(this, eventTime, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
-                AnalyticsListener.CC.$default$onVideoInputFormatChanged(this, eventTime, format, decoderReuseEvaluation);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoSizeChanged(AnalyticsListener.EventTime eventTime, int i, int i2, int i3, float f) {
-                AnalyticsListener.CC.$default$onVideoSizeChanged(this, eventTime, i, i2, i3, f);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public void onVideoSizeChanged(@NonNull AnalyticsListener.EventTime eventTime, @NonNull VideoSize videoSize) {
                 MoviePlayerActivity.this.resolution = videoSize.width + "x" + videoSize.height;
                 Objects.requireNonNull(MoviePlayerActivity.this);
                 Objects.requireNonNull(MoviePlayerActivity.this);
-                AnalyticsListener.CC.$default$onVideoSizeChanged(this, eventTime, videoSize);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVolumeChanged(AnalyticsListener.EventTime eventTime, float f) {
-                AnalyticsListener.CC.$default$onVolumeChanged(this, eventTime, f);
             }
         });
         this.player.setAudioAttributes(AudioAttributes.DEFAULT, true);
@@ -1052,14 +817,13 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
         if (exoPlayer.getCurrentPosition() <= 120000 || this.player.getCurrentPosition() + 60000 >= this.player.getDuration()) {
             final int i = 1;
-            RealmController.with().addPositionToMovies(this.movie_name, this.tmdb_id, false, 0L, 0, new RealmChangeItemListener(this) { // from class: com.ouropro.player.activities.MoviePlayerActivity$$ExternalSyntheticLambda1
+            RealmController.with().addPositionToMovies(this.movie_name, this.tmdb_id, false, 0L, 0, new RealmChangeItemListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity$$ExternalSyntheticLambda1
                 public final /* synthetic */ MoviePlayerActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = MoviePlayerActivity.this;
                 }
 
-                @Override // com.ouropro.player.helper.RealmChangeItemListener
                 public final void onItemChanged() {
                     switch (i) {
                         case 0:
@@ -1074,14 +838,13 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         } else {
             int currentPosition = (int) ((this.player.getCurrentPosition() * 100) / this.player.getDuration());
             final int i2 = 0;
-            RealmController.with().addPositionToMovies(this.movie_name, this.tmdb_id, true, this.player.getCurrentPosition(), currentPosition, new RealmChangeItemListener(this) { // from class: com.ouropro.player.activities.MoviePlayerActivity$$ExternalSyntheticLambda1
+            RealmController.with().addPositionToMovies(this.movie_name, this.tmdb_id, true, this.player.getCurrentPosition(), currentPosition, new RealmChangeItemListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity$$ExternalSyntheticLambda1
                 public final /* synthetic */ MoviePlayerActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = MoviePlayerActivity.this;
                 }
 
-                @Override // com.ouropro.player.helper.RealmChangeItemListener
                 public final void onItemChanged() {
                     switch (i2) {
                         case 0:
@@ -1192,7 +955,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getStop_playback(), this.wordModels.getPlayback_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity.4
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 MoviePlayerActivity moviePlayerActivity = MoviePlayerActivity.this;
                 moviePlayerActivity.handler.removeCallbacks(moviePlayerActivity.hideInfoTicker);
@@ -1201,7 +963,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
                 MoviePlayerActivity.this.listTimer();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 MoviePlayerActivity.this.exitDlgFragment.dismiss();
                 MoviePlayerActivity.this.releaseMediaPlayer();
@@ -1253,11 +1014,9 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         PlayErrorDlgFragment playErrorDlgFragmentNewInstance = PlayErrorDlgFragment.newInstance(this.wordModels.getPlay_back_error(), this.wordModels.getPlay_back_error_description(), true);
         this.errorDlgFragment = playErrorDlgFragmentNewInstance;
         playErrorDlgFragmentNewInstance.setOkButtonClickListener(new PlayErrorDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity.5
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.PlayErrorDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 MoviePlayerActivity.this.finish();
             }
@@ -1276,14 +1035,12 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getResume(), this.wordModels.getResume_plyaback_from_ast_position(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.resumeDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.MoviePlayerActivity.3
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
                 MoviePlayerActivity.this.playVideo(str, 0L);
                 MoviePlayerActivity.this.ly_control.setVisibility(0);
                 MoviePlayerActivity.this.listTimer();
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 MoviePlayerActivity.this.resumeDlgFragment.dismiss();
                 MoviePlayerActivity moviePlayerActivity = MoviePlayerActivity.this;
@@ -1306,7 +1063,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // com.ouropro.player.remote.GetSubtitleLinkRequest.OnGetLinkModelListener
     public void OnGetLinkModelResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             Toast.makeText(getApplicationContext(), this.wordModels.getNo_subtitle(), 1).show();
@@ -1321,7 +1077,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         this.subtitleView.setSubSource(subtitleLinkModel.getLink());
     }
 
-    @Override // com.ouropro.player.remote.GetSubtitleDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             Toast.makeText(getApplicationContext(), this.wordModels.getNo_subtitle(), 1).show();
@@ -1343,7 +1098,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
     /* JADX WARN: Code duplicated, block: B:48:0x00b2  */
     /* JADX WARN: Code duplicated, block: B:49:0x00bb  */
     /* JADX WARN: Code duplicated, block: B:51:0x00c3  */
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -1443,7 +1197,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_audio /* 2131427462 */:
@@ -1504,7 +1257,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_movie_player);
@@ -1545,7 +1297,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         listTimer();
     }
 
-    @Override // android.view.View.OnFocusChangeListener
     public void onFocusChange(View view, boolean z) {
         if (z) {
             this.handler.removeCallbacks(this.hideInfoTicker);
@@ -1553,7 +1304,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onPause() {
         super.onPause();
         if (Build.VERSION.SDK_INT <= 23) {
@@ -1565,7 +1315,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onProgressChanged(SeekBar seekBar, int i, boolean z) {
         if (this.player == null || !z) {
             return;
@@ -1579,11 +1328,9 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         textView.setText(sbM.toString());
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStartTrackingTouch(SeekBar seekBar) {
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onStop() {
         super.onStop();
         if (Build.VERSION.SDK_INT > 23) {
@@ -1595,7 +1342,6 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // android.widget.SeekBar.OnSeekBarChangeListener
     public void onStopTrackingTouch(SeekBar seekBar) {
         if (this.player == null || seekBar.getId() != R.id.seekBar) {
             return;

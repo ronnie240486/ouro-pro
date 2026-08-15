@@ -24,7 +24,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda2 implem
         this.f$1 = list2;
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnCompleteListener
     public final void onComplete(Object obj) {
         switch (this.$r8$classId) {
             case 0:
@@ -36,7 +35,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda2 implem
         }
     }
 
-    @Override // com.ouropro.player.dlgfragment.SubtitleTrackDlgFragment.ItemPositionListener, com.ouropro.player.dlgfragment.AudioTrackDlgFragment.ItemPositionListener
     public final void onItemPosition(int i) {
         switch (this.$r8$classId) {
             case 1:

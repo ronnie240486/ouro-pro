@@ -30,6 +30,9 @@ import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
+import com.ouropro.player.models.EPGChannel;
+import com.ouropro.player.models.MovieModel;
+import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.remote.GetDataRequest;
 import com.ouropro.player.utils.Security;
@@ -57,6 +60,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     public int failed_count = 0;
     public int playlist_position = 0;
     public String device_type = "tv";
+    private boolean openedHomeForBackgroundSync = false;
 
     @RequiresApi(api = 23)
     private void CheckSDK23Permission() {
@@ -92,7 +96,11 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
         if (time - new Date().getTime() >= 604800000 || appInfoModel.isIs_google_pay()) {
             if (appInfoModel.getResult().size() > 0) {
-                loadingData();
+                if (hasUsableLocalCatalog()) {
+                    loadingData();
+                } else {
+                    openHomeForBackgroundSync(appInfoModel);
+                }
                 return;
             }
             this.subscription = "";
@@ -187,7 +195,31 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
+        if (hasUsableLocalCatalog()) {
+            openHomeFromCache();
+            return;
+        }
+        AppInfoModel cachedInfo = this.preferenceHelper.getSharedPreferenceAppInfo();
+        if (cachedInfo != null && cachedInfo.getResult() != null && !cachedInfo.getResult().isEmpty()) {
+            openHomeForBackgroundSync(cachedInfo);
+            return;
+        }
         getUserInfoModel();
+    }
+
+    private boolean hasUsableLocalCatalog() {
+        try {
+            return this.realm.where(MovieModel.class).count() > 0
+                    || this.realm.where(EPGChannel.class).count() > 0
+                    || this.realm.where(SeriesModel.class).count() > 0;
+        } catch (Exception unused) {
+            return false;
+        }
+    }
+
+    private void openHomeFromCache() {
+        startActivity(new Intent(this, HomeActivity.class));
+        finish();
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -212,9 +244,41 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
     }
 
+    private void setLoaderVisibility(int visibility) {
+        if (this.image_loader != null) {
+            this.image_loader.setVisibility(visibility);
+        }
+    }
+
+    private boolean isLoaderVisible() {
+        return this.image_loader != null && this.image_loader.getVisibility() == 0;
+    }
+
+    private void openHomeForBackgroundSync(AppInfoModel info) {
+        if (info == null || info.getResult() == null || info.getResult().isEmpty()) {
+            startActivity(new Intent(this, ChangePlaylistActivity.class));
+            finish();
+            return;
+        }
+        int position = GetSharedInfo.getPlaylistPosition(this);
+        if (position < 0 || position >= info.getResult().size()) {
+            position = 0;
+        }
+        String playlistUrl = info.getResult().get(position).getUrl();
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            loadingData();
+            return;
+        }
+        this.openedHomeForBackgroundSync = true;
+        Intent home = new Intent(this, HomeActivity.class);
+        home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
+        startActivity(home);
+        finish();
+    }
+
     /* JADX INFO: Access modifiers changed from: private */
     public void loadingData() {
-        this.image_loader.setVisibility(0);
+        setLoaderVisibility(0);
         this.playlist_position = GetSharedInfo.getPlaylistPosition(this);
         try {
             try {
@@ -225,15 +289,20 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
                 } else {
                     AppInfoModel.UrlModel urlModel = this.appInfoModel.getResult().get(this.playlist_position);
                     this.currentUrlModel = urlModel;
-                    if (urlModel.getUrl().contains("username")) {
+                    String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
+                    String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
+                    if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
                         this.preferenceHelper.setSharedPreferenceISM3U(false);
-                        goToLogin(this.currentUrlModel.getUrl(), this.wordModels);
-                    } else if (GetSharedInfo.checkXUILink(this.currentUrlModel.getUrl())) {
+                        goToLogin(playlistUrl, this.wordModels);
+                    } else if (playlistUrl.contains("username")) {
+                        this.preferenceHelper.setSharedPreferenceISM3U(false);
+                        goToLogin(playlistUrl, this.wordModels);
+                    } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
                         this.preferenceHelper.setSharedPreferenceISM3U(false);
                         goToXUILogin(this.currentUrlModel.getUrl(), this.wordModels);
                     } else {
                         this.preferenceHelper.setSharedPreferenceISM3U(true);
-                        reloadM3UData(this.currentUrlModel.getUrl(), this.wordModels);
+                        reloadM3UData(playlistUrl, this.wordModels);
                     }
                 }
             } catch (Exception unused) {
@@ -245,7 +314,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     }
 
     private void showDescriptionDlgFragment(String str, String str2, final int i) {
-        this.image_loader.setVisibility(8);
+        setLoaderVisibility(8);
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
         Fragment fragmentFindFragmentByTag = supportFragmentManager.findFragmentByTag("fragment_description");
@@ -256,15 +325,15 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i);
         this.descriptionDlgFragment = descriptionDlgFragmentNewInstance;
         descriptionDlgFragmentNewInstance.setButtonClickListener(new DescriptionDlgFragment.ButtonClickListener() { // from class: com.ouropro.player.MainActivity.2
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onCancelClick() {
                 MainActivity.this.finishApp();
             }
 
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onContinueClick() {
                 if (i == -1) {
                     MainActivity.this.getUserInfoModel();
+                } else if (i > 0 && !MainActivity.this.hasUsableLocalCatalog()) {
+                    MainActivity.this.openHomeForBackgroundSync(MainActivity.this.appInfoModel);
                 } else {
                     MainActivity.this.loadingData();
                 }
@@ -284,11 +353,9 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.MainActivity.3
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 List<ActivityManager.AppTask> appTasks;
                 System.exit(0);
@@ -303,7 +370,6 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         this.exitDlgFragment.show(supportFragmentManager, "fragment_exit");
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             checkLocalStorageAccount();
@@ -356,12 +422,11 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() != 0 || keyEvent.getKeyCode() != 4) {
             return super.dispatchKeyEvent(keyEvent);
         }
-        if (this.image_loader.getVisibility() == 0) {
+        if (isLoaderVisible()) {
             setStop(true);
             startActivity(new Intent(this, (Class<?>) ChangePlaylistActivity.class));
             finish();
@@ -372,20 +437,22 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         return true;
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
+        if (this.openedHomeForBackgroundSync) {
+            setLoaderVisibility(8);
+            return;
+        }
         if (z) {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
             startActivity(new Intent(this, (Class<?>) HomeActivity.class));
         } else {
-            this.image_loader.setVisibility(8);
+            setLoaderVisibility(8);
             Toast.makeText(this, "" + this.wordModels.getPlaylist_is_not_working(), 0).show();
             startActivity(new Intent(this, (Class<?>) ChangePlaylistActivity.class));
         }
         finish();
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_main);
@@ -408,7 +475,6 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, android.app.Activity
     public void onRequestPermissionsResult(int i, @NonNull String[] strArr, @NonNull int[] iArr) {
         getMacAddress();
         super.onRequestPermissionsResult(i, strArr, iArr);

@@ -52,18 +52,15 @@ public class SimpleGestureFilter extends GestureDetector.SimpleOnGestureListener
         return this.swipe_Min_Velocity;
     }
 
-    @Override // android.view.GestureDetector.SimpleOnGestureListener, android.view.GestureDetector.OnDoubleTapListener
     public boolean onDoubleTap(MotionEvent motionEvent) {
         this.listener.onDoubleTap();
         return true;
     }
 
-    @Override // android.view.GestureDetector.SimpleOnGestureListener, android.view.GestureDetector.OnDoubleTapListener
     public boolean onDoubleTapEvent(MotionEvent motionEvent) {
         return true;
     }
 
-    @Override // android.view.GestureDetector.SimpleOnGestureListener, android.view.GestureDetector.OnGestureListener
     public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent2, float f, float f2) {
         float fAbs = Math.abs(motionEvent.getX() - motionEvent2.getX());
         float fAbs2 = Math.abs(motionEvent.getY() - motionEvent2.getY());
@@ -91,7 +88,6 @@ public class SimpleGestureFilter extends GestureDetector.SimpleOnGestureListener
         return true;
     }
 
-    @Override // android.view.GestureDetector.SimpleOnGestureListener, android.view.GestureDetector.OnDoubleTapListener
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
         if (this.mode != 2) {
             return false;
@@ -101,7 +97,6 @@ public class SimpleGestureFilter extends GestureDetector.SimpleOnGestureListener
         return false;
     }
 
-    @Override // android.view.GestureDetector.SimpleOnGestureListener, android.view.GestureDetector.OnGestureListener
     public boolean onSingleTapUp(MotionEvent motionEvent) {
         this.tapIndicator = true;
         return false;

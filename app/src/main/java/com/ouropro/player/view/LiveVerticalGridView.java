@@ -16,7 +16,6 @@ public class LiveVerticalGridView extends VerticalGridView {
         this.L = true;
     }
 
-    @Override // androidx.leanback.widget.BaseGridView, android.view.ViewGroup, android.view.View
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         int selectedPosition = getSelectedPosition();
         if (keyEvent.getAction() == 0) {

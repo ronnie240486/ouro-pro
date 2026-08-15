@@ -12,12 +12,15 @@ import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.ouropro.player.R;
+import com.ouropro.player.activities.TrailerSearchActivity;
 import com.ouropro.player.models.SeriesModel;
+import com.ouropro.player.models.EpisodeModel;
+import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.utils.ImageLoaderJava;
 import io.realm.RealmResults;
 
 /* JADX INFO: loaded from: classes.dex */
-public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel, VodViewHolder> {
+public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel, SeriesRecyclerAdapter.VodViewHolder> {
     public Context context;
     public boolean is_grid;
     public ItemClickListener mItemClickListener;
@@ -38,12 +41,14 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         public RoundedImageView image_logo;
         public RoundedImageView image_vod;
         public TextView txt_name;
+        public TextView btn_trailer;
 
         public VodViewHolder(@NonNull SeriesRecyclerAdapter seriesRecyclerAdapter, View view) {
             super(view);
             this.image_vod = (RoundedImageView) view.findViewById(R.id.image_vod);
             this.image_logo = (RoundedImageView) view.findViewById(R.id.image_logo);
             this.txt_name = (TextView) view.findViewById(R.id.txt_name);
+            this.btn_trailer = (TextView) view.findViewById(R.id.btn_trailer);
             this.image_fav = (ImageView) view.findViewById(R.id.image_fav);
         }
     }
@@ -96,7 +101,6 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         this.mItemClickListener = itemClickListener;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull VodViewHolder vodViewHolder, int i) {
         SeriesModel item = getItem(i);
@@ -106,7 +110,12 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         } else {
             vodViewHolder.image_fav.setVisibility(8);
         }
-        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, item.getStream_icon(), R.drawable.default_bg, vodViewHolder.image_logo);
+        // O card representa a série e não um capítulo. Nunca substitua o
+        // poster original do SeriesModel pelo stream_icon de EpisodeModel.
+        String posterUrl = item.getStream_icon();
+        ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, vodViewHolder.image_vod, posterUrl, R.drawable.default_bg, vodViewHolder.image_logo);
+        vodViewHolder.btn_trailer.setVisibility(View.VISIBLE);
+        vodViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, item.getName()));
         vodViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, i, item, 14));
         vodViewHolder.itemView.setOnFocusChangeListener(new VodRecyclerAdapter$$ExternalSyntheticLambda1(this, vodViewHolder, i, 3));
         vodViewHolder.itemView.setOnLongClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda2(this, item, i, 2));
@@ -126,7 +135,6 @@ public class SeriesRecyclerAdapter extends RealmRecyclerViewAdapter<SeriesModel,
         this.mItemClickListener.onFocusPosition(i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public VodViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return this.is_grid ? new VodViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_vod_grid, viewGroup, false)) : new VodViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_vod, viewGroup, false));

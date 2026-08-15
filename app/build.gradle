@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
-    id 'io.realm.android'
 }
+
+apply plugin: 'realm-android'
 
 android {
     namespace 'com.ouropro.player'
@@ -11,8 +12,8 @@ android {
         applicationId 'com.ouropro.player'
         minSdk 21
         targetSdk 34
-        versionCode 128
-        versionName '6.4-reconstructed'
+        versionCode 180
+        versionName '6.4'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
     }
@@ -20,7 +21,6 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix '.debug'
-            versionNameSuffix '-debug'
             buildConfigField 'boolean', 'ENABLE_VERBOSE_NETWORK_LOGS', 'false'
         }
         release {
@@ -64,6 +64,7 @@ realm {
 }
 
 dependencies {
+    compileOnly files('libs/org.apache.http.legacy.jar')
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.activity:activity:1.9.3'
     implementation 'androidx.core:core:1.15.0'
@@ -91,11 +92,11 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'com.android.volley:volley:1.2.1'
 
+    implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.29'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
     implementation 'com.makeramen:roundedimageview:2.3.0'
-    implementation 'com.eightbitlab:blurview:1.6.6'
-    implementation 'com.github.iarcuschin:SimpleRatingBar:1.5.1'
     implementation 'org.androidannotations:androidannotations-api:4.8.0'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.0.21'
     implementation 'com.google.android.gms:play-services-base:18.5.0'

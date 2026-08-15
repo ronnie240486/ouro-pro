@@ -21,15 +21,12 @@ public class SSLUtils {
         }
         try {
             TrustManager[] trustAllCerts = {new X509TrustManager() { // from class: com.diegodev.travarlaucnher.md.img.SSLUtils.1
-                @Override // javax.net.ssl.X509TrustManager
                 public void checkClientTrusted(X509Certificate[] chain, String authType) {
                 }
 
-                @Override // javax.net.ssl.X509TrustManager
                 public void checkServerTrusted(X509Certificate[] chain, String authType) {
                 }
 
-                @Override // javax.net.ssl.X509TrustManager
                 public X509Certificate[] getAcceptedIssuers() {
                     return new X509Certificate[0];
                 }
@@ -39,7 +36,6 @@ public class SSLUtils {
             SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
             HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
             HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() { // from class: com.diegodev.travarlaucnher.md.img.SSLUtils.2
-                @Override // javax.net.ssl.HostnameVerifier
                 public boolean verify(String hostname, SSLSession session) {
                     return true;
                 }

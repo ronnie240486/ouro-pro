@@ -1,13 +1,22 @@
 package com.ouropro.player.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResult;
+import androidx.annotation.NonNull;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -27,12 +36,32 @@ import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.dlgfragment.NoConnectionDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
+import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.NullTextGuard;
+import com.ouropro.player.improvements.AccessibleFocusHelper;
+import com.ouropro.player.improvements.VoiceChannelMatcher;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceCommandController;
+import com.ouropro.player.improvements.VoiceMediaMatcher;
+import com.ouropro.player.models.EPGChannel;
+import com.ouropro.player.models.MovieModel;
+import com.ouropro.player.models.SeriesModel;
 import com.ouropro.player.models.AppInfoModel;
+import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.LoginModel;
 import com.ouropro.player.models.WordModels;
+import com.ouropro.player.remote.RetroClass;
 import com.ouropro.player.utils.Utils;
 import com.rtx.Themes.dashtheme;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import pl.droidsonroids.gif.GifImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /* JADX INFO: loaded from: classes.dex */
 public class HomeActivity extends BaseActivity implements View.OnClickListener {
@@ -54,6 +83,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public ConstraintLayout ly_reload;
     public ConstraintLayout ly_series;
     public ConstraintLayout ly_setting;
+    public ConstraintLayout ly_radio;
     public NoConnectionDlgFragment noConnectionDlgFragment;
     public PreferenceHelper preferenceHelper;
     public GifImageView progressBar;
@@ -68,6 +98,10 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     public TextView txt_time;
     public TextView txt_version;
     public WordModels wordModels = new WordModels();
+    private ImageButton microphoneButton;
+    private ImageButton radioIconButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 906;
     public ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new HomeActivity$$ExternalSyntheticLambda0(this));
 
     private void changeStringsInApp() {
@@ -81,6 +115,14 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.txt_setting.setText(this.wordModels.getSettings());
         this.txt_reload.setText(this.wordModels.getReload_portal());
         this.txt_exit.setText(this.wordModels.getExit());
+        this.image_live.setImageResource(R.drawable.icon_live);
+        this.image_movie.setImageResource(R.drawable.movie_icon);
+        this.image_series.setImageResource(R.drawable.icon_series);
+        this.image_account.setImageResource(R.drawable.account_icon);
+        this.image_change.setImageResource(R.drawable.change_m3u_icon);
+        this.image_setting.setImageResource(R.drawable.ic_setting);
+        this.image_reload.setImageResource(R.drawable.reload_icon);
+        this.image_exit.setImageResource(R.drawable.exit_icon);
         try {
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/live_tv").error(R.drawable.icon_live).into(this.image_live);
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/movies").error(R.drawable.movie_icon).into(this.image_movie);
@@ -95,8 +137,15 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private String getCurrentPlaylistExpiredDate() {
-        LoginModel sharedPreferenceLoginModel;
-        return (this.preferenceHelper.getSharedPreferenceISM3U() || (sharedPreferenceLoginModel = this.preferenceHelper.getSharedPreferenceLoginModel()) == null) ? "Undefined." : Utils.getDate(sharedPreferenceLoginModel.getExp_date());
+        LoginModel loginModel = this.preferenceHelper.getSharedPreferenceLoginModel();
+        if (loginModel != null && loginModel.getExp_date() != null && loginModel.getExp_date() > 0L) {
+            return Utils.getDate(loginModel.getExp_date());
+        }
+        AppInfoModel appInfo = this.preferenceHelper.getSharedPreferenceAppInfo();
+        if (appInfo != null && appInfo.getExpiredDate() != null && !appInfo.getExpiredDate().trim().isEmpty()) {
+            return appInfo.getExpiredDate();
+        }
+        return this.preferenceHelper.getSharedPreferenceISM3U() ? "Data não informada pela lista M3U" : "Não informado";
     }
 
     private void initView() {
@@ -165,15 +214,20 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         if (sharedPreferenceAppInfo.getResult().size() > 0) {
             AppInfoModel.UrlModel urlModel = sharedPreferenceAppInfo.getResult().get(playlistPosition);
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(0L);
-            if (urlModel.getUrl().contains("username")) {
+            String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
+            String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
+            if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
+                this.preferenceHelper.setSharedPreferenceISM3U(true);
+                reloadM3UData(playlistUrl, this.wordModels);
+            } else if (playlistUrl.contains("username")) {
                 this.preferenceHelper.setSharedPreferenceISM3U(false);
-                goToLogin(urlModel.getUrl(), this.wordModels);
-            } else if (GetSharedInfo.checkXUILink(urlModel.getUrl())) {
+                goToLogin(playlistUrl, this.wordModels);
+            } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
                 this.preferenceHelper.setSharedPreferenceISM3U(false);
                 goToXUILogin(urlModel.getUrl(), this.wordModels);
             } else {
                 this.preferenceHelper.setSharedPreferenceISM3U(true);
-                reloadM3UData(urlModel.getUrl(), this.wordModels);
+                reloadM3UData(playlistUrl, this.wordModels);
             }
         }
     }
@@ -203,11 +257,9 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.HomeActivity.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 HomeActivity.this.finishAffinity();
                 System.exit(0);
@@ -234,7 +286,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         Toast.makeText(this, this.wordModels.getPlaylist_is_loading(), 0).show();
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() != 0 || keyEvent.getKeyCode() != 4) {
             return super.dispatchKeyEvent(keyEvent);
@@ -243,7 +294,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         return true;
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progressBar.setVisibility(8);
@@ -255,7 +305,213 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    @Override // android.view.View.OnClickListener
+    private void setupMicrophoneButton() {
+        FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
+        if (content == null) {
+            return;
+        }
+        boolean tvDevice = GetSharedInfo.isTVDevice(this);
+        int marginBottom = dpRadio(tvDevice ? 24 : 16);
+        int gap = dpRadio(tvDevice ? 46 : 24);
+        int buttonSize = dpRadio(tvDevice ? 70 : 56);
+        this.microphoneButton = VoiceButtonFactory.create(this, "Microfone: abrir canal, filme ou série", view -> requestVoicePermissionAndStart());
+        AccessibleFocusHelper.apply(this.microphoneButton, "Microfone: comando de voz");
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        params.setMargins(gap, 0, 0, marginBottom);
+        content.addView(this.microphoneButton, params);
+        this.microphoneButton.bringToFront();
+
+        this.radioIconButton = new ImageButton(this);
+        this.radioIconButton.setImageResource(R.drawable.ic_radio);
+        this.radioIconButton.setContentDescription("Abrir Rádios");
+        this.radioIconButton.setBackgroundColor(Color.TRANSPARENT);
+        AccessibleFocusHelper.apply(this.radioIconButton, "Rádios: abrir catálogo e favoritos");
+        int radioPadding = dpRadio(8);
+        this.radioIconButton.setPadding(radioPadding, radioPadding, radioPadding, radioPadding);
+        this.radioIconButton.setFocusable(true);
+        this.radioIconButton.setFocusableInTouchMode(true);
+        this.radioIconButton.setClickable(true);
+        this.radioIconButton.setElevation(dpRadio(6));
+        this.radioIconButton.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
+
+        FrameLayout.LayoutParams radioParams = new FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        radioParams.setMargins(0, 0, gap, marginBottom);
+        content.addView(this.radioIconButton, radioParams);
+        this.radioIconButton.bringToFront();
+        this.radioIconButton.setNextFocusRightId(this.microphoneButton.getId());
+        this.microphoneButton.setNextFocusLeftId(this.radioIconButton.getId());
+        this.radioIconButton.setNextFocusUpId(this.ly_live == null ? View.NO_ID : this.ly_live.getId());
+        this.microphoneButton.setNextFocusUpId(this.ly_movie == null ? View.NO_ID : this.ly_movie.getId());
+        this.radioIconButton.setNextFocusDownId(View.NO_ID);
+        this.microphoneButton.setNextFocusDownId(View.NO_ID);
+        if (this.ly_live != null) {
+            this.ly_live.setNextFocusDownId(this.radioIconButton.getId());
+        }
+        if (this.ly_movie != null) {
+            this.ly_movie.setNextFocusDownId(this.microphoneButton.getId());
+        }
+
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.voiceCommandController = null;
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleHomeVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                Toast.makeText(HomeActivity.this, state, Toast.LENGTH_SHORT).show();
+            }
+
+            public void onVoiceError(String message) {
+                Toast.makeText(HomeActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        } else {
+            Toast.makeText(this, "O reconhecimento de voz não está disponível nesta TV Box", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handleHomeVoiceCommand(VoiceCommand command) {
+        if (command == null) {
+            return;
+        }
+        switch (command.getAction()) {
+            case OPEN_MOVIES:
+                startActivity(new Intent(this, MovieActivity.class));
+                return;
+            case OPEN_SERIES:
+                startActivity(new Intent(this, SeriesActivity.class));
+                return;
+            case OPEN_LIVE:
+                startActivity(new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class));
+                return;
+            case OPEN_SETTINGS:
+                startActivity(new Intent(this, SettingActivity.class));
+                return;
+            case OPEN_MOVIE_ITEM:
+            case SEARCH_MOVIE:
+                openGlobalVoiceTitle(command.getQuery(), "movie");
+                return;
+            case OPEN_SERIES_ITEM:
+            case SEARCH_SERIES:
+                openGlobalVoiceTitle(command.getQuery(), "series");
+                return;
+            case OPEN_CHANNEL:
+            case SEARCH_CHANNEL:
+                openGlobalVoiceTitle(command.getQuery(), "channel");
+                return;
+            case OPEN_TITLE:
+                openGlobalVoiceTitle(command.getQuery(), null);
+                return;
+            default:
+                Toast.makeText(this, "Diga o nome do canal, filme ou série", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGlobalVoiceTitle(String query, String preferredType) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+        if ("movie".equals(preferredType)) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        if ("series".equals(preferredType)) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        boolean hasQuality = VoiceCommand.normalize(query).matches(".*\\b(full hd|fhd|hd|sd)\\b.*");
+        if ("channel".equals(preferredType)) {
+            Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        SeriesModel series = VoiceMediaMatcher.findUniqueSeries(
+                RealmController.with().getSeriesByKey(query), query);
+        if (series != null && !hasQuality) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        MovieModel movie = VoiceMediaMatcher.findUniqueMovie(
+                RealmController.with().getMoviesByKey(query, this.preferenceHelper.getSharedPreferenceISM3U()), query);
+        if (movie != null && !hasQuality) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        EPGChannel channel = VoiceChannelMatcher.findUniqueMatch(
+                RealmController.with().getLiveChannelsByKey(query, true), query);
+        if (channel != null || hasQuality) {
+            Intent intent = new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+
+        if (series != null) {
+            Intent intent = new Intent(this, SeriesActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        if (movie != null) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            intent.putExtra("voice_query", query);
+            startActivity(intent);
+            return;
+        }
+        Toast.makeText(this, "Não encontrei resultados para: " + query, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
+    }
+
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_account /* 2131427885 */:
@@ -273,9 +529,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 showExitDlgFragment();
                 break;
             case R.id.ly_live /* 2131427903 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     LTVApp.homeType = HomeType.live;
                     startActivity(new Intent(this, (Class<?>) CategoryActivity.class));
                 } else if (!GetSharedInfo.isTVDevice(this)) {
@@ -285,9 +539,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.ly_movie /* 2131427906 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     startActivity(new Intent(this, (Class<?>) MovieActivity.class));
                 } else {
                     LTVApp.homeType = HomeType.movies;
@@ -302,9 +554,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.ly_series /* 2131427913 */:
-                if (this.progressBar.getVisibility() == 0) {
-                    showWaitToast();
-                } else if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
+                if (!this.preferenceHelper.getSharedPreferenceIsGrid()) {
                     startActivity(new Intent(this, (Class<?>) SeriesActivity.class));
                 } else {
                     LTVApp.homeType = HomeType.series;
@@ -321,21 +571,132 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
+    private void setupRadioButton() {
+        if (this.ly_radio != null || this.ly_live == null) {
+            return;
+        }
+        ConstraintLayout root = (ConstraintLayout) findViewById(R.id.fullContainer);
+        if (root == null) {
+            return;
+        }
+        ConstraintLayout radio = new ConstraintLayout(this);
+        radio.setId(View.generateViewId());
+        radio.setFocusable(true);
+        radio.setClickable(true);
+        radio.setBackgroundResource(R.drawable.home_small_item_bg);
+        radio.setContentDescription("Abrir Rádios");
+
+        ImageView icon = new ImageView(this);
+        icon.setId(View.generateViewId());
+        icon.setImageResource(R.drawable.ic_radio);
+        icon.setPadding(dpRadio(8), dpRadio(8), dpRadio(8), dpRadio(8));
+        radio.addView(icon, new ConstraintLayout.LayoutParams(dpRadio(58), dpRadio(58)));
+        ConstraintLayout.LayoutParams iconParams = (ConstraintLayout.LayoutParams) icon.getLayoutParams();
+        iconParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+        iconParams.topMargin = dpRadio(10);
+        icon.setLayoutParams(iconParams);
+
+        TextView label = new TextView(this);
+        label.setText("Rádios");
+        label.setTextColor(Color.WHITE);
+        label.setTextSize(14.0f);
+        label.setGravity(Gravity.CENTER_HORIZONTAL);
+        label.setTypeface(null, android.graphics.Typeface.BOLD);
+        radio.addView(label, new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        ConstraintLayout.LayoutParams labelParams = (ConstraintLayout.LayoutParams) label.getLayoutParams();
+        labelParams.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.topToBottom = icon.getId();
+        labelParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        labelParams.bottomMargin = dpRadio(8);
+        radio.setOnClickListener(view -> startActivity(new Intent(this, RadioActivity.class)));
+        radio.setOnFocusChangeListener((view, focused) -> {
+            view.setScaleX(focused ? 1.04f : 1.0f);
+            view.setScaleY(focused ? 1.04f : 1.0f);
+        });
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(dpRadio(90), dpRadio(120));
+        params.startToEnd = this.ly_live.getId();
+        params.topToTop = this.ly_live.getId();
+        params.bottomToBottom = this.ly_live.getId();
+        params.leftMargin = dpRadio(10);
+        root.addView(radio, params);
+        radio.setNextFocusLeftId(this.ly_live.getId());
+        radio.setNextFocusRightId(this.ly_movie.getId());
+        radio.setNextFocusUpId(this.ly_live.getId());
+        radio.setNextFocusDownId(this.ly_account == null ? this.ly_live.getId() : this.ly_account.getId());
+        this.ly_radio = radio;
+    }
+
+    private void updateActionButtonFocus(View view, boolean focused) {
+        view.setScaleX(focused ? 1.12f : 1.0f);
+        view.setScaleY(focused ? 1.12f : 1.0f);
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.TRANSPARENT);
+        background.setCornerRadius(dpRadio(40));
+        if (focused) {
+            background.setStroke(dpRadio(2), Color.rgb(255, 211, 42));
+        }
+        view.setBackground(background);
+    }
+
+    private int dpRadio(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private void startBootstrapPlaylistSync() {
+        String playlistUrl = getIntent().getStringExtra("bootstrap_playlist_url");
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            return;
+        }
+        getIntent().removeExtra("bootstrap_playlist_url");
+        final String url = playlistUrl.trim();
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+            try {
+                String lower = url.toLowerCase(java.util.Locale.ROOT);
+                if (lower.contains("get.php") || lower.contains("type=m3u") || lower.contains("output=mpegts")) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(true);
+                    reloadM3UData(url, this.wordModels);
+                } else if (lower.contains("username")) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(false);
+                    goToLogin(url, this.wordModels);
+                } else if (GetSharedInfo.checkXUILink(url)) {
+                    this.preferenceHelper.setSharedPreferenceISM3U(false);
+                    goToXUILogin(url, this.wordModels);
+                } else {
+                    this.preferenceHelper.setSharedPreferenceISM3U(true);
+                    reloadM3UData(url, this.wordModels);
+                }
+            } catch (Exception ignored) {
+                // A Home permanece utilizável mesmo se a sincronização inicial falhar.
+            }
+        });
+    }
+
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(dashtheme.mNewDashtheme());
         Utils.FullScreenCall(this);
         this.preferenceHelper = new PreferenceHelper(this);
         initView();
+        setupMicrophoneButton();
         changeStringsInApp();
         this.txt_time.setText(this.wordModels.getCurrent_expired() + " " + getCurrentPlaylistExpiredDate());
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
-        TextView textView = this.txt_version;
-        StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("v");
-        sbM.append(LTVApp.version_name);
-        textView.setText(sbM.toString());
+        // A versão não deve ser exibida na tela principal.
+        this.txt_version.setText("");
+        this.txt_version.setVisibility(View.GONE);
         this.ly_live.requestFocus();
+        // O catálogo segue o fluxo original do 6.1; não reescrever séries em segundo plano.
+        startBootstrapPlaylistSync();
+        NullTextGuard.sanitize(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
     }
 }

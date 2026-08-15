@@ -3826,12 +3826,12 @@
     <public type="dimen" name="txt_live_item_font" id="0x7f070668" />
     <public type="dimen" name="txt_middle_font" id="0x7f070669" />
     <public type="dimen" name="txt_small_font" id="0x7f07066a" />
-    <public type="drawable" name="$avd_hide_password__0" id="0x7f080000" />
-    <public type="drawable" name="$avd_hide_password__1" id="0x7f080001" />
-    <public type="drawable" name="$avd_hide_password__2" id="0x7f080002" />
-    <public type="drawable" name="$avd_show_password__0" id="0x7f080003" />
-    <public type="drawable" name="$avd_show_password__1" id="0x7f080004" />
-    <public type="drawable" name="$avd_show_password__2" id="0x7f080005" />
+    <public type="drawable" name="avd_hide_password_0" id="0x7f080000" />
+    <public type="drawable" name="avd_hide_password_1" id="0x7f080001" />
+    <public type="drawable" name="avd_hide_password_2" id="0x7f080002" />
+    <public type="drawable" name="avd_show_password_0" id="0x7f080003" />
+    <public type="drawable" name="avd_show_password_1" id="0x7f080004" />
+    <public type="drawable" name="avd_show_password_2" id="0x7f080005" />
     <public type="drawable" name="abc_ab_share_pack_mtrl_alpha" id="0x7f080006" />
     <public type="drawable" name="abc_action_bar_item_background_material" id="0x7f080007" />
     <public type="drawable" name="abc_btn_borderless_material" id="0x7f080008" />

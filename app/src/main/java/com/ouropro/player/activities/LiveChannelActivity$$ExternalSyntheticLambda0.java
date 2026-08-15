@@ -13,12 +13,10 @@ public final /* synthetic */ class LiveChannelActivity$$ExternalSyntheticLambda0
         this.f$0 = liveChannelActivity;
     }
 
-    @Override // androidx.activity.result.ActivityResultCallback
     public final void onActivityResult(Object obj) {
         this.f$0.lambda$new$6((ActivityResult) obj);
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         this.f$0.lambda$playSelectedChannel$1();
     }

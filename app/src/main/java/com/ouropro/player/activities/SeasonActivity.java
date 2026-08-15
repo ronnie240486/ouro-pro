@@ -499,11 +499,11 @@ public class SeasonActivity extends AppCompatActivity {
         this.series_id = this.currentSeries.getSeries_id();
         this.txt_name.setText(this.series_name);
         final int i = 0;
-        SeasonRecyclerAdapter seasonRecyclerAdapter = new SeasonRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
+        SeasonRecyclerAdapter seasonRecyclerAdapter = new SeasonRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
             public final /* synthetic */ SeasonActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeasonActivity.this;
             }
 
             @Override // kotlin.jvm.functions.Function3
@@ -519,11 +519,11 @@ public class SeasonActivity extends AppCompatActivity {
         this.seasonAdapter = seasonRecyclerAdapter;
         this.season_list.setAdapter(seasonRecyclerAdapter);
         final int i2 = 1;
-        EpisodeRecyclerAdapter episodeRecyclerAdapter = new EpisodeRecyclerAdapter(this, new ArrayList(), this.series_name, this.season_name, new Function3(this) { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
+        EpisodeRecyclerAdapter episodeRecyclerAdapter = new EpisodeRecyclerAdapter(this, new ArrayList(), this.series_name, this.season_name, new Function3() { // from class: com.ouropro.player.activities.SeasonActivity$$ExternalSyntheticLambda1
             public final /* synthetic */ SeasonActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SeasonActivity.this;
             }
 
             @Override // kotlin.jvm.functions.Function3

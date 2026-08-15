@@ -66,13 +66,11 @@ public class LiveSortDlgFragment extends DialogFragment {
         return liveSortDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         final int i = 0;
         View viewInflate = layoutInflater.inflate(R.layout.fragment_live_sort, viewGroup, false);
@@ -89,14 +87,13 @@ public class LiveSortDlgFragment extends DialogFragment {
         this.recyclerTimes.setAdapter(this.adapter);
         this.recyclerTimes.smoothScrollToPosition(this.selected_position);
         this.recyclerTimes.requestFocus();
-        this.btn_ok.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.LiveSortDlgFragment$$ExternalSyntheticLambda0
+        this.btn_ok.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.LiveSortDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ LiveSortDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = LiveSortDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i) {
                     case 0:
@@ -109,14 +106,13 @@ public class LiveSortDlgFragment extends DialogFragment {
             }
         });
         final int i2 = 1;
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.LiveSortDlgFragment$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.LiveSortDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ LiveSortDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = LiveSortDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i2) {
                     case 0:

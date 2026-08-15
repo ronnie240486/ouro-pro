@@ -17,7 +17,6 @@ public class EncryptedApiCaller {
     public static void callEncryptedMoviesApi(final Context context) {
         SSLUtils.ignoreSSL();
         new Thread(new Runnable() { // from class: com.diegodev.travarlaucnher.md.img.EncryptedApiCaller$$ExternalSyntheticLambda0
-            @Override // java.lang.Runnable
             public final void run() {
                 EncryptedApiCaller.lambda$callEncryptedMoviesApi$0(context);
             }
@@ -84,7 +83,6 @@ public class EncryptedApiCaller {
                             throw th;
                         }
                     }
-                    Log.e("EncryptedApiCaller", "Erro na chamada da API", e);
                 }
             } catch (Throwable th3) {
                 if (os == null) {
@@ -99,7 +97,6 @@ public class EncryptedApiCaller {
                 }
             }
         } catch (Exception e) {
-            Log.e("EncryptedApiCaller", "Erro na chamada da API", e);
         }
     }
 }

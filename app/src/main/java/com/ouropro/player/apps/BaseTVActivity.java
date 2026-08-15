@@ -642,7 +642,7 @@ public class BaseTVActivity extends FragmentActivity {
     }
 
     private String getKeyFromCategoryName(String str) {
-        for (String str2 : new TreeSet(this.categoryHashMap.keySet())) {
+        for (String str2 : new TreeSet<String>(this.categoryHashMap.keySet())) {
             if (getCategoryNameFromKey(str2).equalsIgnoreCase(str)) {
                 return str2;
             }
@@ -707,7 +707,7 @@ public class BaseTVActivity extends FragmentActivity {
         while (it.hasNext()) {
             addChannelToCategory(it.next());
         }
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
@@ -763,7 +763,7 @@ public class BaseTVActivity extends FragmentActivity {
         while (it.hasNext()) {
             addMovieToCategory(it.next());
         }
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getResume_to_watch()));
@@ -893,7 +893,7 @@ public class BaseTVActivity extends FragmentActivity {
             addSeriesToCategory(it.next());
         }
         this.categoryHashMap.keySet();
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
@@ -923,7 +923,7 @@ public class BaseTVActivity extends FragmentActivity {
         }
         ArrayList arrayList = new ArrayList();
         this.episodeModelHashMap.keySet();
-        for (String str : new TreeSet(this.episodeModelHashMap.keySet())) {
+        for (String str : new TreeSet<String>(this.episodeModelHashMap.keySet())) {
             if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
                 SeriesModel seriesModel = new SeriesModel();
                 seriesModel.setName(str);

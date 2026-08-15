@@ -18,7 +18,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerLiveHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHolder> {
+public class RecyclerLiveHomeAdapter extends RecyclerView.Adapter<RecyclerLiveHomeAdapter.LiveHomeViewHolder> {
     public Function3<EPGChannel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<EPGChannel> epgChannels;
@@ -74,7 +74,6 @@ public class RecyclerLiveHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHo
         return false;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<EPGChannel> list = this.epgChannels;
         if (list == null) {
@@ -88,7 +87,6 @@ public class RecyclerLiveHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHo
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, int i) {
         EPGChannel ePGChannel = this.epgChannels.get(i);
@@ -99,7 +97,6 @@ public class RecyclerLiveHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHo
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, ePGChannel, i, 1));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveHomeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_home_live, viewGroup, false));

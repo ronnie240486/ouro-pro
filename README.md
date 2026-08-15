@@ -16,13 +16,17 @@ A base contém o pacote principal `com.ouropro.player`, 279 arquivos Java recupe
 | EPG/catch-up, favoritos e histórico | Recuperados |
 | Reprodução ExoPlayer/FFmpeg | Recuperada, sujeita à validação em dispositivo |
 | Recursos visuais e assets | Copiados para `app/src/main/res` e `app/src/main/assets` |
-| Build Android reprodutível | Estrutura Gradle criada; requer SDK Android local |
+| Build Android reprodutível | `assembleDebug` validado com Android SDK 35 e JDK 17 |
 
 ## Melhorias aplicadas
 
 A camada de rede agora rejeita endpoints sem host válido, evita usuário e senha dentro da URL e exige HTTPS no caminho padrão. O logging HTTP foi desativado em nível de corpo, reduzindo o risco de credenciais aparecerem no logcat. O cliente anteriormente chamado de `UnsafeOkHttpClient` mantém a assinatura por compatibilidade, mas não aceita mais certificados ou hostnames arbitrários.
 
 As preferências passaram a ser abertas por `SecurePreferenceStore`, usando Android Keystore por meio de `EncryptedSharedPreferences`. Isso protege usuário, senha, URL do servidor, MAC, tokens locais, favoritos e histórico em repouso quando o provider criptográfico está disponível. Também foi formalizado o contrato de playlist com os campos `playlist_url` e `playlist_name`, acompanhado de teste unitário para impedir a regressão para `url` e `name`.
+
+O **comando de voz** agora usa um ícone de microfone na tela principal, nos canais mobile/TV, filmes e séries. Ele aceita títulos sem prefixo obrigatório, como “Esqueceram de Mim”, e frases como “abrir Space HD”. O recurso solicita `RECORD_AUDIO` somente quando o usuário toca no microfone, não grava áudio em disco, recusa correspondências ambíguas e preserva o controle parental. O detalhamento está em [`docs/voice-commands.md`](docs/voice-commands.md).
+
+A sincronização de séries foi protegida contra perda de dados. Respostas vazias de `get_series`, `get_second_series` ou episódios não apagam mais registros do Realm. Quando a fonte é M3U e a tela encontra menos de 100 séries, ela reimporta os episódios e reconstrói o catálogo por nome base, temporada e `group-title`. Consulte [`docs/series-data-safety.md`](docs/series-data-safety.md), [`docs/series-voice-recovery.md`](docs/series-voice-recovery.md), [`docs/series-category-cache.md`](docs/series-category-cache.md), [`docs/original-flow-fix.md`](docs/original-flow-fix.md), [`docs/m3u-series-fix.md`](docs/m3u-series-fix.md) e [`docs/series-cards-order.md`](docs/series-cards-order.md).
 
 ## Estrutura
 
@@ -39,7 +43,9 @@ improvements/            Backlog de melhorias planejadas
 
 ## Build
 
-É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew assembleDebug` para uma primeira compilação de depuração. Esta sandbox não possuía Gradle nem Android SDK instalados no momento da reconstrução; por isso, a validação automática de compilação ainda está pendente.
+É necessário instalar o Android SDK com as plataformas correspondentes ao `compileSdk 35`, além de JDK 17 e Gradle 8.6 ou superior. Na raiz do projeto, execute `./gradlew test` para os testes unitários e `./gradlew :app:assembleDebug` para gerar o APK completo de depuração. A compilação foi validada com sucesso nesta entrega.
+
+O instalador desta correção é `artifacts/OuroPro6.4-m3u-plus-voice-fix-debug.apk`. Ele preserva a abertura rápida, classifica a M3U Plus real sem misturar o grupo de canais `FILMES E SERIES`, reconhece provedores como Netflix/HBO/Disney+/Amazon, recupera capas pelo primeiro episódio, organiza temporadas/capítulos numericamente e executa a migração uma única vez. O comando de voz abre diretamente canais, filmes e séries. As versões anteriores não devem ser usadas. A assinatura é de debug e serve para teste, não para distribuição comercial.
 
 O projeto deliberadamente não inclui o APK original, chaves de assinatura, credenciais, dados de playlists ou endpoints privados. Para distribuir uma versão, crie uma chave de assinatura própria e configure os segredos fora do Git.
 

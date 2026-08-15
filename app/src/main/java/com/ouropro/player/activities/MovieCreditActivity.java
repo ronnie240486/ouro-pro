@@ -55,12 +55,10 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
 
     private void getMovieCredit() {
         RetroClass.getAPIService(Constants.PERSON_API).getMovieCreditModels(this.person_id + "/movie_credits?api_key=" + Constants.IMDB_KEY + "&language=en-US").enqueue(new Callback<MovieCreditResponse>() { // from class: com.ouropro.player.activities.MovieCreditActivity.1
-            @Override // retrofit2.Callback
             public void onFailure(Call<MovieCreditResponse> call, Throwable th) {
             }
 
             /* JADX WARN: Type inference incomplete: some casts might be missing */
-            @Override // retrofit2.Callback
             public void onResponse(Call<MovieCreditResponse> call, Response<MovieCreditResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
                     return;
@@ -92,12 +90,10 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
 
     private void getTrailerVideoId() {
         RetroClass.getAPIService(Constants.IMDB_API).getTmdbVideoModels(this.currentMovieModel.getId() + "/videos?api_key=" + Constants.IMDB_KEY).enqueue(new Callback<TMDBVideoResponse>() { // from class: com.ouropro.player.activities.MovieCreditActivity.2
-            @Override // retrofit2.Callback
             public void onFailure(Call<TMDBVideoResponse> call, Throwable th) {
                 Toast.makeText(MovieCreditActivity.this, "No Trailer", 0).show();
             }
 
-            @Override // retrofit2.Callback
             public void onResponse(Call<TMDBVideoResponse> call, Response<TMDBVideoResponse> response) {
                 if (!response.isSuccessful() || response.body() == null || response.body().getResults().size() <= 0) {
                     Toast.makeText(MovieCreditActivity.this, "No Trailer", 0).show();
@@ -149,12 +145,10 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
         MovieCreditRecyclerAdapter movieCreditRecyclerAdapter = new MovieCreditRecyclerAdapter(this, new ArrayList());
         this.adapter = movieCreditRecyclerAdapter;
         movieCreditRecyclerAdapter.setItemClickListener(new MovieCreditRecyclerAdapter.ItemClickListener() { // from class: com.ouropro.player.activities.MovieCreditActivity.3
-            @Override // com.ouropro.player.adapter.MovieCreditRecyclerAdapter.ItemClickListener
             public void onFocusPosition(MovieCreditModel movieCreditModel, int i) {
                 MovieCreditActivity.this.setMovieInfo(movieCreditModel);
             }
 
-            @Override // com.ouropro.player.adapter.MovieCreditRecyclerAdapter.ItemClickListener
             public void onItemClick(MovieCreditModel movieCreditModel, int i) {
                 MovieCreditActivity.this.setMovieInfo(movieCreditModel);
             }
@@ -165,7 +159,6 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
             this.recycler_vod.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_vod.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieCreditActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -210,7 +203,6 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
         Glide.with(getApplicationContext()).load(Constants.IMDB_IMAGE_PREF + movieCreditModel.getPoster_path()).into(this.movie_logo);
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -229,7 +221,6 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.btn_back) {
@@ -248,7 +239,6 @@ public class MovieCreditActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_movie_creadit);

@@ -39,9 +39,8 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
 
     private OrderedRealmCollectionChangeListener createListener() {
         return new OrderedRealmCollectionChangeListener() { // from class: com.ouropro.player.adapter.RealmRecyclerViewAdapter$$ExternalSyntheticLambda0
-            @Override // io.realm.OrderedRealmCollectionChangeListener
             public final void onChange(Object obj, OrderedCollectionChangeSet orderedCollectionChangeSet) {
-                this.f$0.lambda$createListener$0(obj, orderedCollectionChangeSet);
+                RealmRecyclerViewAdapter.this.lambda$createListener$0(obj, orderedCollectionChangeSet);
             }
         };
     }
@@ -105,7 +104,6 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
         return null;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         if (isDataValid()) {
             return this.adapterData.size();
@@ -113,7 +111,6 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
         return 0;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         if (this.hasAutoUpdates && isDataValid()) {
@@ -121,7 +118,6 @@ public abstract class RealmRecyclerViewAdapter<T extends RealmModel, S extends R
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
         if (this.hasAutoUpdates && isDataValid()) {

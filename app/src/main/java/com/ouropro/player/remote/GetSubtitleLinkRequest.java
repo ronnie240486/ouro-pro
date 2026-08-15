@@ -43,7 +43,6 @@ public class GetSubtitleLinkRequest {
     public void getResponse(JSONObject jSONObject, String str, final String str2, final String str3) {
         try {
             Volley.newRequestQueue(this.context).add(new JsonObjectRequest(str, jSONObject, new GetSubtitleLinkRequest$$ExternalSyntheticLambda0(this), new GetSubtitleLinkRequest$$ExternalSyntheticLambda0(this)) { // from class: com.ouropro.player.remote.GetSubtitleLinkRequest.1
-                @Override // com.android.volley.Request
                 public Map<String, String> getHeaders() {
                     HashMap map = new HashMap();
                     map.put("Api-Key", str2);

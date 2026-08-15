@@ -106,7 +106,6 @@ public class SubtitleSettingDlgFragment extends DialogFragment implements View.O
         this.selectColorDlgFragment.show(childFragmentManager, "fragment_subtitle_color");
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_minus /* 2131427474 */:
@@ -144,13 +143,11 @@ public class SubtitleSettingDlgFragment extends DialogFragment implements View.O
         }
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_subtitle, viewGroup, false);
         this.preferenceHelper = new PreferenceHelper(this.context);

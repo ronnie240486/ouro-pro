@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ouropro.player.R;
+import com.ouropro.player.activities.TrailerSearchActivity;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
@@ -18,7 +19,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHolder> {
+public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<RecyclerVodHomeAdapter.LiveHomeViewHolder> {
     public Function3<MovieModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<MovieModel> models;
@@ -27,10 +28,12 @@ public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHol
         public ImageView image_logo;
         public ImageView image_movie;
         public TextView txt_name;
+        public TextView btn_trailer;
 
         public LiveHomeViewHolder(@NonNull RecyclerVodHomeAdapter recyclerVodHomeAdapter, View view) {
             super(view);
             this.txt_name = (TextView) view.findViewById(R.id.txt_name);
+            this.btn_trailer = (TextView) view.findViewById(R.id.btn_trailer);
             this.image_movie = (ImageView) view.findViewById(R.id.image_channel);
             this.image_logo = (ImageView) view.findViewById(R.id.image_logo);
         }
@@ -74,7 +77,6 @@ public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHol
         return false;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<MovieModel> list = this.models;
         if (list == null) {
@@ -88,18 +90,18 @@ public class RecyclerVodHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHol
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, int i) {
         MovieModel movieModel = this.models.get(i);
         liveHomeViewHolder.txt_name.setText(movieModel.getName());
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, liveHomeViewHolder.image_movie, movieModel.getStream_icon(), R.drawable.default_bg, liveHomeViewHolder.image_logo);
+        liveHomeViewHolder.btn_trailer.setVisibility(View.VISIBLE);
+        liveHomeViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, movieModel.getName()));
         liveHomeViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, movieModel, i, liveHomeViewHolder, 10));
         liveHomeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, movieModel, i, 13));
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, movieModel, i, 0));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveHomeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_home_vod, viewGroup, false));

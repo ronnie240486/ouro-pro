@@ -22,7 +22,6 @@ public final /* synthetic */ class SeriesPlayerActivity$$ExternalSyntheticLambda
         this.f$3 = i;
     }
 
-    @Override // com.ouropro.player.dlgfragment.AudioTrackDlgFragment.ItemPositionListener
     public final void onItemPosition(int i) {
         switch (this.$r8$classId) {
             case 0:

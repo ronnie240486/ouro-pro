@@ -15,7 +15,6 @@ public final /* synthetic */ class ExitDlgFragment$$ExternalSyntheticLambda0 imp
         this.f$0 = dialogFragment;
     }
 
-    @Override // android.content.DialogInterface.OnKeyListener
     public final boolean onKey(DialogInterface dialogInterface, int i, KeyEvent keyEvent) {
         switch (this.$r8$classId) {
             case 0:

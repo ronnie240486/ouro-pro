@@ -11,7 +11,6 @@ public final /* synthetic */ class MoviePlayerActivity$$ExternalSyntheticLambda2
         this.f$0 = moviePlayerActivity;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:

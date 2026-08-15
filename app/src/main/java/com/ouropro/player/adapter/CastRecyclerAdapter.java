@@ -18,7 +18,7 @@ import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 
 /* JADX INFO: loaded from: classes.dex */
-public class CastRecyclerAdapter extends RecyclerView.Adapter<VodStalkerHolder> {
+public class CastRecyclerAdapter extends RecyclerView.Adapter<CastRecyclerAdapter.VodStalkerHolder> {
     public Function3<CastModel, Integer, Boolean, Unit> clickListenerFunction;
     public Context context;
     private List<CastModel> datas;
@@ -63,7 +63,6 @@ public class CastRecyclerAdapter extends RecyclerView.Adapter<VodStalkerHolder> 
         return this.datas;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CastModel> list = this.datas;
         if (list == null) {
@@ -72,7 +71,6 @@ public class CastRecyclerAdapter extends RecyclerView.Adapter<VodStalkerHolder> 
         return list.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public long getItemId(int i) {
         return i;
     }
@@ -82,7 +80,6 @@ public class CastRecyclerAdapter extends RecyclerView.Adapter<VodStalkerHolder> 
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull @NotNull VodStalkerHolder vodStalkerHolder, int i) {
         CastModel castModel = this.datas.get(i);
         if (castModel.getProfile_path() == null || castModel.getProfile_path().equals("")) {
@@ -95,7 +92,6 @@ public class CastRecyclerAdapter extends RecyclerView.Adapter<VodStalkerHolder> 
         vodStalkerHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, castModel, i, 1));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     @NotNull
     public VodStalkerHolder onCreateViewHolder(@NonNull @NotNull ViewGroup viewGroup, int i) {

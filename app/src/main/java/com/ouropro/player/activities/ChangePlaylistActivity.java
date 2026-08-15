@@ -18,6 +18,7 @@ import androidx.leanback.widget.OnChildViewHolderSelectedListener;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.exoplayer2.metadata.icy.IcyHeaders;
+import com.google.gson.Gson;
 import com.ouropro.player.R;
 import com.ouropro.player.adapter.PortalRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
@@ -38,7 +39,9 @@ import com.ouropro.player.view.LiveVerticalGridView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import kotlin.Unit;
 import org.json.JSONObject;
 import pl.droidsonroids.gif.GifImageView;
@@ -125,11 +128,9 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
         final ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getDelete_playlist() + "?", this.wordModels.getWant_delete_playlist(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.1
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 exitDlgFragmentNewInstance.dismiss();
                 String deleteData = Security.getDeleteData(ChangePlaylistActivity.this.preferenceHelper.getSharedPreferenceMacAddress().toLowerCase(), urlModel.getId());
@@ -139,6 +140,54 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             }
         });
         exitDlgFragmentNewInstance.show(supportFragmentManager, "fragment_delete");
+    }
+
+    private void refreshPlaylistsFromPanel() {
+        try {
+            String deviceType = GetSharedInfo.isTVDevice(this) ? "tv" : "mobile";
+            String requestData = Security.getStringData(
+                    Utils.getDeviceId(this), LTVApp.version_name, false, deviceType).trim();
+            GetDataRequest request = new GetDataRequest(this, 1000);
+            request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
+            request.setOnGetResponseListener(this);
+        } catch (Exception ignored) {
+            // A falha de atualização não pode esconder o cache local já exibido.
+        }
+    }
+
+    private void applyPanelAppInfo(AppInfoModel remoteInfo) {
+        if (remoteInfo == null || remoteInfo.getResult() == null) {
+            return;
+        }
+        List<AppInfoModel.UrlModel> remotePlaylists = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (AppInfoModel.UrlModel model : remoteInfo.getResult()) {
+            addPlaylistIfValid(remotePlaylists, seen, model);
+        }
+        this.appInfoModel = remoteInfo;
+        this.appInfoModel.setResult(remotePlaylists);
+        this.urlModelList = remotePlaylists;
+        this.preferenceHelper.setSharedPreferenceAppInfo(this.appInfoModel);
+        Utils.saveToFile(this.appInfoModel);
+        if (this.portalAdapter != null) {
+            this.portalAdapter.setData(this.urlModelList);
+            if (this.urlModelList.isEmpty()) {
+                this.playlist_position = 0;
+            } else {
+                this.playlist_position = Math.min(this.playlist_position, this.urlModelList.size() - 1);
+                this.recycler_playlist.setSelectedPosition(this.playlist_position);
+            }
+        }
+    }
+
+    private void addPlaylistIfValid(List<AppInfoModel.UrlModel> target, Set<String> seen, AppInfoModel.UrlModel model) {
+        if (model == null || model.getUrl() == null || model.getUrl().trim().isEmpty()) {
+            return;
+        }
+        String key = model.getUrl().trim().toLowerCase(java.util.Locale.ROOT);
+        if (seen.add(key)) {
+            target.add(model);
+        }
     }
 
     private void initView() {
@@ -166,7 +215,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             this.recycler_playlist.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_playlist.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.3
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -199,10 +247,8 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         this.str_device_key.setText(this.wordModels.getDevice_key());
         LTVApp.instance.versionCheck();
         LTVApp.instance.loadVersion();
-        TextView textView = this.txt_version;
-        StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("v");
-        sbM.append(LTVApp.version_name);
-        textView.setText(sbM.toString());
+        this.txt_version.setText("");
+        this.txt_version.setVisibility(8);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -273,15 +319,20 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
 
     private void loadingData(AppInfoModel.UrlModel urlModel) {
         this.progress_bar.setVisibility(0);
-        if (urlModel.getUrl().contains("username")) {
+        String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
+        String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
+        if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
             this.preferenceHelper.setSharedPreferenceISM3U(false);
-            goToLogin(urlModel.getUrl(), this.wordModels);
-        } else if (GetSharedInfo.checkXUILink(urlModel.getUrl())) {
+            goToLogin(playlistUrl, this.wordModels);
+        } else if (playlistUrl.contains("username")) {
+            this.preferenceHelper.setSharedPreferenceISM3U(false);
+            goToLogin(playlistUrl, this.wordModels);
+        } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
             this.preferenceHelper.setSharedPreferenceISM3U(false);
             goToXUILogin(urlModel.getUrl(), this.wordModels);
         } else {
             this.preferenceHelper.setSharedPreferenceISM3U(true);
-            reloadM3UData(urlModel.getUrl(), this.wordModels);
+            reloadM3UData(playlistUrl, this.wordModels);
         }
     }
 
@@ -294,7 +345,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             return;
         }
         AddPlaylistDlgFragment addPlaylistDlgFragmentNewInstance = AddPlaylistDlgFragment.newInstance(this, i, new AddPlaylistDlgFragment.SuccessAddedListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.2
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onReload(int i2) {
                 ChangePlaylistActivity changePlaylistActivity = ChangePlaylistActivity.this;
                 changePlaylistActivity.is_home = false;
@@ -302,7 +352,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
                 ChangePlaylistActivity.this.changePlaylistView();
             }
 
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onSkip() {
                 ChangePlaylistActivity changePlaylistActivity = ChangePlaylistActivity.this;
                 changePlaylistActivity.is_home = false;
@@ -339,11 +388,9 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.activities.ChangePlaylistActivity.4
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 ChangePlaylistActivity.this.finishAffinity();
                 System.exit(0);
@@ -368,9 +415,19 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject != null) {
+            if (i == 1000 && jSONObject.has("data")) {
+                try {
+                    AppInfoModel remoteInfo = (AppInfoModel) new Gson().fromJson(
+                            new JSONObject(Security.getDecodedString(jSONObject.getString("data"))).toString(),
+                            AppInfoModel.class);
+                    applyPanelAppInfo(remoteInfo);
+                } catch (Exception ignored) {
+                    // Não altera o cache quando a resposta não pôde ser decodificada.
+                }
+                return;
+            }
             if (i == 2000) {
                 try {
                     AppInfoModel.UrlModel urlModel = this.selectedModel;
@@ -406,7 +463,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -448,7 +504,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progress_bar.setVisibility(8);
@@ -462,7 +517,6 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         finish();
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Utils.FullScreenCall(this);
@@ -494,6 +548,7 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         this.btn_pay.setFocusable(false);
         this.recycler_playlist.setAdapter(this.portalAdapter);
         this.recycler_playlist.requestFocus();
+        refreshPlaylistsFromPanel();
         this.recycler_playlist.setSelectedPosition(this.playlist_position);
     }
 }

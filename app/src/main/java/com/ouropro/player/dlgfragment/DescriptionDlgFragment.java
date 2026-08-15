@@ -80,13 +80,11 @@ public class DescriptionDlgFragment extends DialogFragment {
         return descriptionDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         final int i = 0;
         View viewInflate = layoutInflater.inflate(R.layout.fragment_description, viewGroup, false);
@@ -99,14 +97,13 @@ public class DescriptionDlgFragment extends DialogFragment {
         this.txt_mac_address.setText(this.preferenceHelper.getSharedPreferenceMacAddress());
         this.txt_device_key.setText(this.preferenceHelper.getSharedPreferenceDeviceKey());
         this.str_mac_address.setText(this.wordModels.getMac_address());
-        this.btn_reload.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.DescriptionDlgFragment$$ExternalSyntheticLambda0
+        this.btn_reload.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.DescriptionDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ DescriptionDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = DescriptionDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i) {
                     case 0:
@@ -119,14 +116,13 @@ public class DescriptionDlgFragment extends DialogFragment {
             }
         });
         final int i2 = 1;
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlgfragment.DescriptionDlgFragment$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlgfragment.DescriptionDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ DescriptionDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = DescriptionDlgFragment.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i2) {
                     case 0:

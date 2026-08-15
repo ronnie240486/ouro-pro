@@ -50,14 +50,13 @@ public class EpisodeDlgFragment extends DialogFragment {
         this.str_episodes.setText(this.wordModels.getStr_more_episodes());
         this.txt_see_all.setText(this.wordModels.getSee_all());
         final int i = 0;
-        this.btn_close.setOnTouchListener(new View.OnTouchListener(this) { // from class: com.ouropro.player.dlgfragment.EpisodeDlgFragment$$ExternalSyntheticLambda0
+        this.btn_close.setOnTouchListener(new View.OnTouchListener() { // from class: com.ouropro.player.dlgfragment.EpisodeDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ EpisodeDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = EpisodeDlgFragment.this;
             }
 
-            @Override // android.view.View.OnTouchListener
             public final boolean onTouch(View view2, MotionEvent motionEvent) {
                 switch (i) {
                     case 0:
@@ -68,14 +67,13 @@ public class EpisodeDlgFragment extends DialogFragment {
             }
         });
         final int i2 = 1;
-        this.txt_see_all.setOnTouchListener(new View.OnTouchListener(this) { // from class: com.ouropro.player.dlgfragment.EpisodeDlgFragment$$ExternalSyntheticLambda0
+        this.txt_see_all.setOnTouchListener(new View.OnTouchListener() { // from class: com.ouropro.player.dlgfragment.EpisodeDlgFragment$$ExternalSyntheticLambda0
             public final /* synthetic */ EpisodeDlgFragment f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = EpisodeDlgFragment.this;
             }
 
-            @Override // android.view.View.OnTouchListener
             public final boolean onTouch(View view2, MotionEvent motionEvent) {
                 switch (i2) {
                     case 0:
@@ -145,13 +143,11 @@ public class EpisodeDlgFragment extends DialogFragment {
         return episodeDlgFragment;
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_episode, viewGroup, false);
         this.wordModels = GetSharedInfo.getWordModel(getContext());

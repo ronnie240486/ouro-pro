@@ -57,7 +57,6 @@ public abstract class NetworkTask<Params, Progress, Result> extends AsyncTask<Pa
         cancel(true);
     }
 
-    @Override // android.os.AsyncTask
     public final Result doInBackground(Params... paramsArr) {
         if (isCancelled()) {
             return null;
@@ -94,7 +93,6 @@ public abstract class NetworkTask<Params, Progress, Result> extends AsyncTask<Pa
         return this.isComplete;
     }
 
-    @Override // android.os.AsyncTask
     public final void onPostExecute(Result result) {
         super.onPostExecute(result);
         this.isComplete = true;
@@ -158,7 +156,6 @@ public abstract class NetworkTask<Params, Progress, Result> extends AsyncTask<Pa
         }
     }
 
-    @Override // android.os.AsyncTask
     public void onPreExecute() {
         super.onPreExecute();
         this.isComplete = false;
@@ -174,7 +171,6 @@ public abstract class NetworkTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     /* JADX WARN: Multi-variable type inference failed */
-    @Override // android.os.AsyncTask
     public final void onProgressUpdate(Progress... progressArr) {
         super.onProgressUpdate(progressArr);
         OnProgressListener onProgressListener = this.progressListener;

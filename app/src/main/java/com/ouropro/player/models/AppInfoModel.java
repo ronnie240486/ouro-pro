@@ -1,7 +1,6 @@
 package com.ouropro.player.models;
 
 import com.evgenii.jsevaluator.BuildConfig;
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.android.gms.common.internal.ImagesContract;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
@@ -45,7 +44,7 @@ public class AppInfoModel implements Serializable {
     @SerializedName("price")
     private String price;
 
-    @SerializedName("urls")
+    @SerializedName(value = "urls", alternate = {"playlists", "lists", "playlist", "result"})
     private List<UrlModel> result;
 
     @SerializedName("mac_registered")
@@ -53,19 +52,19 @@ public class AppInfoModel implements Serializable {
 
     public static class UrlModel implements Serializable {
 
-        @SerializedName(TtmlNode.ATTR_ID)
+        @SerializedName(value = "id", alternate = {"playlist_id", "uid"})
         private String id;
 
         @SerializedName("is_protected")
         private String is_protected;
 
-        @SerializedName("name")
+        @SerializedName(value = "name", alternate = {"playlist_name", "title"})
         private String name;
 
         @SerializedName("type")
         private String type;
 
-        @SerializedName(ImagesContract.URL)
+        @SerializedName(value = "url", alternate = {"playlist_url", "stream_url", "link"})
         private String url;
 
         public String getId() {

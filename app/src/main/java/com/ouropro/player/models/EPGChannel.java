@@ -4,14 +4,13 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import com.google.gson.annotations.SerializedName;
 import io.realm.RealmObject;
-import io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface;
 import io.realm.internal.RealmObjectProxy;
 import iptv.m3u.parser.M3UItem;
 import java.io.Serializable;
 import java.util.Random;
 
 /* JADX INFO: loaded from: classes.dex */
-public class EPGChannel extends RealmObject implements Serializable, com_flextv_livestore_models_EPGChannelRealmProxyInterface {
+public class EPGChannel extends RealmObject implements Serializable {
 
     @SerializedName("epg_channel_id")
     private String Id;
@@ -96,24 +95,8 @@ public class EPGChannel extends RealmObject implements Serializable, com_flextv_
             }
             if (!TextUtils.isEmpty(m3UItem.getStreamURL())) {
                 ePGChannel.setUrl(m3UItem.getStreamURL());
-                if (m3UItem.getStreamURL().contains("live")) {
-                    try {
-                        String str = ePGChannel.getUrl().split("/")[6];
-                        if (str.contains(".")) {
-                            ePGChannel.setStream_id(str.split(".")[0]);
-                        } else {
-                            ePGChannel.setStream_id(str);
-                        }
-                    } catch (Exception unused) {
-                        ePGChannel.setStream_id("" + new Random().nextInt());
-                    }
-                } else {
-                    try {
-                        ePGChannel.setStream_id(ePGChannel.getUrl().split("/")[5]);
-                    } catch (Exception unused2) {
-                        ePGChannel.setStream_id("" + new Random().nextInt());
-                    }
-                }
+                String streamId = extractStreamId(ePGChannel.getUrl());
+                ePGChannel.setStream_id(streamId.isEmpty() ? "" + new Random().nextInt() : streamId);
             }
             if (!TextUtils.isEmpty(m3UItem.getLogoURL())) {
                 ePGChannel.setStream_icon(m3UItem.getLogoURL());
@@ -123,6 +106,24 @@ public class EPGChannel extends RealmObject implements Serializable, com_flextv_
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String extractStreamId(String rawUrl) {
+        if (rawUrl == null || rawUrl.trim().isEmpty()) return "";
+        try {
+            String path = rawUrl.split("\\?", 2)[0];
+            String[] parts = path.split("/");
+            for (int i = parts.length - 1; i >= 0; i--) {
+                String candidate = parts[i].trim();
+                if (candidate.isEmpty()) continue;
+                int dot = candidate.lastIndexOf('.');
+                if (dot > 0) candidate = candidate.substring(0, dot);
+                if (candidate.matches("\\d+")) return candidate;
+                if (!candidate.isEmpty() && !candidate.equalsIgnoreCase("index")) return candidate;
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
     }
 
     public String getAdded() {
@@ -209,212 +210,170 @@ public class EPGChannel extends RealmObject implements Serializable, com_flextv_
         return realmGet$is_locked();
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$Id() {
         return this.Id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$added() {
         return this.added;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$category_id() {
         return this.category_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$category_name() {
         return this.category_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public int realmGet$cell() {
         return this.cell;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public int realmGet$channelID() {
         return this.channelID;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$custom_sid() {
         return this.custom_sid;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$direct_source() {
         return this.direct_source;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public boolean realmGet$is_favorite() {
         return this.is_favorite;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public boolean realmGet$is_locked() {
         return this.is_locked;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public boolean realmGet$is_recent() {
         return this.is_recent;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$name() {
         return this.name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$num() {
         return this.num;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public long realmGet$recent_pos() {
         return this.recent_pos;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public boolean realmGet$selected() {
         return this.selected;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$stream_icon() {
         return this.stream_icon;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$stream_id() {
         return this.stream_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$stream_type() {
         return this.stream_type;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$tv_archive() {
         return this.tv_archive;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$tv_archive_duration() {
         return this.tv_archive_duration;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public String realmGet$url() {
         return this.url;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$Id(String str) {
         this.Id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$added(String str) {
         this.added = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$category_id(String str) {
         this.category_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$category_name(String str) {
         this.category_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$cell(int i) {
         this.cell = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$channelID(int i) {
         this.channelID = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$custom_sid(String str) {
         this.custom_sid = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$direct_source(String str) {
         this.direct_source = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$is_favorite(boolean z) {
         this.is_favorite = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$is_locked(boolean z) {
         this.is_locked = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$is_recent(boolean z) {
         this.is_recent = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$name(String str) {
         this.name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$num(String str) {
         this.num = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$recent_pos(long j) {
         this.recent_pos = j;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$selected(boolean z) {
         this.selected = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$stream_icon(String str) {
         this.stream_icon = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$stream_id(String str) {
         this.stream_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$stream_type(String str) {
         this.stream_type = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$tv_archive(String str) {
         this.tv_archive = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$tv_archive_duration(String str) {
         this.tv_archive_duration = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EPGChannelRealmProxyInterface
     public void realmSet$url(String str) {
         this.url = str;
     }

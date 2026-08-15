@@ -1,7 +1,5 @@
 package com.ouropro.player.activities;
 
-import com.google.android.play.core.tasks.OnCompleteListener;
-import com.google.android.play.core.tasks.Task;
 import com.ouropro.player.dlgfragment.ExternalPlayerDlgFragment;
 import com.ouropro.player.dlgfragment.LiveSortDlgFragment;
 import com.ouropro.player.dlgfragment.NoConnectionDlgFragment;
@@ -9,7 +7,7 @@ import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 
 /* JADX INFO: compiled from: R8$$SyntheticClass */
 /* JADX INFO: loaded from: classes.dex */
-public final /* synthetic */ class SettingActivity$$ExternalSyntheticLambda0 implements ExternalPlayerDlgFragment.ItemPositionListener, UpdateDlgFragment.UpdateAvailableListener, OnCompleteListener, LiveSortDlgFragment.ItemPositionListener, NoConnectionDlgFragment.OnRetryClickListener {
+public final /* synthetic */ class SettingActivity$$ExternalSyntheticLambda0 implements ExternalPlayerDlgFragment.ItemPositionListener, UpdateDlgFragment.UpdateAvailableListener, LiveSortDlgFragment.ItemPositionListener, NoConnectionDlgFragment.OnRetryClickListener {
     public final /* synthetic */ int $r8$classId;
     public final /* synthetic */ SettingActivity f$0;
 
@@ -18,19 +16,6 @@ public final /* synthetic */ class SettingActivity$$ExternalSyntheticLambda0 imp
         this.f$0 = settingActivity;
     }
 
-    @Override // com.google.android.play.core.tasks.OnCompleteListener
-    public final void onComplete(Task task) {
-        switch (this.$r8$classId) {
-            case 3:
-                this.f$0.lambda$activateReviewInfo$1(task);
-                break;
-            default:
-                this.f$0.lambda$startReviewFlow$10(task);
-                break;
-        }
-    }
-
-    @Override // com.ouropro.player.dlgfragment.ExternalPlayerDlgFragment.ItemPositionListener, com.ouropro.player.dlgfragment.LiveSortDlgFragment.ItemPositionListener
     public final void onItemPosition(int i) {
         switch (this.$r8$classId) {
             case 0:
@@ -58,12 +43,10 @@ public final /* synthetic */ class SettingActivity$$ExternalSyntheticLambda0 imp
         }
     }
 
-    @Override // com.ouropro.player.dlgfragment.NoConnectionDlgFragment.OnRetryClickListener
     public final void onRetryClick() {
         this.f$0.lambda$showNoConnectionDlgFragment$11();
     }
 
-    @Override // com.ouropro.player.dlgfragment.UpdateDlgFragment.UpdateAvailableListener
     public final void onUpdateAvailable() {
         this.f$0.goToUpdate();
     }

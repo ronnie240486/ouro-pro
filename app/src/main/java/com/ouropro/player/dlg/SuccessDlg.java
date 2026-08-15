@@ -34,14 +34,13 @@ public class SuccessDlg extends Dialog {
         this.btn_ok.setText(str2);
         this.btn_cancel.setText(str3);
         ((TextView) findViewById(R.id.txt_description)).setText(str);
-        this.btn_ok.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlg.SuccessDlg$$ExternalSyntheticLambda0
+        this.btn_ok.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlg.SuccessDlg$$ExternalSyntheticLambda0
             public final /* synthetic */ SuccessDlg f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SuccessDlg.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i2) {
                     case 0:
@@ -53,14 +52,13 @@ public class SuccessDlg extends Dialog {
                 }
             }
         });
-        this.btn_cancel.setOnClickListener(new View.OnClickListener(this) { // from class: com.ouropro.player.dlg.SuccessDlg$$ExternalSyntheticLambda0
+        this.btn_cancel.setOnClickListener(new View.OnClickListener() { // from class: com.ouropro.player.dlg.SuccessDlg$$ExternalSyntheticLambda0
             public final /* synthetic */ SuccessDlg f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SuccessDlg.this;
             }
 
-            @Override // android.view.View.OnClickListener
             public final void onClick(View view) {
                 switch (i) {
                     case 0:

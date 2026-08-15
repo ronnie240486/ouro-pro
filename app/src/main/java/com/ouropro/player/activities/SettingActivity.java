@@ -1,5 +1,6 @@
 package com.ouropro.player.activities;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -25,11 +26,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.android.play.core.tasks.Task;
 import com.ouropro.player.R;
 import com.ouropro.player.adapter.SettingRecyclerAdapter;
 import com.ouropro.player.apps.BaseActivity;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda0;
+import com.ouropro.player.apps.Constants;
 import com.ouropro.player.apps.BaseActivity$$ExternalSyntheticLambda1;
 import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.apps.SideMenu;
@@ -45,6 +46,7 @@ import com.ouropro.player.dlgfragment.PayForTvDlgFragment;
 import com.ouropro.player.dlgfragment.SubtitleSettingDlgFragment;
 import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
+import com.ouropro.player.improvements.InAppApkUpdateTask;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LanguageModel;
@@ -69,6 +71,7 @@ import pl.droidsonroids.gif.GifImageView;
 
 /* JADX INFO: loaded from: classes.dex */
 public class SettingActivity extends BaseActivity implements View.OnClickListener, GetDataRequest.OnGetResponseListener {
+    private static final int UPDATE_INFO_REQUEST_CODE = 1400;
     public SettingRecyclerAdapter adapter;
     public AddPlaylistDlgFragment addPlaylistDlgFragment;
     public double api_version;
@@ -112,23 +115,27 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         /* JADX WARN: Code duplicated, block: B:72:0x00f1 A[EXC_TOP_SPLITTER, SYNTHETIC] */
         /* JADX WARN: Code duplicated, block: B:74:0x00dc A[EXC_TOP_SPLITTER, SYNTHETIC] */
         /* JADX WARN: Code duplicated, block: B:90:? A[SYNTHETIC] */
-        @Override // android.os.AsyncTask
-        public final String doInBackground(String[] strArr) throws Throwable {
+        public final String doInBackground(String[] strArr) {
             Throwable th;
             HttpURLConnection httpURLConnection;
             InputStream inputStream;
             FileOutputStream fileOutputStream;
             Exception e;
             FileOutputStream fileOutputStream2 = null;
-            string = null;
             String string = null;
             fileOutputStream2 = null;
             fileOutputStream2 = null;
             try {
                 httpURLConnection = (HttpURLConnection) new URL(strArr[0]).openConnection();
                 try {
-                    httpURLConnection.setConnectTimeout(60000);
+                    httpURLConnection.setConnectTimeout(30000);
+                    httpURLConnection.setReadTimeout(60000);
+                    httpURLConnection.setRequestProperty("Accept", "application/vnd.android.package-archive, application/octet-stream");
+                    httpURLConnection.setUseCaches(false);
                     httpURLConnection.connect();
+                    if (httpURLConnection.getResponseCode() < 200 || httpURLConnection.getResponseCode() >= 300) {
+                        return "HTTP " + httpURLConnection.getResponseCode();
+                    }
                     int contentLength = httpURLConnection.getContentLength();
                     inputStream = httpURLConnection.getInputStream();
                     try {
@@ -166,6 +173,14 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                                 }
                             }
                             inputStream.close();
+                            if (this.file == null || !this.file.exists() || this.file.length() < 1024L) {
+                                return "Arquivo de atualização inválido";
+                            }
+                            android.content.pm.PackageInfo packageInfo = SettingActivity.this.getPackageManager().getPackageArchiveInfo(this.file.getAbsolutePath(), android.content.pm.PackageManager.GET_META_DATA);
+                            if (packageInfo == null || !SettingActivity.this.getPackageName().equals(packageInfo.packageName)) {
+                                this.file.delete();
+                                return "O link não aponta para um APK OuroPro direto";
+                            }
                         } catch (Exception e2) {
                             e = e2;
                             try {
@@ -287,18 +302,16 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             return string;
         }
 
-        @Override // android.os.AsyncTask
         public final void onPostExecute(String str) {
             String str2 = str;
             this.mProgressDialog.dismiss();
             if (str2 != null) {
-                Toast.makeText(SettingActivity.this.getApplicationContext(), SettingActivity.this.wordModels.getUpdate_failed(), 0).show();
+                Toast.makeText(SettingActivity.this.getApplicationContext(), str2, Toast.LENGTH_LONG).show();
             } else {
                 SettingActivity.this.startInstall(this.file);
             }
         }
 
-        @Override // android.os.AsyncTask
         public final void onPreExecute() {
             ProgressDialog progressDialog = new ProgressDialog(SettingActivity.this);
             this.mProgressDialog = progressDialog;
@@ -309,7 +322,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             this.mProgressDialog.show();
         }
 
-        @Override // android.os.AsyncTask
         public final void onProgressUpdate(Integer[] numArr) {
             this.mProgressDialog.setIndeterminate(false);
             this.mProgressDialog.setMax(100);
@@ -320,7 +332,7 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private void activateReviewInfo() {
         ReviewManager reviewManagerCreate = ReviewManagerFactory.create(this);
         this.reviewManager = reviewManagerCreate;
-        reviewManagerCreate.requestReviewFlow().addOnCompleteListener(new SettingActivity$$ExternalSyntheticLambda0(this, 3));
+        // Review flow optional; the app remains functional without Play review. 
     }
 
     private List<SideMenu> getSettingLists(WordModels wordModels) {
@@ -357,15 +369,51 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void goToUpdate() {
-        String apk_link;
-        AppInfoModel appInfoModel = this.appInfoModel;
-        if (appInfoModel == null || (apk_link = appInfoModel.getApk_link()) == null || apk_link.isEmpty()) {
-            apk_link = "https://renciaapp.manus.space/api/v4/update.php";
+        try {
+            String payload = Security.getStringData(
+                    Utils.getDeviceId(this),
+                    LTVApp.version_name,
+                    false,
+                    this.preferenceHelper.getSharedPreferenceDeviceType()).trim();
+            GetDataRequest request = new GetDataRequest(this, UPDATE_INFO_REQUEST_CODE);
+            request.setOnGetResponseListener(this);
+            request.getResponse(Security.getJsonData(payload), Constants.second_response_url);
+        } catch (Exception error) {
+            startUpdateDownload("");
         }
-        Intent intent = new Intent("android.intent.action.VIEW", Uri.parse(apk_link));
-        intent.addCategory("android.intent.category.BROWSABLE");
-        intent.addFlags(268435456);
-        startActivity(intent);
+    }
+
+    private void startUpdateDownload(String serverLink) {
+        String apkLink = serverLink == null ? "" : serverLink.trim();
+        if (apkLink.isEmpty()) {
+            showUpdateError("O painel não retornou um link de APK atualizado");
+            return;
+        }
+        if (!(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
+            showUpdateError("O painel retornou um link de atualização inválido");
+            return;
+        }
+        String cacheBustedLink = apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis();
+        new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
+            @Override public void onSuccess(File apk) {
+                startInstall(apk);
+            }
+            @Override public void onFailure(String message) {
+                if (message != null && message.startsWith("Seu APK já está na última versão")) {
+                    new AlertDialog.Builder(SettingActivity.this)
+                            .setTitle("Atualização")
+                            .setMessage(message)
+                            .setPositiveButton("OK", null)
+                            .show();
+                } else {
+                    Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
+                }
+            }
+        }).execute(cacheBustedLink);
+    }
+
+    private void showUpdateError(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private void initView() {
@@ -389,7 +437,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         this.recycler_setting.setPreserveFocusAfterLayout(true);
         final View[] viewArr = {null};
         this.recycler_setting.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SettingActivity.2
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr2 = viewArr;
@@ -401,15 +448,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
                 }
             }
         });
-    }
-
-    /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$activateReviewInfo$1(Task task) {
-        if (task.isSuccessful()) {
-            this.reviewInfo = (ReviewInfo) task.getResult();
-        } else {
-            Toast.makeText(this, "Review failed to start!", 0).show();
-        }
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -538,12 +576,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         finish();
     }
 
-    /* JADX INFO: Access modifiers changed from: private */
-    public /* synthetic */ void lambda$startReviewFlow$10(Task task) {
-        Toast.makeText(this, "Rating is completed.", 0).show();
-        startActivity(new Intent("android.intent.action.VIEW", Uri.parse("market://details?id=com.ouropro.player")));
-    }
-
     private void showAddPlaylistDlgFragment() {
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
@@ -553,12 +585,10 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
             return;
         }
         AddPlaylistDlgFragment addPlaylistDlgFragmentNewInstance = AddPlaylistDlgFragment.newInstance(this, -1, new AddPlaylistDlgFragment.SuccessAddedListener() { // from class: com.ouropro.player.activities.SettingActivity.1
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onReload(int i) {
                 SettingActivity.this.addPlaylistDlgFragment.dismiss();
             }
 
-            @Override // com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.SuccessAddedListener
             public void onSkip() {
                 SettingActivity.this.addPlaylistDlgFragment.dismiss();
             }
@@ -743,11 +773,9 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
         PayForTvDlgFragment payForTvDlgFragment = new PayForTvDlgFragment();
         payForTvDlgFragment.setOnButtonClickListener(new PayForTvDlgFragment.OnButtonClickListener() { // from class: com.ouropro.player.activities.SettingActivity.3
-            @Override // com.ouropro.player.dlgfragment.PayForTvDlgFragment.OnButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.PayForTvDlgFragment.OnButtonClickListener
             public void onOkClick(String str) {
                 SettingActivity.this.tv_mac_address = str;
             }
@@ -788,9 +816,16 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void startInstall(File file) {
+        if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+            Intent permissionIntent = new Intent("android.settings.MANAGE_UNKNOWN_APP_SOURCES");
+            permissionIntent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(permissionIntent);
+            Toast.makeText(this, "Autorize a instalação por esta fonte e toque em Atualizar novamente.", Toast.LENGTH_LONG).show();
+            return;
+        }
         Intent intent = new Intent("android.intent.action.VIEW");
         if (Build.VERSION.SDK_INT > 24) {
-            intent.setDataAndType(FileProvider.getUriForFile(this, "com.ouropro.player.provider", file), "application/vnd.android.package-archive");
+            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName() + ".provider", file), "application/vnd.android.package-archive");
             intent.setFlags(268435456);
             intent.addFlags(1);
         } else {
@@ -803,12 +838,32 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     private void startReviewFlow() {
         ReviewInfo reviewInfo = this.reviewInfo;
         if (reviewInfo != null) {
-            this.reviewManager.launchReviewFlow(this, reviewInfo).addOnCompleteListener(new SettingActivity$$ExternalSyntheticLambda0(this, 7));
+            this.reviewManager.launchReviewFlow(this, reviewInfo);
         }
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
+        if (i == UPDATE_INFO_REQUEST_CODE) {
+            String freshLink = "";
+            try {
+                if (jSONObject != null && jSONObject.has("data")) {
+                    JSONObject decoded = new JSONObject(Security.getDecodedString(jSONObject.getString("data")));
+                    AppInfoModel freshInfo = new com.google.gson.Gson().fromJson(decoded.toString(), AppInfoModel.class);
+                    if (freshInfo != null) {
+                        this.appInfoModel = freshInfo;
+                        this.preferenceHelper.setSharedPreferenceAppInfo(freshInfo);
+                        if (freshInfo.getMac_address() != null && !freshInfo.getMac_address().trim().isEmpty()) {
+                            this.preferenceHelper.setSharedPreferenceMacAddress(freshInfo.getMac_address());
+                        }
+                        Utils.saveToFile(freshInfo);
+                        freshLink = freshInfo.getApk_link();
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            startUpdateDownload(freshLink);
+            return;
+        }
         if (jSONObject != null) {
             if (i != 2000) {
                 if (jSONObject.has("data")) {
@@ -848,7 +903,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -897,7 +951,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity
     public final void doNextTask(boolean z) {
         if (!z) {
             this.progress_bar.setVisibility(8);
@@ -910,7 +963,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         int id = view.getId();
         if (id != R.id.btn_back) {
@@ -930,7 +982,6 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_setting);

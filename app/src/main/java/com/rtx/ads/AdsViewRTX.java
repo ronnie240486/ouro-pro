@@ -35,7 +35,6 @@ public class AdsViewRTX extends WebView {
     private void init(Context context) {
         WebSettings webSettings = getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setAppCacheEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setMediaPlaybackRequiresUserGesture(true);
         webSettings.setPluginState(WebSettings.PluginState.ON);
@@ -46,7 +45,6 @@ public class AdsViewRTX extends WebView {
             setLayerType(1, null);
         }
         setWebViewClient(new WebViewClient() { // from class: com.rtx.ads.AdsViewRTX.1
-            @Override // android.webkit.WebViewClient
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 AdsViewRTX.this.loadUrl("file:///android_asset/offline/adindex.html");
             }
@@ -62,7 +60,6 @@ public class AdsViewRTX extends WebView {
         private MyWebViewClient() {
         }
 
-        @Override // android.webkit.WebViewClient
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             super.onReceivedError(view, errorCode, description, failingUrl);
         }

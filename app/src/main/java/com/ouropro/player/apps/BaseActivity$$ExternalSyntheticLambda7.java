@@ -13,7 +13,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda7 implem
         this.f$0 = str;
     }
 
-    @Override // io.realm.Realm.Transaction
     public final void execute(Realm realm) {
         switch (this.$r8$classId) {
             case 0:

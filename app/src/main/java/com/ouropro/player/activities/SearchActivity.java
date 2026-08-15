@@ -71,6 +71,48 @@ public class SearchActivity extends AppCompatActivity {
         return Constants.xxx_vod_categories.contains(str2);
     }
 
+    private boolean isAdultChannel(String categoryId, String categoryName) {
+        String value = ((categoryId == null ? "" : categoryId) + " " + (categoryName == null ? "" : categoryName)).toLowerCase(java.util.Locale.US);
+        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(categoryId);
+    }
+
+    private void openLiveChannel(EPGChannel channel) {
+        RealmController.with().addToRecentChannels(channel.getName(), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$8);
+        saveCategoryAndChannelPosition(channel);
+        if (this.is_live) {
+            Intent intent = new Intent();
+            intent.putExtra("is_changed", "from_search");
+            setResult(-1, intent);
+            finish();
+        } else if (GetSharedInfo.isTVDevice(this)) {
+            Intent intent2 = new Intent(this, LiveActivity.class);
+            intent2.putExtra("is_full", true);
+            startActivity(intent2);
+        } else {
+            Intent intent3 = new Intent(this, LiveMobileActivity.class);
+            intent3.putExtra("is_full", true);
+            startActivity(intent3);
+        }
+    }
+
+    private void showLiveLockDlgFragment(final EPGChannel channel) {
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
+        Fragment existing = manager.findFragmentByTag("fragment_lock_live");
+        if (existing != null) {
+            Insets$$ExternalSyntheticOutline0.m(transaction, existing, (String) null);
+            return;
+        }
+        LockDlgFragment dialog = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
+        this.lockDlgFragment = dialog;
+        dialog.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() {
+            public void OnPinCorrect() { SearchActivity.this.openLiveChannel(channel); }
+            public void OnPinIncorrect() { Toast.makeText(SearchActivity.this, SearchActivity.this.wordModels.getPin_incorrect(), Toast.LENGTH_SHORT).show(); }
+            public void OnPutPinCode() { Toast.makeText(SearchActivity.this, "Configure o Controle Parental nas Configurações antes de desbloquear.", Toast.LENGTH_LONG).show(); }
+        });
+        dialog.show(manager, "fragment_lock_live");
+    }
+
     private String getMovieCategoryName(String str) {
         for (CategoryModel categoryModel : LTVApp.series_categories_filter) {
             if (categoryModel.getId().equalsIgnoreCase(str)) {
@@ -104,7 +146,6 @@ public class SearchActivity extends AppCompatActivity {
             this.recyclerChannels.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recyclerChannels.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SearchActivity.3
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -125,7 +166,6 @@ public class SearchActivity extends AppCompatActivity {
             this.recyclerMovies.setPreserveFocusAfterLayout(true);
             final View[] viewArr2 = {null};
             this.recyclerMovies.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SearchActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr3 = viewArr2;
@@ -149,7 +189,6 @@ public class SearchActivity extends AppCompatActivity {
             this.recyclerSeries.setPreserveFocusAfterLayout(true);
             final View[] viewArr3 = {null};
             this.recyclerSeries.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.SearchActivity.5
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr4 = viewArr3;
@@ -181,24 +220,11 @@ public class SearchActivity extends AppCompatActivity {
         if (!bool.booleanValue()) {
             return null;
         }
-        RealmController.with().addToRecentChannels(ePGChannel.getName(), BaseActivity$$ExternalSyntheticLambda0.INSTANCE$8);
-        saveCategoryAndChannelPosition(ePGChannel);
-        if (this.is_live) {
-            Intent intent = new Intent();
-            intent.putExtra("is_changed", "from_search");
-            setResult(-1, intent);
-            finish();
+        if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+            showLiveLockDlgFragment(ePGChannel);
             return null;
         }
-        if (GetSharedInfo.isTVDevice(this)) {
-            Intent intent2 = new Intent(this, (Class<?>) LiveActivity.class);
-            intent2.putExtra("is_full", true);
-            startActivity(intent2);
-            return null;
-        }
-        Intent intent3 = new Intent(this, (Class<?>) LiveMobileActivity.class);
-        intent3.putExtra("is_full", true);
-        startActivity(intent3);
+        openLiveChannel(ePGChannel);
         return null;
     }
 
@@ -291,14 +317,13 @@ public class SearchActivity extends AppCompatActivity {
         } else {
             this.str_live.setVisibility(0);
             this.recyclerChannels.setVisibility(0);
-            RecyclerLiveHomeAdapter recyclerLiveHomeAdapter = new RecyclerLiveHomeAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
+            RecyclerLiveHomeAdapter recyclerLiveHomeAdapter = new RecyclerLiveHomeAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
                 public final /* synthetic */ SearchActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = SearchActivity.this;
                 }
 
-                @Override // kotlin.jvm.functions.Function3
                 public final Object invoke(Object obj, Object obj2, Object obj3) {
                     switch (i) {
                         case 0:
@@ -322,14 +347,13 @@ public class SearchActivity extends AppCompatActivity {
             this.str_movies.setVisibility(0);
             this.recyclerMovies.setVisibility(0);
             final int i2 = 1;
-            RecyclerVodHomeAdapter recyclerVodHomeAdapter = new RecyclerVodHomeAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
+            RecyclerVodHomeAdapter recyclerVodHomeAdapter = new RecyclerVodHomeAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
                 public final /* synthetic */ SearchActivity f$0;
 
                 {
-                    this.f$0 = this;
+                    this.f$0 = SearchActivity.this;
                 }
 
-                @Override // kotlin.jvm.functions.Function3
                 public final Object invoke(Object obj, Object obj2, Object obj3) {
                     switch (i2) {
                         case 0:
@@ -354,14 +378,13 @@ public class SearchActivity extends AppCompatActivity {
         this.str_series.setVisibility(0);
         this.recyclerSeries.setVisibility(0);
         final int i3 = 2;
-        this.recyclerSeries.setAdapter(new RecyclerSeriesHomeAdapter(this, this.seriesModels, new Function3(this) { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
+        this.recyclerSeries.setAdapter(new RecyclerSeriesHomeAdapter(this, this.seriesModels, new Function3() { // from class: com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda1
             public final /* synthetic */ SearchActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = SearchActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i3) {
                     case 0:
@@ -386,7 +409,6 @@ public class SearchActivity extends AppCompatActivity {
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.SearchActivity.2
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 Intent intent = new Intent(SearchActivity.this, (Class<?>) MovieInfoActivity.class);
                 intent.putExtra("name", str);
@@ -394,13 +416,11 @@ public class SearchActivity extends AppCompatActivity {
                 SearchActivity.this.startActivity(intent);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 SearchActivity searchActivity = SearchActivity.this;
                 Toast.makeText(searchActivity, searchActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 SearchActivity searchActivity = SearchActivity.this;
                 Toast.makeText(searchActivity, searchActivity.wordModels.getPut_pin_code(), 0).show();
@@ -409,7 +429,6 @@ public class SearchActivity extends AppCompatActivity {
         this.lockDlgFragment.show(supportFragmentManager, "fragment_lock");
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
@@ -438,7 +457,6 @@ public class SearchActivity extends AppCompatActivity {
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_search);
@@ -453,7 +471,6 @@ public class SearchActivity extends AppCompatActivity {
         this.str_series.setText(this.wordModels.getSeries());
         this.et_search.setHint(this.wordModels.getSearch_by_title());
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.SearchActivity.1
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().isEmpty()) {
                     return;
@@ -461,11 +478,9 @@ public class SearchActivity extends AppCompatActivity {
                 SearchActivity.this.searchModels(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });

@@ -2,12 +2,11 @@ package com.ouropro.player.models;
 
 import com.google.gson.annotations.SerializedName;
 import io.realm.RealmObject;
-import io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface;
 import io.realm.internal.RealmObjectProxy;
 import java.io.Serializable;
 
 /* JADX INFO: loaded from: classes.dex */
-public class SeriesModel extends RealmObject implements Serializable, com_flextv_livestore_models_SeriesModelRealmProxyInterface {
+public class SeriesModel extends RealmObject implements Serializable {
 
     @SerializedName("cast")
     private String cast;
@@ -175,232 +174,186 @@ public class SeriesModel extends RealmObject implements Serializable, com_flextv
         return realmGet$is_watched();
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$cast() {
         return this.cast;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$category_id() {
         return this.category_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$category_name() {
         return this.category_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$director() {
         return this.director;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public int realmGet$episode_pos() {
         return this.episode_pos;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$genre() {
         return this.genre;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public boolean realmGet$is_favorite() {
         return this.is_favorite;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public boolean realmGet$is_recent() {
         return this.is_recent;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public boolean realmGet$is_watched() {
         return this.is_watched;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$last_modified() {
         return this.last_modified;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$name() {
         return this.name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public int realmGet$num() {
         return this.num;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$plot() {
         return this.plot;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$rating() {
         return this.rating;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public float realmGet$rating_5based() {
         return this.rating_5based;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$releaseDate() {
         return this.releaseDate;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public int realmGet$season_pos() {
         return this.season_pos;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$series_id() {
         return this.series_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$stream_icon() {
         return this.stream_icon;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$stream_type() {
         return this.stream_type;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$tmdb() {
         return this.tmdb;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$url() {
         return this.url;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public String realmGet$youtube() {
         return this.youtube;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$cast(String str) {
         this.cast = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$category_id(String str) {
         this.category_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$category_name(String str) {
         this.category_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$director(String str) {
         this.director = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$episode_pos(int i) {
         this.episode_pos = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$genre(String str) {
         this.genre = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$is_favorite(boolean z) {
         this.is_favorite = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$is_recent(boolean z) {
         this.is_recent = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$is_watched(boolean z) {
         this.is_watched = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$last_modified(String str) {
         this.last_modified = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$name(String str) {
         this.name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$num(int i) {
         this.num = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$plot(String str) {
         this.plot = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$rating(String str) {
         this.rating = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$rating_5based(float f) {
         this.rating_5based = f;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$releaseDate(String str) {
         this.releaseDate = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$season_pos(int i) {
         this.season_pos = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$series_id(String str) {
         this.series_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$stream_icon(String str) {
         this.stream_icon = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$stream_type(String str) {
         this.stream_type = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$tmdb(String str) {
         this.tmdb = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$url(String str) {
         this.url = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_SeriesModelRealmProxyInterface
     public void realmSet$youtube(String str) {
         this.youtube = str;
     }

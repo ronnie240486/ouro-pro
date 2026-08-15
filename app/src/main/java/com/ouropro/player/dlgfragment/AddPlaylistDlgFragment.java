@@ -18,7 +18,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.android.gms.common.internal.ImagesContract;
 import com.ouropro.player.R;
 import com.ouropro.player.activities.MovieActivity$$ExternalSyntheticLambda2;
@@ -230,19 +229,16 @@ public class AddPlaylistDlgFragment extends DialogFragment implements View.OnCli
 
     private void showSuccessDlg() {
         new SuccessDlg(getContext(), this.wordModels.getStr_playlist_uploaded_successfully(), this.wordModels.getOk(), this.wordModels.getCancel(), new SuccessDlg.OkButtonClickListener() { // from class: com.ouropro.player.dlgfragment.AddPlaylistDlgFragment.1
-            @Override // com.ouropro.player.dlg.SuccessDlg.OkButtonClickListener
             public void onCancelClick() {
                 AddPlaylistDlgFragment.this.listener.onSkip();
             }
 
-            @Override // com.ouropro.player.dlg.SuccessDlg.OkButtonClickListener
             public void onOkClick() {
                 AddPlaylistDlgFragment.this.listener.onSkip();
             }
         }).show();
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             showNoConnectionDlgFragment();
@@ -250,7 +246,7 @@ public class AddPlaylistDlgFragment extends DialogFragment implements View.OnCli
         }
         try {
             AppInfoModel.UrlModel urlModel = new AppInfoModel.UrlModel();
-            urlModel.setId(jSONObject.getString(TtmlNode.ATTR_ID));
+            urlModel.setId(jSONObject.getString("id"));
             urlModel.setName(jSONObject.getString("name").trim());
             urlModel.setUrl(jSONObject.getString(ImagesContract.URL).trim());
             int i2 = this.playlist_position;
@@ -267,7 +263,6 @@ public class AddPlaylistDlgFragment extends DialogFragment implements View.OnCli
         }
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_add /* 2131427460 */:
@@ -287,13 +282,11 @@ public class AddPlaylistDlgFragment extends DialogFragment implements View.OnCli
         }
     }
 
-    @Override // androidx.fragment.app.DialogFragment, androidx.fragment.app.Fragment
     public void onCreate(@Nullable Bundle bundle) {
         super.onCreate(bundle);
         setStyle(0, R.style.FullScreenDialogStyle);
     }
 
-    @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         View viewInflate = layoutInflater.inflate(R.layout.fragment_add_playlist, viewGroup, false);
         this.sharedPreferenceHelper = new PreferenceHelper(getContext());

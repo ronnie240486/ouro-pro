@@ -16,7 +16,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class DateRecyclerAdapter extends RecyclerView.Adapter<XCDateViewHolder> {
+public class DateRecyclerAdapter extends RecyclerView.Adapter<DateRecyclerAdapter.XCDateViewHolder> {
     public List<CatchupModel> catchupModels;
     public Function3<CatchupModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
@@ -78,7 +78,6 @@ public class DateRecyclerAdapter extends RecyclerView.Adapter<XCDateViewHolder> 
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CatchupModel> list = this.catchupModels;
         if (list == null) {
@@ -99,7 +98,6 @@ public class DateRecyclerAdapter extends RecyclerView.Adapter<XCDateViewHolder> 
         notifyItemChanged(i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull XCDateViewHolder xCDateViewHolder, int i) {
         CatchupModel catchupModel = this.catchupModels.get(i);
         xCDateViewHolder.txt_week.setText(catchupModel.getDayofweek());
@@ -109,7 +107,6 @@ public class DateRecyclerAdapter extends RecyclerView.Adapter<XCDateViewHolder> 
         setBackgroundColor(xCDateViewHolder, i, xCDateViewHolder.itemView.isFocused());
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public XCDateViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new XCDateViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_date, viewGroup, false));

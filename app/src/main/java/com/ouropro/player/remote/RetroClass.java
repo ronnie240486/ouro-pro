@@ -22,11 +22,15 @@ public final class RetroClass {
     }
 
     public static APIService getAPIService(String rawBaseUrl) {
-        return getRetrofitInstance(rawBaseUrl).create(APIService.class);
+        return getRetrofitInstance(rawBaseUrl, false).create(APIService.class);
     }
 
-    private static Retrofit getRetrofitInstance(String rawBaseUrl) {
-        String baseUrl = NetworkPolicy.requireBaseUrl(rawBaseUrl, false);
+    public static APIService getAPIService(String rawBaseUrl, boolean allowLegacyCleartext) {
+        return getRetrofitInstance(rawBaseUrl, allowLegacyCleartext).create(APIService.class);
+    }
+
+    private static Retrofit getRetrofitInstance(String rawBaseUrl, boolean allowCleartext) {
+        String baseUrl = NetworkPolicy.requireBaseUrl(rawBaseUrl, allowCleartext);
         Gson gson = new GsonBuilder().setLenient().create();
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.NONE);

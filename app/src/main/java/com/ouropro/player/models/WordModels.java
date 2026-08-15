@@ -1,6 +1,5 @@
 package com.ouropro.player.models;
 
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.common.net.HttpHeaders;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
@@ -38,7 +37,7 @@ public class WordModels implements Serializable {
     @SerializedName("age")
     private String age;
 
-    @SerializedName(TtmlNode.COMBINE_ALL)
+    @SerializedName("combine")
     private String all;
 
     @SerializedName("app_is_up_to_date")

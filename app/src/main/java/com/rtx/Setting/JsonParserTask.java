@@ -13,7 +13,6 @@ import org.json.JSONObject;
 /* JADX INFO: loaded from: classes2.dex */
 public class JsonParserTask extends AsyncTask<String, Void, String> {
     /* JADX INFO: Access modifiers changed from: protected */
-    @Override // android.os.AsyncTask
     public String doInBackground(String... params) {
         String url = params[0];
         String jsonData = "";
@@ -45,7 +44,6 @@ public class JsonParserTask extends AsyncTask<String, Void, String> {
     }
 
     /* JADX INFO: Access modifiers changed from: protected */
-    @Override // android.os.AsyncTask
     public void onPostExecute(String jsonData) {
         try {
             JSONArray jsonArray = new JSONArray(jsonData);

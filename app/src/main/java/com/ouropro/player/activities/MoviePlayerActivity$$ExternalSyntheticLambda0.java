@@ -35,12 +35,9 @@ public final /* synthetic */ class MoviePlayerActivity$$ExternalSyntheticLambda0
         this.f$3 = i;
     }
 
-    @Override // com.google.android.exoplayer2.util.ListenerSet.Event
     public final void invoke(Object obj) {
-        DefaultAnalyticsCollector.lambda$onPositionDiscontinuity$43((AnalyticsListener.EventTime) this.f$0, this.f$3, (Player.PositionInfo) this.f$1, (Player.PositionInfo) this.f$2, (AnalyticsListener) obj);
     }
 
-    @Override // com.ouropro.player.dlgfragment.SubtitleTrackDlgFragment.ItemPositionListener, com.ouropro.player.dlgfragment.AudioTrackDlgFragment.ItemPositionListener
     public final void onItemPosition(int i) {
         switch (this.$r8$classId) {
             case 0:

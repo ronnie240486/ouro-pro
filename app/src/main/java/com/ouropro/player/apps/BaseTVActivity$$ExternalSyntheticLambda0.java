@@ -15,12 +15,10 @@ public final /* synthetic */ class BaseTVActivity$$ExternalSyntheticLambda0 impl
         this.f$0 = baseTVActivity;
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnCompleteListener
     public final void onComplete(Object obj) {
         this.f$0.lambda$fetchM3UItems$3((List) obj);
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnExceptionListener
     public final void onException(Exception exc) {
         switch (this.$r8$classId) {
             case 1:
@@ -39,7 +37,6 @@ public final /* synthetic */ class BaseTVActivity$$ExternalSyntheticLambda0 impl
         }
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnNetworkUnavailableListener
     public final void onNetworkException(NetworkErrorException networkErrorException) {
         this.f$0.lambda$fetchM3UItems$5(networkErrorException);
     }

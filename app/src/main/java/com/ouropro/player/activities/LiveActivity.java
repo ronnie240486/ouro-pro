@@ -1,9 +1,13 @@
 package com.ouropro.player.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.Editable;
@@ -25,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
@@ -80,6 +85,14 @@ import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.XmlTvEpgLoader;
+import com.ouropro.player.improvements.EpgReminderBinder;
+import com.ouropro.player.improvements.EpgReminderStore;
+import com.ouropro.player.improvements.NullTextGuard;
+import com.ouropro.player.improvements.VoiceChannelMatcher;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.VoiceCommandController;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CategoryModel;
@@ -133,6 +146,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public ConstraintLayout ly_buttons;
     public ConstraintLayout ly_control;
     public ConstraintLayout ly_surface;
+    public View epg_summary_visible;
     public ConstraintLayout main_lay;
     public LiveActivity$$ExternalSyntheticLambda2 moveTicker;
     public int move_time;
@@ -142,6 +156,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public LiveVerticalGridView recycler_category;
     public LiveVerticalGridView recycler_channel;
     public RecyclerView recycler_epg;
+    public RecyclerView visibleEpgPanel;
     public SeekBar seekBar;
     public EPGChannel selectedChannel;
     public TrackSelectionParameters trackSelectionParameters;
@@ -151,6 +166,8 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public TextView txt_channel_name;
     public TextView txt_current_program;
     public TextView txt_current_time;
+    public TextView txt_epg_now_visible;
+    public TextView txt_epg_next_visible;
     public TextView txt_epg;
     public TextView txt_fav;
     public TextView txt_group;
@@ -166,9 +183,14 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public TextView txt_right;
     public TextView txt_search;
     public TextView txt_series;
+    public String epgNowDisplay = "carregando EPG...";
+    public String epgNextDisplay = "aguardando programação...";
     public TextView txt_subtitle;
     public TextView txt_vod;
     public WordModels wordModels;
+    private ImageButton voiceButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 904;
     public int category_pos = 0;
     public int channel_pos = 0;
     public int pre_category_pos = 0;
@@ -176,6 +198,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     public int move_pos = 0;
     public int error_count = 0;
     public String stream_id = "";
+    private String activeEpgStreamId = "";
+    private Handler tvReminderHandler = new Handler();
+    private Runnable tvReminderRunnable;
+    private String scheduledTvReminderKey = "";
+    private CountDownTimer tvReminderCountdown;
     public String key = "";
     public boolean is_full = false;
     public Handler handler = new Handler();
@@ -209,92 +236,57 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         private PlayerEventListener() {
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioAttributesChanged(AudioAttributes audioAttributes) {
-            Player.Listener.CC.$default$onAudioAttributesChanged(this, audioAttributes);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAudioSessionIdChanged(int i) {
-            Player.Listener.CC.$default$onAudioSessionIdChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onAvailableCommandsChanged(Player.Commands commands) {
-            Player.Listener.CC.$default$onAvailableCommandsChanged(this, commands);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(CueGroup cueGroup) {
-            Player.Listener.CC.$default$onCues(this, cueGroup);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onCues(List list) {
-            Player.Listener.CC.$default$onCues(this, list);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceInfoChanged(DeviceInfo deviceInfo) {
-            Player.Listener.CC.$default$onDeviceInfoChanged(this, deviceInfo);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onDeviceVolumeChanged(int i, boolean z) {
-            Player.Listener.CC.$default$onDeviceVolumeChanged(this, i, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onEvents(Player player, Player.Events events) {
-            Player.Listener.CC.$default$onEvents(this, player, events);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onIsPlayingChanged(boolean z) {
-            Player.Listener.CC.$default$onIsPlayingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onLoadingChanged(boolean z) {
-            Player.Listener.CC.$default$onLoadingChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(long j) {
-            Player.Listener.CC.$default$onMaxSeekToPreviousPositionChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaItemTransition(MediaItem mediaItem, int i) {
-            Player.Listener.CC.$default$onMediaItemTransition(this, mediaItem, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onMediaMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onMetadata(Metadata metadata) {
-            Player.Listener.CC.$default$onMetadata(this, metadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayWhenReadyChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayWhenReadyChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-            Player.Listener.CC.$default$onPlaybackParametersChanged(this, playbackParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlaybackStateChanged(int i) {
             if (i == 4) {
                 LiveActivity.this.releaseMediaPlayer();
@@ -305,12 +297,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaybackSuppressionReasonChanged(int i) {
-            Player.Listener.CC.$default$onPlaybackSuppressionReasonChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public void onPlayerError(PlaybackException playbackException) {
             if (playbackException.errorCode == 1002) {
                 LiveActivity.this.releaseMediaPlayer();
@@ -331,94 +320,58 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             }
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerErrorChanged(PlaybackException playbackException) {
-            Player.Listener.CC.$default$onPlayerErrorChanged(this, playbackException);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlayerStateChanged(boolean z, int i) {
-            Player.Listener.CC.$default$onPlayerStateChanged(this, z, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPlaylistMetadataChanged(MediaMetadata mediaMetadata) {
-            Player.Listener.CC.$default$onPlaylistMetadataChanged(this, mediaMetadata);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onPositionDiscontinuity(Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-            Player.Listener.CC.$default$onPositionDiscontinuity(this, positionInfo, positionInfo2, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRenderedFirstFrame() {
-            Player.Listener.CC.$default$onRenderedFirstFrame(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onRepeatModeChanged(int i) {
-            Player.Listener.CC.$default$onRepeatModeChanged(this, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekBackIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekBackIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekForwardIncrementChanged(long j) {
-            Player.Listener.CC.$default$onSeekForwardIncrementChanged(this, j);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSeekProcessed() {
-            Player.Listener.CC.$default$onSeekProcessed(this);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onShuffleModeEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onShuffleModeEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSkipSilenceEnabledChanged(boolean z) {
-            Player.Listener.CC.$default$onSkipSilenceEnabledChanged(this, z);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onSurfaceSizeChanged(int i, int i2) {
-            Player.Listener.CC.$default$onSurfaceSizeChanged(this, i, i2);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTimelineChanged(Timeline timeline, int i) {
-            Player.Listener.CC.$default$onTimelineChanged(this, timeline, i);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTrackSelectionParametersChanged(TrackSelectionParameters trackSelectionParameters) {
-            Player.Listener.CC.$default$onTrackSelectionParametersChanged(this, trackSelectionParameters);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onTracksChanged(Tracks tracks) {
-            Player.Listener.CC.$default$onTracksChanged(this, tracks);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVideoSizeChanged(VideoSize videoSize) {
-            Player.Listener.CC.$default$onVideoSizeChanged(this, videoSize);
         }
 
-        @Override // com.google.android.exoplayer2.Player.Listener
         public final /* synthetic */ void onVolumeChanged(float f) {
-            Player.Listener.CC.$default$onVolumeChanged(this, f);
         }
     }
 
@@ -485,7 +438,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.key = "";
         this.txt_num.setText("");
         this.txt_num.setVisibility(8);
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(this.keySelChannel.getCategory_id(), this.keySelChannel.getCategory_name())) {
+        if (isAdultChannel(this.keySelChannel.getCategory_id(), this.keySelChannel.getCategory_name())) {
             showChannelLockDlgFragment(this.keySelChannel, this.channel_pos, 2);
             return;
         }
@@ -503,35 +456,81 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
     /* JADX INFO: Access modifiers changed from: private */
     public void getShortEpg(String str) {
-        try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), str).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
-                @Override // retrofit2.Callback
+                final String requestStreamId = str == null ? "" : str.trim();
+        this.activeEpgStreamId = requestStreamId;
+        showEpgInfo(null);
+        updateChannelEpgText("Carregando EPG...", "Aguardando programação...");
+try {
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), requestStreamId).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.LiveActivity.4
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
-                    LiveActivity.this.showEpgInfo(null);
+                    if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        LiveActivity.this.loadXmlTvEpg(requestStreamId);
+                    }
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
+                    if (!requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        return;
+                    }
                     if (response.body() == null || response.body().getEpg_listings() == null || response.body().getEpg_listings().size() <= 0) {
-                        LiveActivity.this.showEpgInfo(null);
+                        if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                        LiveActivity.this.loadXmlTvEpg(requestStreamId);
+                    }
                         return;
                     }
                     LiveActivity.this.showEpgInfo(response.body().getEpg_listings());
                     LiveActivity.this.epgEventList = response.body().getEpg_listings();
                 }
             });
-        } catch (Exception unused) {
-            showEpgInfo(null);
+                } catch (Exception unused) {
+            if (requestStreamId.equals(this.activeEpgStreamId)) {
+                loadXmlTvEpg(requestStreamId);
+            }
         }
     }
 
+    private void loadXmlTvEpg(String streamId) {
+        final String requestStreamId = streamId == null ? "" : streamId.trim();
+        XmlTvEpgLoader.load(
+                this.preferenceHelper.getSharedPreferenceServerUrl(),
+                this.preferenceHelper.getSharedPreferenceISM3U(),
+                this.preferenceHelper.getSharedPreferenceUsername(),
+                this.preferenceHelper.getSharedPreferencePassword(),
+                this.preferenceHelper.getSharedPreferenceM3UEpgUrl(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId() + "|" + this.selectedChannel.getStream_id(),
+                this.selectedChannel == null ? this.channel_name : this.selectedChannel.getName(),
+                new XmlTvEpgLoader.Listener() {
+                    @Override
+                    public void onLoaded(List<CatchUpEpg> programs) {
+                        runOnUiThread(() -> {
+                            if (!requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                                return;
+                            }
+                            showEpgInfo(programs);
+                            epgEventList = programs;
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        runOnUiThread(() -> {
+                            if (requestStreamId.equals(LiveActivity.this.activeEpgStreamId)) {
+                                showEpgInfo(null);
+                            }
+                        });
+                    }
+                });
+    }
+
     private void goToCatchupActivity() {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), 0).show();
-        } else if (this.selectedChannel != null) {
+        if (this.selectedChannel != null) {
             releaseMediaPlayer();
             LTVApp.channelName = this.selectedChannel.getName();
-            this.someActivityResultLauncher.launch(new Intent(this, (Class<?>) CatchUpActivity.class));
+            Intent intent = new Intent(this, (Class<?>) CatchUpActivity.class);
+            intent.putExtra("catchup_stream_id", this.selectedChannel.getStream_id());
+            intent.putExtra("catchup_channel_id", this.selectedChannel.getId());
+            intent.putExtra("catchup_channel_name", this.selectedChannel.getName());
+            this.someActivityResultLauncher.launch(intent);
         }
     }
 
@@ -567,6 +566,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
     private void initView() {
         this.main_lay = (ConstraintLayout) findViewById(R.id.fullContainer);
+        setupVoiceButton();
         StyledPlayerView styledPlayerView = (StyledPlayerView) findViewById(R.id.player_view);
         this.playerView = styledPlayerView;
         styledPlayerView.setResizeMode(3);
@@ -580,6 +580,9 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_movie = (TextView) findViewById(R.id.txt_movie);
         this.txt_series = (TextView) findViewById(R.id.txt_series);
         this.txt_name = (TextView) findViewById(R.id.txt_name);
+        this.epg_summary_visible = findViewById(R.id.epg_summary_visible);
+        this.txt_epg_now_visible = (TextView) findViewById(R.id.txt_epg_now_visible);
+        this.txt_epg_next_visible = (TextView) findViewById(R.id.txt_epg_next_visible);
         this.et_search = (EditText) findViewById(R.id.et_search);
         this.recycler_category = (LiveVerticalGridView) findViewById(R.id.recycler_category);
         this.recycler_channel = (LiveVerticalGridView) findViewById(R.id.recycler_channel);
@@ -618,7 +621,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_category.setPreserveFocusAfterLayout(true);
         final View[] viewArr = {null};
         this.recycler_category.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.LiveActivity.5
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr2 = viewArr;
@@ -635,7 +637,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_channel.setPreserveFocusAfterLayout(true);
         final View[] viewArr2 = {null};
         this.recycler_channel.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.LiveActivity.6
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr3 = viewArr2;
@@ -659,6 +660,12 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.image_search = (ImageButton) findViewById(R.id.image_search);
         this.seekBar = (SeekBar) findViewById(R.id.seekBar);
         this.txt_current_time = (TextView) findViewById(R.id.txt_current_time);
+        if (this.epg_summary_visible != null) {
+            this.epg_summary_visible.setVisibility(View.GONE);
+        }
+        this.txt_epg_now_visible.setText("Agora: carregando EPG...");
+        this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         this.txt_current_program = (TextView) findViewById(R.id.txt_current_program);
         this.txt_next_time = (TextView) findViewById(R.id.txt_next_time);
         this.txt_next_program = (TextView) findViewById(R.id.txt_next_program);
@@ -686,29 +693,26 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.txt_series.setOnClickListener(this);
         this.txt_movie.setOnClickListener(this);
         this.btn_fav.setOnClickListener(this);
-        this.btn_catch_up.setOnClickListener(this);
+        this.btn_catch_up.setOnClickListener(view -> goToCatchupActivity());
+        this.image_epg.setOnClickListener(view -> goToCatchupActivity());
+        this.image_subtitle.setOnClickListener(view -> showSubtitleTrack());
         this.btn_search.setOnClickListener(this);
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.LiveActivity.7
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 LiveActivity.this.searchChannelsInCategory(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });
     }
 
     private boolean isAdultChannel(String str, String str2) {
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            return str2.contains("adult") || str2.contains("xxx") || str2.contains("porn");
-        }
-        return Constants.xxx_live_categories.contains(str);
+        String value = ((str == null ? "" : str) + " " + (str2 == null ? "" : str2)).toLowerCase(java.util.Locale.US);
+        return value.contains("adult") || value.contains("xxx") || value.contains("porn") || value.contains("18+") || value.contains("18 ") || value.contains("sex") || value.contains("sexy") || value.contains("erotic") || value.contains("erotico") || value.contains("playboy") || value.contains("venus") || value.contains("hot ") || value.contains("redtube") || Constants.xxx_live_categories.contains(str);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -772,15 +776,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.recycler_category.setSelectedPosition(this.category_pos);
             this.recycler_category.scrollToPosition(this.category_pos);
             this.categoryAdapter.setCategoryPosition(this.category_pos);
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(this.selectedChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(this.selectedChannel.getStream_id());
             String name = this.selectedChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelEpgText("carregando EPG...", "aguardando programação...");
             showFavImageIcon(this.selectedChannel.is_favorite());
             changeChannelInfo(this.channel_pos);
         }
@@ -821,7 +821,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     }
                     this.is_full = true;
                     setFull();
-                } else if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
+                } else if (isAdultChannel(ePGChannel.getCategory_id(), ePGChannel.getCategory_name())) {
                     showChannelLockDlgFragment(ePGChannel, num.intValue(), 0);
                 } else {
                     this.channel_pos = num.intValue();
@@ -832,15 +832,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             controlFav(ePGChannel, num.intValue());
             showFavImageIcon(ePGChannel.is_favorite());
         } else if (!this.is_full) {
-            if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-                showEpgInfo(null);
-            } else {
-                this.handler.removeCallbacks(this.epgTicker);
-                epgTimer(ePGChannel.getStream_id());
-            }
+            this.handler.removeCallbacks(this.epgTicker);
+            epgTimer(ePGChannel.getStream_id());
             String name = ePGChannel.getName();
             this.channel_name = name;
-            this.txt_name.setText(name);
+            updateChannelEpgText("carregando EPG...", "aguardando programação...");
             showFavImageIcon(ePGChannel.is_favorite());
             changeChannelInfo(this.pre_channel_pos);
         }
@@ -891,24 +887,20 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         } else {
             this.channel_pos = 0;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
         }
         this.handler.removeCallbacks(this.hideInfoTicker);
         mInfoHideTimer();
-        this.txt_name.setText(this.channel_name);
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         this.recycler_channel.setSelectedPosition(this.channel_pos);
     }
 
@@ -919,19 +911,15 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         } else {
             this.channel_pos = this.epgChannels.size() - 1;
         }
-        if (this.categoryModels.get(this.category_pos).getId().equalsIgnoreCase(Constants.all_id) && isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
+        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
             showChannelLockDlgFragment((EPGChannel) this.epgChannels.get(this.channel_pos), this.channel_pos, 1);
             return;
         }
         playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         changeChannelInfo(this.channel_pos);
-        this.txt_name.setText(this.channel_name);
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
         if (this.ly_control.getVisibility() == 8) {
             this.ly_control.setVisibility(0);
         }
@@ -993,405 +981,245 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.player = exoPlayerBuild;
         exoPlayerBuild.setTrackSelectionParameters(this.trackSelectionParameters);
         this.player.addAnalyticsListener(new AnalyticsListener() { // from class: com.ouropro.player.activities.LiveActivity.3
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioAttributesChanged(AnalyticsListener.EventTime eventTime, AudioAttributes audioAttributes) {
-                AnalyticsListener.CC.$default$onAudioAttributesChanged(this, eventTime, audioAttributes);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioCodecError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onAudioCodecError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j) {
-                AnalyticsListener.CC.$default$onAudioDecoderInitialized(this, eventTime, str2, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j, long j2) {
-                AnalyticsListener.CC.$default$onAudioDecoderInitialized(this, eventTime, str2, j, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDecoderReleased(AnalyticsListener.EventTime eventTime, String str2) {
-                AnalyticsListener.CC.$default$onAudioDecoderReleased(this, eventTime, str2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioDisabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onAudioDisabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioEnabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onAudioEnabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format) {
-                AnalyticsListener.CC.$default$onAudioInputFormatChanged(this, eventTime, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
-                AnalyticsListener.CC.$default$onAudioInputFormatChanged(this, eventTime, format, decoderReuseEvaluation);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioPositionAdvancing(AnalyticsListener.EventTime eventTime, long j) {
-                AnalyticsListener.CC.$default$onAudioPositionAdvancing(this, eventTime, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioSessionIdChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onAudioSessionIdChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioSinkError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onAudioSinkError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAudioUnderrun(AnalyticsListener.EventTime eventTime, int i, long j, long j2) {
-                AnalyticsListener.CC.$default$onAudioUnderrun(this, eventTime, i, j, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onAvailableCommandsChanged(AnalyticsListener.EventTime eventTime, Player.Commands commands) {
-                AnalyticsListener.CC.$default$onAvailableCommandsChanged(this, eventTime, commands);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onBandwidthEstimate(AnalyticsListener.EventTime eventTime, int i, long j, long j2) {
-                AnalyticsListener.CC.$default$onBandwidthEstimate(this, eventTime, i, j, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onCues(AnalyticsListener.EventTime eventTime, CueGroup cueGroup) {
-                AnalyticsListener.CC.$default$onCues(this, eventTime, cueGroup);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onCues(AnalyticsListener.EventTime eventTime, List list) {
-                AnalyticsListener.CC.$default$onCues(this, eventTime, list);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderDisabled(AnalyticsListener.EventTime eventTime, int i, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onDecoderDisabled(this, eventTime, i, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderEnabled(AnalyticsListener.EventTime eventTime, int i, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onDecoderEnabled(this, eventTime, i, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderInitialized(AnalyticsListener.EventTime eventTime, int i, String str2, long j) {
-                AnalyticsListener.CC.$default$onDecoderInitialized(this, eventTime, i, str2, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDecoderInputFormatChanged(AnalyticsListener.EventTime eventTime, int i, Format format) {
-                AnalyticsListener.CC.$default$onDecoderInputFormatChanged(this, eventTime, i, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDeviceInfoChanged(AnalyticsListener.EventTime eventTime, DeviceInfo deviceInfo) {
-                AnalyticsListener.CC.$default$onDeviceInfoChanged(this, eventTime, deviceInfo);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDeviceVolumeChanged(AnalyticsListener.EventTime eventTime, int i, boolean z) {
-                AnalyticsListener.CC.$default$onDeviceVolumeChanged(this, eventTime, i, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDownstreamFormatChanged(AnalyticsListener.EventTime eventTime, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onDownstreamFormatChanged(this, eventTime, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysLoaded(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysLoaded(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysRemoved(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysRemoved(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmKeysRestored(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmKeysRestored(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionAcquired(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmSessionAcquired(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionAcquired(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onDrmSessionAcquired(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionManagerError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onDrmSessionManagerError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDrmSessionReleased(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onDrmSessionReleased(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onDroppedVideoFrames(AnalyticsListener.EventTime eventTime, int i, long j) {
-                AnalyticsListener.CC.$default$onDroppedVideoFrames(this, eventTime, i, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onEvents(Player player, AnalyticsListener.Events events) {
-                AnalyticsListener.CC.$default$onEvents(this, player, events);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onIsLoadingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onIsLoadingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onIsPlayingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onIsPlayingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadCanceled(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadCanceled(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadCompleted(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadCompleted(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadError(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData, IOException iOException, boolean z) {
-                AnalyticsListener.CC.$default$onLoadError(this, eventTime, loadEventInfo, mediaLoadData, iOException, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadStarted(AnalyticsListener.EventTime eventTime, LoadEventInfo loadEventInfo, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onLoadStarted(this, eventTime, loadEventInfo, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onLoadingChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onLoadingChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMaxSeekToPreviousPositionChanged(AnalyticsListener.EventTime eventTime, long j) {
-                AnalyticsListener.CC.$default$onMaxSeekToPreviousPositionChanged(this, eventTime, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMediaItemTransition(AnalyticsListener.EventTime eventTime, MediaItem mediaItem, int i) {
-                AnalyticsListener.CC.$default$onMediaItemTransition(this, eventTime, mediaItem, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMediaMetadataChanged(AnalyticsListener.EventTime eventTime, MediaMetadata mediaMetadata) {
-                AnalyticsListener.CC.$default$onMediaMetadataChanged(this, eventTime, mediaMetadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onMetadata(AnalyticsListener.EventTime eventTime, Metadata metadata) {
-                AnalyticsListener.CC.$default$onMetadata(this, eventTime, metadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayWhenReadyChanged(AnalyticsListener.EventTime eventTime, boolean z, int i) {
-                AnalyticsListener.CC.$default$onPlayWhenReadyChanged(this, eventTime, z, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackParametersChanged(AnalyticsListener.EventTime eventTime, PlaybackParameters playbackParameters) {
-                AnalyticsListener.CC.$default$onPlaybackParametersChanged(this, eventTime, playbackParameters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackStateChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPlaybackStateChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaybackSuppressionReasonChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPlaybackSuppressionReasonChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerError(AnalyticsListener.EventTime eventTime, PlaybackException playbackException) {
-                AnalyticsListener.CC.$default$onPlayerError(this, eventTime, playbackException);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerErrorChanged(AnalyticsListener.EventTime eventTime, PlaybackException playbackException) {
-                AnalyticsListener.CC.$default$onPlayerErrorChanged(this, eventTime, playbackException);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerReleased(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onPlayerReleased(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlayerStateChanged(AnalyticsListener.EventTime eventTime, boolean z, int i) {
-                AnalyticsListener.CC.$default$onPlayerStateChanged(this, eventTime, z, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPlaylistMetadataChanged(AnalyticsListener.EventTime eventTime, MediaMetadata mediaMetadata) {
-                AnalyticsListener.CC.$default$onPlaylistMetadataChanged(this, eventTime, mediaMetadata);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPositionDiscontinuity(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onPositionDiscontinuity(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onPositionDiscontinuity(AnalyticsListener.EventTime eventTime, Player.PositionInfo positionInfo, Player.PositionInfo positionInfo2, int i) {
-                AnalyticsListener.CC.$default$onPositionDiscontinuity(this, eventTime, positionInfo, positionInfo2, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onRenderedFirstFrame(AnalyticsListener.EventTime eventTime, Object obj, long j) {
-                AnalyticsListener.CC.$default$onRenderedFirstFrame(this, eventTime, obj, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onRepeatModeChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onRepeatModeChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekBackIncrementChanged(AnalyticsListener.EventTime eventTime, long j) {
-                AnalyticsListener.CC.$default$onSeekBackIncrementChanged(this, eventTime, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekForwardIncrementChanged(AnalyticsListener.EventTime eventTime, long j) {
-                AnalyticsListener.CC.$default$onSeekForwardIncrementChanged(this, eventTime, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekProcessed(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onSeekProcessed(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSeekStarted(AnalyticsListener.EventTime eventTime) {
-                AnalyticsListener.CC.$default$onSeekStarted(this, eventTime);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onShuffleModeChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onShuffleModeChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSkipSilenceEnabledChanged(AnalyticsListener.EventTime eventTime, boolean z) {
-                AnalyticsListener.CC.$default$onSkipSilenceEnabledChanged(this, eventTime, z);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onSurfaceSizeChanged(AnalyticsListener.EventTime eventTime, int i, int i2) {
-                AnalyticsListener.CC.$default$onSurfaceSizeChanged(this, eventTime, i, i2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTimelineChanged(AnalyticsListener.EventTime eventTime, int i) {
-                AnalyticsListener.CC.$default$onTimelineChanged(this, eventTime, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTrackSelectionParametersChanged(AnalyticsListener.EventTime eventTime, TrackSelectionParameters trackSelectionParameters) {
-                AnalyticsListener.CC.$default$onTrackSelectionParametersChanged(this, eventTime, trackSelectionParameters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onTracksChanged(AnalyticsListener.EventTime eventTime, Tracks tracks) {
-                AnalyticsListener.CC.$default$onTracksChanged(this, eventTime, tracks);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onUpstreamDiscarded(AnalyticsListener.EventTime eventTime, MediaLoadData mediaLoadData) {
-                AnalyticsListener.CC.$default$onUpstreamDiscarded(this, eventTime, mediaLoadData);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoCodecError(AnalyticsListener.EventTime eventTime, Exception exc) {
-                AnalyticsListener.CC.$default$onVideoCodecError(this, eventTime, exc);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j) {
-                AnalyticsListener.CC.$default$onVideoDecoderInitialized(this, eventTime, str2, j);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderInitialized(AnalyticsListener.EventTime eventTime, String str2, long j, long j2) {
-                AnalyticsListener.CC.$default$onVideoDecoderInitialized(this, eventTime, str2, j, j2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDecoderReleased(AnalyticsListener.EventTime eventTime, String str2) {
-                AnalyticsListener.CC.$default$onVideoDecoderReleased(this, eventTime, str2);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoDisabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onVideoDisabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoEnabled(AnalyticsListener.EventTime eventTime, DecoderCounters decoderCounters) {
-                AnalyticsListener.CC.$default$onVideoEnabled(this, eventTime, decoderCounters);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoFrameProcessingOffset(AnalyticsListener.EventTime eventTime, long j, int i) {
-                AnalyticsListener.CC.$default$onVideoFrameProcessingOffset(this, eventTime, j, i);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format) {
-                AnalyticsListener.CC.$default$onVideoInputFormatChanged(this, eventTime, format);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoInputFormatChanged(AnalyticsListener.EventTime eventTime, Format format, DecoderReuseEvaluation decoderReuseEvaluation) {
-                AnalyticsListener.CC.$default$onVideoInputFormatChanged(this, eventTime, format, decoderReuseEvaluation);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVideoSizeChanged(AnalyticsListener.EventTime eventTime, int i, int i2, int i3, float f) {
-                AnalyticsListener.CC.$default$onVideoSizeChanged(this, eventTime, i, i2, i3, f);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public void onVideoSizeChanged(@NonNull AnalyticsListener.EventTime eventTime, @NonNull VideoSize videoSize) {
                 LiveActivity.this.txt_resolution.setText(videoSize.width + "x" + videoSize.height);
-                AnalyticsListener.CC.$default$onVideoSizeChanged(this, eventTime, videoSize);
             }
 
-            @Override // com.google.android.exoplayer2.analytics.AnalyticsListener
             public final /* synthetic */ void onVolumeChanged(AnalyticsListener.EventTime eventTime, float f) {
-                AnalyticsListener.CC.$default$onVolumeChanged(this, eventTime, f);
             }
         });
         this.player.addListener(new PlayerEventListener());
@@ -1466,25 +1294,191 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_channel.scrollToPosition(0);
     }
 
+    private void ensureVisibleEpgPanel() {
+        if (this.main_lay == null || this.epgAdapter == null) {
+            return;
+        }
+        if (this.visibleEpgPanel == null) {
+            RecyclerView panel = new RecyclerView(this);
+            panel.setId(View.generateViewId());
+            panel.setFocusable(true);
+            panel.setFocusableInTouchMode(true);
+            panel.setClickable(true);
+            panel.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+            panel.setNextFocusUpId(R.id.recycler_channel);
+            panel.setNextFocusLeftId(R.id.recycler_channel);
+            panel.setBackgroundColor(Color.TRANSPARENT);
+            panel.setLayoutManager(new LinearLayoutManager(this));
+            panel.setAdapter(this.epgAdapter);
+            ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, 0);
+            params.startToStart = R.id.vertical_line2;
+            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+            params.topToBottom = R.id.txt_name;
+            params.bottomToTop = R.id.btn_catch_up;
+            int margin = getResources().getDimensionPixelSize(R.dimen._5sdp);
+            params.setMargins(margin, margin, margin, margin);
+            this.main_lay.addView(panel, params);
+            this.visibleEpgPanel = panel;
+        }
+        this.visibleEpgPanel.setVisibility(View.VISIBLE);
+        if (this.recycler_channel != null) {
+            this.recycler_channel.setNextFocusDownId(this.visibleEpgPanel.getId());
+        }
+        this.visibleEpgPanel.setNextFocusUpId(this.recycler_channel == null ? View.NO_ID : this.recycler_channel.getId());
+        this.visibleEpgPanel.bringToFront();
+        this.visibleEpgPanel.requestLayout();
+        this.visibleEpgPanel.setOnFocusChangeListener((view, hasFocus) -> {
+            if (hasFocus) {
+                focusFirstEpgBell();
+            }
+        });
+    }
+
+    private void focusFirstEpgBell() {
+        if (this.visibleEpgPanel == null || this.epgAdapter == null || this.epgAdapter.getItemCount() <= 0) {
+            return;
+        }
+        this.visibleEpgPanel.scrollToPosition(0);
+        this.visibleEpgPanel.post(() -> {
+            RecyclerView.ViewHolder holder = this.visibleEpgPanel.findViewHolderForAdapterPosition(0);
+            if (holder != null) {
+                View bell = holder.itemView.findViewById(R.id.epg_bell);
+                if (bell != null) {
+                    bell.requestFocus();
+                }
+            }
+        });
+    }
+
+    private void scheduleTvReminder(List<CatchUpEpg> list) {
+        if (this.tvReminderHandler == null) {
+            return;
+        }
+        String currentStream = this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id();
+        if (currentStream == null || currentStream.trim().isEmpty() || list == null) {
+            clearTvReminderSchedule();
+            return;
+        }
+        long now = System.currentTimeMillis();
+        CatchUpEpg nextReminder = null;
+        for (CatchUpEpg program : list) {
+            if (program == null || !EpgReminderStore.isScheduled(this, currentStream, program)) {
+                continue;
+            }
+            long startMillis = program.getStart_timestamp() * 1000L;
+            long stopMillis = program.getStop_timestamp() * 1000L;
+            if (stopMillis <= now || startMillis <= 0L) {
+                continue;
+            }
+            if (nextReminder == null || startMillis < nextReminder.getStart_timestamp() * 1000L) {
+                nextReminder = program;
+            }
+        }
+        if (nextReminder == null) {
+            clearTvReminderSchedule();
+            return;
+        }
+        String reminderKey = currentStream + "|" + nextReminder.getStart_timestamp();
+        if (reminderKey.equals(this.scheduledTvReminderKey) && this.tvReminderRunnable != null) {
+            return;
+        }
+        clearTvReminderSchedule();
+        this.scheduledTvReminderKey = reminderKey;
+        long delay = Math.max(0L, nextReminder.getStart_timestamp() * 1000L - now - 10000L);
+        CatchUpEpg reminderProgram = nextReminder;
+        this.tvReminderRunnable = () -> showTvReminder(reminderProgram, currentStream);
+        this.tvReminderHandler.postDelayed(this.tvReminderRunnable, delay);
+    }
+
+    private void clearTvReminderSchedule() {
+        if (this.tvReminderHandler != null && this.tvReminderRunnable != null) {
+            this.tvReminderHandler.removeCallbacks(this.tvReminderRunnable);
+        }
+        this.tvReminderRunnable = null;
+        this.scheduledTvReminderKey = "";
+        if (this.tvReminderCountdown != null) {
+            this.tvReminderCountdown.cancel();
+            this.tvReminderCountdown = null;
+        }
+    }
+
+    private void showTvReminder(CatchUpEpg program, String streamId) {
+        if (isFinishing() || program == null || !EpgReminderStore.isScheduled(this, streamId, program)) {
+            return;
+        }
+        TextView message = new TextView(this);
+        message.setTextColor(Color.WHITE);
+        message.setTextSize(18.0f);
+        message.setPadding(32, 24, 32, 8);
+        message.setText("O programa começa em 10 segundos");
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Lembrete EPG").setView(message).setPositiveButton("Ir agora", (d, which) -> EpgReminderStore.setScheduled(this, streamId, program, false)).setNegativeButton("Descartar", (d, which) -> EpgReminderStore.setScheduled(this, streamId, program, false)).create();
+        dialog.setOnDismissListener(d -> {
+            EpgReminderStore.setScheduled(this, streamId, program, false);
+            clearTvReminderSchedule();
+        });
+        dialog.setOnShowListener(d -> {
+            this.tvReminderCountdown = new CountDownTimer(10000L, 1000L) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    message.setText("O programa começa em " + Math.max(1, (int) Math.ceil(millisUntilFinished / 1000.0d)) + " segundos");
+                }
+
+                @Override
+                public void onFinish() {
+                    message.setText("Começando agora");
+                }
+            }.start();
+        });
+        dialog.show();
+    }
+
+    private void updateChannelEpgText(String nowText, String nextText) {
+        if (this.txt_name == null) {
+            return;
+        }
+        String channelTitle = this.channel_name == null || this.channel_name.trim().isEmpty() ? "Canal" : this.channel_name;
+        this.txt_name.setMaxLines(3);
+        this.txt_name.setEllipsize(null);
+        this.txt_name.setTextColor(Color.WHITE);
+        this.epgNowDisplay = nowText == null ? "carregando EPG..." : nowText;
+        this.epgNextDisplay = nextText == null ? "aguardando programação..." : nextText;
+        this.txt_name.setText(channelTitle);
+    }
+
     private void setCurrentEpgEvent(List<CatchUpEpg> list) {
+        if (this.epg_summary_visible != null) {
+            this.epg_summary_visible.setVisibility(View.GONE);
+        }
         if (list == null || list.size() <= 0) {
             this.txt_current_time.setText(this.wordModels.getNo_information());
             this.txt_current_program.setText("");
             this.seekBar.setProgress(0);
             this.txt_next_time.setText("");
             this.txt_next_program.setText(this.wordModels.getNo_information());
+            if (this.txt_epg_now_visible != null) this.txt_epg_now_visible.setText("Agora: EPG não disponível");
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: aguardando programação...");
+            updateChannelEpgText("EPG não disponível", "aguardando programação...");
             return;
         }
-        this.txt_current_program.setText(Utils.decode64String(list.get(0).getTitle()));
-        this.txt_current_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", list.get(0).getStart()).getTime() + LTVApp.SEVER_OFFSET));
-        this.seekBar.setProgress(list.get(0).getProgress());
+        CatchUpEpg current = list.get(0);
+        String currentTitle = Utils.decode64String(current.getTitle());
+        this.txt_current_program.setText(currentTitle);
+        this.txt_current_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", current.getStart()).getTime() + LTVApp.SEVER_OFFSET));
+        this.seekBar.setProgress(Math.max(0, Math.min(100, current.getProgress())));
+        if (this.txt_epg_now_visible != null) this.txt_epg_now_visible.setText("Agora: " + currentTitle);
+        String nextTitle = this.wordModels.getNo_information();
         if (list.size() > 1) {
-            this.txt_next_program.setText(Utils.decode64String(list.get(1).getTitle()));
-            this.txt_next_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", list.get(1).getStart()).getTime() + LTVApp.SEVER_OFFSET));
+            CatchUpEpg next = list.get(1);
+            nextTitle = Utils.decode64String(next.getTitle());
+            this.txt_next_program.setText(nextTitle);
+            this.txt_next_time.setText(Utils.getDateFromMillisecond(GetSharedInfo.getCurrentTimeFormat(this), Utils.getDateFromString("yyyy-MM-dd HH:mm:ss", next.getStart()).getTime() + LTVApp.SEVER_OFFSET));
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: " + nextTitle);
         } else {
             this.txt_next_time.setText("");
-            this.txt_next_program.setText(this.wordModels.getNo_information());
+            this.txt_next_program.setText(nextTitle);
+            if (this.txt_epg_next_visible != null) this.txt_epg_next_visible.setText("Próximo: " + nextTitle);
         }
+        updateChannelEpgText(currentTitle, nextTitle);
     }
 
     private void setFocusButtons(boolean z) {
@@ -1597,7 +1591,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.LiveActivity.2
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 int i3 = i2;
                 if (i3 == 0) {
@@ -1613,6 +1606,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     LiveActivity.this.playSelectedChannel(ePGChannel);
                     LiveActivity liveActivity2 = LiveActivity.this;
                     liveActivity2.recycler_channel.setSelectedPosition(liveActivity2.channel_pos);
+                    liveActivity2.recycler_channel.requestFocus();
                     LiveActivity liveActivity3 = LiveActivity.this;
                     liveActivity3.handler.removeCallbacks(liveActivity3.epgTicker);
                     LiveActivity liveActivity4 = LiveActivity.this;
@@ -1631,14 +1625,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                     return;
                 }
                 LiveActivity.this.playSelectedChannel(ePGChannel);
-                if (LiveActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                    LiveActivity.this.showEpgInfo(null);
-                } else {
-                    LiveActivity liveActivity8 = LiveActivity.this;
-                    liveActivity8.handler.removeCallbacks(liveActivity8.epgTicker);
-                    LiveActivity liveActivity9 = LiveActivity.this;
-                    liveActivity9.epgTimer(liveActivity9.stream_id);
-                }
+                LiveActivity liveActivity8 = LiveActivity.this;
+                liveActivity8.handler.removeCallbacks(liveActivity8.epgTicker);
+                LiveActivity liveActivity9 = LiveActivity.this;
+                liveActivity9.epgTimer(liveActivity9.stream_id);
                 LiveActivity liveActivity10 = LiveActivity.this;
                 liveActivity10.changeChannelInfo(liveActivity10.channel_pos);
                 if (LiveActivity.this.ly_control.getVisibility() == 8) {
@@ -1648,18 +1638,17 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 liveActivity11.handler.removeCallbacks(liveActivity11.hideInfoTicker);
                 LiveActivity.this.mInfoHideTimer();
                 LiveActivity liveActivity12 = LiveActivity.this;
-                liveActivity12.txt_name.setText(liveActivity12.channel_name);
+                liveActivity12.updateChannelEpgText("carregando EPG...", "aguardando programação...");
                 LiveActivity liveActivity13 = LiveActivity.this;
                 liveActivity13.recycler_channel.setSelectedPosition(liveActivity13.channel_pos);
+                liveActivity13.recycler_channel.requestFocus();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 LiveActivity liveActivity = LiveActivity.this;
                 Toast.makeText(liveActivity, liveActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 LiveActivity liveActivity = LiveActivity.this;
                 Toast.makeText(liveActivity, liveActivity.wordModels.getPut_pin_code(), 0).show();
@@ -1670,6 +1659,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
 
     /* JADX INFO: Access modifiers changed from: private */
     public void showEpgInfo(List<CatchUpEpg> list) {
+        ensureVisibleEpgPanel();
+        if (this.recycler_epg != null) {
+            this.recycler_epg.setVisibility(View.GONE);
+        }
         if (list == null || list.size() == 0) {
             this.epgAdapter.setEpgList(new ArrayList());
             setCurrentEpgEvent(new ArrayList());
@@ -1677,6 +1670,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
             this.epgAdapter.setEpgList(list);
             setCurrentEpgEvent(list);
         }
+        scheduleTvReminder(list);
     }
 
     private void showFavImageIcon(boolean z) {
@@ -1698,7 +1692,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.LiveActivity.1
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 LiveActivity liveActivity = LiveActivity.this;
                 liveActivity.category_pos = i;
@@ -1714,13 +1707,11 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                 LiveActivity.this.recycler_channel.setSelectedPosition(0);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 LiveActivity liveActivity = LiveActivity.this;
                 Toast.makeText(liveActivity, liveActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 LiveActivity liveActivity = LiveActivity.this;
                 Toast.makeText(liveActivity, liveActivity.wordModels.getPut_pin_code(), 0).show();
@@ -1760,13 +1751,28 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
     /* JADX WARN: Code duplicated, block: B:173:0x0374  */
     /* JADX WARN: Code duplicated, block: B:175:0x0387  */
     /* JADX WARN: Code duplicated, block: B:176:0x0396  */
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         int i;
         EPGChannel ePGChannel;
         EPGChannel ePGChannel2;
         if (keyEvent.getAction() == 0) {
             int keyCode = keyEvent.getKeyCode();
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+                    && this.recycler_channel != null
+                    && this.recycler_channel.hasFocus()
+                    && this.epgAdapter != null
+                    && this.epgAdapter.getItemCount() > 0) {
+                ensureVisibleEpgPanel();
+                focusFirstEpgBell();
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP
+                    && this.visibleEpgPanel != null
+                    && this.visibleEpgPanel.hasFocus()
+                    && this.recycler_channel != null) {
+                this.recycler_channel.requestFocus();
+                return true;
+            }
             if (keyCode == 4) {
                 if (this.ly_control.getVisibility() == 0) {
                     this.ly_control.setVisibility(8);
@@ -1935,6 +1941,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
                                             }
                                             break;
                                         case 20:
+                                            if (!this.is_full && this.recycler_channel != null && this.recycler_channel.hasFocus() && this.visibleEpgPanel != null && this.visibleEpgPanel.getVisibility() == View.VISIBLE && this.epgAdapter != null && this.epgAdapter.getItemCount() > 0 && this.recycler_channel.getSelectedPosition() >= this.epgChannels.size() - 1) {
+                                                focusFirstEpgBell();
+                                                return true;
+                                            }
                                             if (!this.is_full) {
                                                 if (this.txt_home.hasFocus() || this.txt_live.hasFocus() || this.txt_movie.hasFocus()) {
                                                     setFocusTopView(false);
@@ -2077,7 +2087,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
     public void onClick(View view) {
         EPGChannel ePGChannel;
         switch (view.getId()) {
@@ -2137,7 +2146,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_live);
@@ -2151,6 +2159,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.is_full = getIntent().getBooleanExtra("is_full", false);
         Constants.getLiveGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleLiveCategories(), this);
         this.categoryModels = LTVApp.live_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = new ArrayList<>();
+            this.categoryModels.add(new CategoryModel(Constants.all_id, "All"));
+        }
         int sharedPreferenceCategoryPos = this.preferenceHelper.getSharedPreferenceCategoryPos();
         this.category_pos = sharedPreferenceCategoryPos;
         if (sharedPreferenceCategoryPos > this.categoryModels.size() - 1) {
@@ -2159,7 +2171,7 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         if (isAdultChannel(this.categoryModels.get(this.category_pos).getId(), this.categoryModels.get(this.category_pos).getId())) {
             this.category_pos = 0;
         }
-        RecyclerLiveCategoryAdapter recyclerLiveCategoryAdapter = new RecyclerLiveCategoryAdapter(this, this.categoryModels, this.preferenceHelper.getSharedPreferenceISM3U(), false, this.category_pos, new LiveActivity$$ExternalSyntheticLambda4(this, i));
+        RecyclerLiveCategoryAdapter recyclerLiveCategoryAdapter = new RecyclerLiveCategoryAdapter(this, this.categoryModels, this.preferenceHelper.getSharedPreferenceISM3U(), this.preferenceHelper.getSharedPreferenceIsGrid(), this.category_pos, new LiveActivity$$ExternalSyntheticLambda4(this, i));
         this.categoryAdapter = recyclerLiveCategoryAdapter;
         this.recycler_category.setAdapter(recyclerLiveCategoryAdapter);
         this.recycler_category.setSelectedPosition(this.category_pos);
@@ -2176,25 +2188,26 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         setFocusTopView(false);
         setFocusButtons(false);
         this.epgAdapter = new EpgRecyclerAdapter(this, new ArrayList());
+        EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
         this.recycler_epg.setFocusable(false);
+        this.recycler_epg.setVisibility(View.GONE);
+        ensureVisibleEpgPanel();
         if (this.epgChannels.size() <= 0) {
             this.recycler_category.requestFocus();
             return;
         }
         setFull();
-        if (isAdultChannel(((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_id(), ((EPGChannel) this.epgChannels.get(this.channel_pos)).getCategory_name())) {
-            this.channel_pos = 0;
+        EPGChannel initialChannel = (EPGChannel) this.epgChannels.get(this.channel_pos);
+        if (isAdultChannel(initialChannel.getCategory_id(), initialChannel.getCategory_name())) {
+            showChannelLockDlgFragment(initialChannel, this.channel_pos, 2);
+            return;
         }
-        playSelectedChannel((EPGChannel) this.epgChannels.get(this.channel_pos));
+        playSelectedChannel(initialChannel);
         this.stream_id = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getStream_id();
-        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            showEpgInfo(null);
-        } else {
-            this.handler.removeCallbacks(this.epgTicker);
-            epgTimer(this.stream_id);
-        }
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(this.stream_id);
         String name = ((EPGChannel) this.epgChannels.get(this.channel_pos)).getName();
         this.channel_name = name;
         this.txt_name.setText(name);
@@ -2203,9 +2216,228 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         this.recycler_channel.requestFocus();
         this.recycler_channel.setSelectedPosition(this.channel_pos);
         this.recycler_channel.scrollToPosition(this.channel_pos);
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            openVoiceChannel(voiceQuery);
+        }
+        NullTextGuard.sanitize(this);
     }
 
-    @Override // android.view.View.OnFocusChangeListener
+    @Override
+    protected void onResume() {
+        super.onResume();
+        NullTextGuard.sanitize(this);
+    }
+
+    private void applyVoiceChannelSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+        int allPosition = 0;
+        for (int i = 0; this.categoryModels != null && i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                allPosition = i;
+                break;
+            }
+        }
+        this.category_pos = allPosition;
+        if (this.categoryAdapter != null) {
+            this.categoryAdapter.setCategoryPosition(allPosition);
+        }
+        this.et_search.setText(query);
+        Toast.makeText(this, "Canais encontrados para: " + query, Toast.LENGTH_SHORT).show();
+    }
+
+    private int voiceDp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private void setupVoiceButton() {
+        if (this.main_lay == null) {
+            return;
+        }
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz", view -> requestVoicePermissionAndStart());
+        this.voiceButton.setId(View.generateViewId());
+        ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(voiceDp(116), voiceDp(52));
+        params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+        params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+        params.setMarginEnd(voiceDp(24));
+        params.bottomMargin = voiceDp(24);
+        this.main_lay.addView(this.voiceButton, params);
+        this.voiceButton.bringToFront();
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.voiceButton.setVisibility(View.GONE);
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                Toast.makeText(LiveActivity.this, state, Toast.LENGTH_SHORT).show();
+            }
+
+            public void onVoiceError(String message) {
+                Toast.makeText(LiveActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    private void handleVoiceCommand(VoiceCommand command) {
+        if (command == null) {
+            return;
+        }
+        switch (command.getAction()) {
+            case OPEN_LIVE:
+                Toast.makeText(this, "Você já está nos canais ao vivo", Toast.LENGTH_SHORT).show();
+                return;
+            case OPEN_MOVIES:
+                goToVodActivity();
+                return;
+            case OPEN_SERIES:
+                goToSeriesActivity();
+                return;
+            case OPEN_SETTINGS:
+                goToSettingActivity();
+                return;
+            case NEXT_CHANNEL:
+                playNextChannel();
+                return;
+            case PREVIOUS_CHANNEL:
+                playPreviousChannel();
+                return;
+            case PLAY:
+                if (this.player != null) {
+                    this.player.setPlayWhenReady(true);
+                }
+                return;
+            case PAUSE:
+                if (this.player != null) {
+                    this.player.setPlayWhenReady(false);
+                }
+                return;
+            case SEARCH_CHANNEL:
+                applyVoiceChannelSearch(command.getQuery());
+                return;
+            case OPEN_CHANNEL:
+            case OPEN_TITLE:
+                openVoiceChannel(command.getQuery());
+                return;
+            default:
+                Toast.makeText(this, "Diga: abrir canal seguido do nome", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean hasVoiceQuality(String query) {
+        String normalized = VoiceCommand.normalize(query);
+        return normalized.matches(".*\\b(full hd|fhd|hd|sd)\\b.*");
+    }
+
+    private String voiceBaseToken(String query) {
+        String normalized = VoiceCommand.normalize(query);
+        for (String token : normalized.split("\\s+")) {
+            if (!token.isEmpty() && !"full".equals(token) && !"hd".equals(token) && !"fhd".equals(token) && !"sd".equals(token)) {
+                return token;
+            }
+        }
+        return normalized;
+    }
+
+    private void openVoiceChannel(String query) {
+        if (this.et_search != null && this.et_search.length() > 0) {
+            this.et_search.setText("");
+        }
+        if (!hasVoiceQuality(query)) {
+            applyVoiceChannelSearch(query);
+            return;
+        }
+        String baseToken = voiceBaseToken(query);
+        RealmResults<EPGChannel> globalMatches = RealmController.with().getLiveChannelsByKey(baseToken, true);
+        EPGChannel channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
+        if (channel == null) {
+            globalMatches = RealmController.with().getAllLiveChannels();
+            channel = VoiceChannelMatcher.findExactMatch(globalMatches, query);
+        }
+        if (channel == null && hasVoiceQuality(query)) {
+            java.util.List<EPGChannel> firstMatches = VoiceChannelMatcher.findMatches(globalMatches, query);
+            if (!firstMatches.isEmpty()) {
+                channel = firstMatches.get(0);
+            }
+        }
+        if (channel == null) {
+            applyVoiceChannelSearch(query);
+            return;
+        }
+        int index = -1;
+        for (int i = 0; i < this.epgChannels.size(); i++) {
+            EPGChannel item = this.epgChannels.get(i);
+            if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            this.epgChannels = globalMatches;
+            if (this.channelAdapter != null) {
+                this.channelAdapter.updateData(this.epgChannels, 0);
+            }
+            for (int i = 0; i < this.epgChannels.size(); i++) {
+                EPGChannel item = this.epgChannels.get(i);
+                if (item != null && item.getStream_id() != null && item.getStream_id().equals(channel.getStream_id())) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index < 0) {
+            applyVoiceChannelSearch(query);
+            return;
+        }
+        if (isAdultChannel(channel.getCategory_id(), channel.getCategory_name())) {
+            showChannelLockDlgFragment(channel, index, 0);
+            return;
+        }
+        this.channel_pos = index;
+        this.pre_channel_pos = index;
+        this.is_full = true;
+        setFull();
+        playSelectedChannel(channel);
+        this.handler.removeCallbacks(this.epgTicker);
+        epgTimer(channel.getStream_id());
+        this.channel_name = channel.getName();
+        updateChannelEpgText("carregando EPG...", "aguardando programação...");
+        changeChannelInfo(index);
+        this.recycler_channel.setSelectedPosition(index);
+        this.recycler_channel.scrollToPosition(index);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            requestVoicePermissionAndStart();
+        } else if (requestCode == VOICE_PERMISSION_REQUEST) {
+            Toast.makeText(this, "O comando de voz precisa da permissão de microfone", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
+    }
+
     public void onFocusChange(View view, boolean z) {
         if (z) {
             this.handler.removeCallbacks(this.hideInfoTicker);
@@ -2213,8 +2445,10 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
         super.onPause();
         if (Util.SDK_INT <= 23) {
             StyledPlayerView styledPlayerView = this.playerView;
@@ -2225,7 +2459,6 @@ public class LiveActivity extends AppCompatActivity implements View.OnFocusChang
         }
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity, android.app.Activity
     public void onStop() {
         super.onStop();
         HeartbeatPeriodicHelper heartbeatPeriodicHelper = this.heartbeatHelper;

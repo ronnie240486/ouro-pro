@@ -23,7 +23,6 @@ public class DownloadImageTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     /* JADX INFO: Access modifiers changed from: protected */
-    @Override // android.os.AsyncTask
     public Boolean doInBackground(Void... voids) {
         int i = 0;
         while (true) {
@@ -38,11 +37,9 @@ public class DownloadImageTask extends AsyncTask<Void, Void, Boolean> {
                     File outputFile = new File(cacheDir, "image" + i + ".jpg");
                     FileOutputStream outputStream = new FileOutputStream(outputFile);
                     byte[] buffer = new byte[1024];
-                    while (true) {
-                        int bytesRead = inputStream.read(buffer);
-                        if (bytesRead != -1) {
-                            outputStream.write(buffer, 0, bytesRead);
-                        }
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
                     }
                     outputStream.close();
                     inputStream.close();
@@ -59,7 +56,6 @@ public class DownloadImageTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     /* JADX INFO: Access modifiers changed from: protected */
-    @Override // android.os.AsyncTask
     public void onPostExecute(Boolean result) {
         if (result.booleanValue()) {
             Log.d(TAG, "Images downloaded successfully!");

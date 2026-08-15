@@ -9,6 +9,7 @@ import androidx.multidex.MultiDexApplication;
 import com.diegodev.travarlaucnher.md.img.EncryptedApiCaller;
 import com.evgenii.jsevaluator.BuildConfig;
 import com.ouropro.player.helper.PreferenceHelper;
+import com.ouropro.player.improvements.PlaylistFailoverManager;
 import com.ouropro.player.models.CategoryModel;
 import com.rtx.DNS.mConfig;
 import com.rtx.Setting.JsonParserTask;
@@ -81,11 +82,11 @@ public class LTVApp extends MultiDexApplication {
         version_name = packageInfo.versionName;
     }
 
-    @Override // android.app.Application
     public void onCreate() {
         super.onCreate();
         EncryptedApiCaller.callEncryptedMoviesApi(this);
         instance = this;
+        PlaylistFailoverManager.start(this);
     }
 
     public void setM3UChannelsItems(List<M3UItem> list) {

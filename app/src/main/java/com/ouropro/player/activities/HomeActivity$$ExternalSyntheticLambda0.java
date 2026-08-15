@@ -14,17 +14,14 @@ public final /* synthetic */ class HomeActivity$$ExternalSyntheticLambda0 implem
         this.f$0 = homeActivity;
     }
 
-    @Override // androidx.activity.result.ActivityResultCallback
     public final void onActivityResult(Object obj) {
         this.f$0.lambda$new$0((ActivityResult) obj);
     }
 
-    @Override // com.ouropro.player.dlgfragment.AccountDlgFragment.PayButtonClickListener
     public final void onPayButtonClicked() {
         this.f$0.lambda$showAccountDlgFragment$1();
     }
 
-    @Override // com.ouropro.player.dlgfragment.NoConnectionDlgFragment.OnRetryClickListener
     public final void onRetryClick() {
         this.f$0.lambda$showNoConnectionDlgFragment$2();
     }

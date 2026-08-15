@@ -1,14 +1,27 @@
 package com.ouropro.player.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.DialogInterface;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
@@ -24,6 +37,8 @@ import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.EpgReminderStore;
+import com.ouropro.player.improvements.XmlTvEpgLoader;
 import com.ouropro.player.models.CatchUpEpg;
 import com.ouropro.player.models.CatchUpEpgResponse;
 import com.ouropro.player.models.CatchupModel;
@@ -65,6 +80,10 @@ public class CatchUpActivity extends AppCompatActivity {
     public SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM d");
     public SimpleDateFormat weekFormat = new SimpleDateFormat("EEEE");
     public WordModels wordModels = new WordModels();
+    private final Handler reminderHandler = new Handler(Looper.getMainLooper());
+    private AlertDialog reminderDialog;
+    private CountDownTimer reminderTimer;
+    private CatchUpEpg activeReminder;
 
     /* JADX INFO: Access modifiers changed from: private */
     /* JADX WARN: Type inference failed for: r0v15, types: [java.util.ArrayList, java.util.List<com.ouropro.player.models.CatchupModel>] */
@@ -148,18 +167,11 @@ public class CatchUpActivity extends AppCompatActivity {
     private void getEpg() {
         this.progressBar.setVisibility(0);
         try {
-            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl()).get_full_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
-                @Override // retrofit2.Callback
+            RetroClass.getAPIService(this.preferenceHelper.getSharedPreferenceServerUrl(), this.preferenceHelper.getSharedPreferenceISM3U()).get_short_epg(this.preferenceHelper.getSharedPreferenceUsername(), this.preferenceHelper.getSharedPreferencePassword(), this.selectedChannel.getStream_id()).enqueue(new Callback<CatchUpEpgResponse>() { // from class: com.ouropro.player.activities.CatchUpActivity.1
                 public void onFailure(@NonNull Call<CatchUpEpgResponse> call, @NonNull Throwable th) {
-                    CatchUpActivity.this.progressBar.setVisibility(8);
-                    CatchUpActivity catchUpActivity = CatchUpActivity.this;
-                    Toast.makeText(catchUpActivity, catchUpActivity.wordModels.getNo_epg_avaliable(), 0).show();
-                    CatchUpActivity.this.catchUpEpgList = new ArrayList();
-                    CatchUpActivity.this.image_back.setFocusable(true);
-                    CatchUpActivity.this.image_back.requestFocus();
+                    CatchUpActivity.this.loadXmlTvEpg();
                 }
 
-                @Override // retrofit2.Callback
                 public void onResponse(@NonNull Call<CatchUpEpgResponse> call, @NonNull Response<CatchUpEpgResponse> response) {
                     if (response.body() != null && response.body().getEpg_listings().size() != 0) {
                         CatchUpActivity.this.catchUpEpgList = response.body().getEpg_listings();
@@ -167,19 +179,45 @@ public class CatchUpActivity extends AppCompatActivity {
                         catchUpActivity.getCatchupModels(catchUpActivity.catchUpEpgList);
                         return;
                     }
-                    CatchUpActivity.this.catchUpEpgList = new ArrayList();
-                    CatchUpActivity.this.progressBar.setVisibility(8);
-                    CatchUpActivity catchUpActivity2 = CatchUpActivity.this;
-                    Toast.makeText(catchUpActivity2, catchUpActivity2.wordModels.getNo_epg_avaliable(), 0).show();
+                    CatchUpActivity.this.loadXmlTvEpg();
                 }
             });
         } catch (Exception unused) {
-            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), 0).show();
-            this.progressBar.setVisibility(8);
-            this.catchUpEpgList = new ArrayList();
-            this.image_back.setFocusable(true);
-            this.image_back.requestFocus();
+            loadXmlTvEpg();
         }
+    }
+
+    private void loadXmlTvEpg() {
+        XmlTvEpgLoader.load(
+                this.preferenceHelper.getSharedPreferenceServerUrl(),
+                this.preferenceHelper.getSharedPreferenceISM3U(),
+                this.preferenceHelper.getSharedPreferenceUsername(),
+                this.preferenceHelper.getSharedPreferencePassword(),
+                this.preferenceHelper.getSharedPreferenceM3UEpgUrl(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getId() + "|" + this.selectedChannel.getStream_id(),
+                this.selectedChannel == null ? "" : this.selectedChannel.getName(),
+                new XmlTvEpgLoader.Listener() {
+                    @Override
+                    public void onLoaded(List<CatchUpEpg> programs) {
+                        runOnUiThread(() -> {
+                            if (programs == null || programs.isEmpty()) {
+                                progressBar.setVisibility(8);
+                                Toast.makeText(CatchUpActivity.this, wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            catchUpEpgList = programs;
+                            getCatchupModels(programs);
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable error) {
+                        runOnUiThread(() -> {
+                            progressBar.setVisibility(8);
+                            Toast.makeText(CatchUpActivity.this, wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
     }
 
     private void goToLivePage() {
@@ -187,6 +225,195 @@ public class CatchUpActivity extends AppCompatActivity {
         intent.putExtra("is_changed", "");
         setResult(-1, intent);
         finish();
+    }
+
+    private boolean isReminderScheduled(CatchUpEpg program) {
+        return this.selectedChannel != null && EpgReminderStore.isScheduled(this, this.selectedChannel.getStream_id(), program);
+    }
+
+    private void toggleReminder(CatchUpEpg program) {
+        if (this.selectedChannel == null || program == null) {
+            return;
+        }
+        boolean scheduled = isReminderScheduled(program);
+        EpgReminderStore.setScheduled(this, this.selectedChannel.getStream_id(), program, !scheduled);
+        int index = this.currentEventList == null ? -1 : this.currentEventList.indexOf(program);
+        if (index >= 0 && this.programAdapter != null) {
+            this.programAdapter.notifyItemChanged(index);
+        }
+        if (scheduled) {
+            Toast.makeText(this, "Aviso removido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        long startMillis = program.getStart_timestamp() * 1000L;
+        long delay = startMillis - System.currentTimeMillis() - 10000L;
+        if (delay < 0L) {
+            delay = 0L;
+        }
+        this.reminderHandler.postDelayed(() -> showReminderDialog(program), delay);
+        Toast.makeText(this, "Aviso ativado para este programa", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showReminderDialog(CatchUpEpg program) {
+        if (program == null || this.selectedChannel == null || !isReminderScheduled(program)
+                || isFinishing() || (android.os.Build.VERSION.SDK_INT >= 17 && isDestroyed())) {
+            return;
+        }
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            return;
+        }
+        this.activeReminder = program;
+        final String title = Utils.decode64String(program.getTitle());
+        final int gold = Color.rgb(255, 208, 0);
+        final int dark = Color.rgb(28, 22, 36);
+        int density = (int) (getResources().getDisplayMetrics().density + 0.5f);
+        int padding = 24 * density;
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        content.setPadding(padding, padding, padding, padding / 2);
+        GradientDrawable cardBackground = new GradientDrawable();
+        cardBackground.setColor(Color.argb(228, 28, 22, 36));
+        cardBackground.setCornerRadius(22 * density);
+        cardBackground.setStroke(2 * density, gold);
+        content.setBackground(cardBackground);
+        FrameLayout modalRoot = new FrameLayout(this);
+        ImageView backdrop = new ImageView(this);
+        backdrop.setImageResource(R.drawable.home_logo);
+        backdrop.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        backdrop.setAlpha(0.12f);
+        modalRoot.addView(backdrop, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        modalRoot.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        TextView header = new TextView(this);
+        header.setText("LEMBRETE DO EPG");
+        header.setTextColor(gold);
+        header.setTextSize(13.0f);
+        header.setGravity(Gravity.CENTER);
+        header.setTypeface(null, android.graphics.Typeface.BOLD);
+        content.addView(header, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView status = new TextView(this);
+        status.setTextColor(Color.WHITE);
+        status.setTextSize(17.0f);
+        status.setGravity(Gravity.CENTER);
+        status.setPadding(0, padding / 2, 0, padding / 3);
+        status.setText("O programa começa em 10 segundos");
+        content.addView(status, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView titleView = new TextView(this);
+        titleView.setTextColor(Color.WHITE);
+        titleView.setTextSize(22.0f);
+        titleView.setGravity(Gravity.CENTER);
+        titleView.setTypeface(null, android.graphics.Typeface.BOLD);
+        titleView.setSingleLine(true);
+        titleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        titleView.setText(title);
+        content.addView(titleView, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        TextView countdown = new TextView(this);
+        countdown.setTextColor(gold);
+        countdown.setTextSize(34.0f);
+        countdown.setGravity(Gravity.CENTER);
+        countdown.setTypeface(null, android.graphics.Typeface.BOLD);
+        countdown.setText("10");
+        GradientDrawable clockBackground = new GradientDrawable();
+        clockBackground.setShape(GradientDrawable.OVAL);
+        clockBackground.setColor(Color.rgb(48, 36, 58));
+        clockBackground.setStroke(4 * density, gold);
+        countdown.setBackground(clockBackground);
+        int clockSize = 96 * density;
+        LinearLayout.LayoutParams clockParams = new LinearLayout.LayoutParams(clockSize, clockSize);
+        clockParams.gravity = Gravity.CENTER_HORIZONTAL;
+        clockParams.topMargin = padding / 2;
+        clockParams.bottomMargin = padding / 2;
+        content.addView(countdown, clockParams);
+
+        ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progress.setMax(10);
+        progress.setProgress(10);
+        content.addView(progress, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 8 * density));
+
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setGravity(Gravity.CENTER);
+        buttons.setPadding(0, padding / 2, 0, 0);
+        TextView discard = new TextView(this);
+        TextView goNow = new TextView(this);
+        for (TextView button : new TextView[]{discard, goNow}) {
+            button.setTextColor(Color.WHITE);
+            button.setTextSize(14.0f);
+            button.setGravity(Gravity.CENTER);
+            button.setTypeface(null, android.graphics.Typeface.BOLD);
+            button.setPadding(20 * density, 12 * density, 20 * density, 12 * density);
+            GradientDrawable buttonBackground = new GradientDrawable();
+            buttonBackground.setColor(Color.rgb(102, 72, 150));
+            buttonBackground.setCornerRadius(10 * density);
+            button.setBackground(buttonBackground);
+        }
+        discard.setText("DESCARTAR");
+        goNow.setText("IR AGORA");
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f);
+        buttonParams.setMargins(6 * density, 0, 6 * density, 0);
+        buttons.addView(discard, new LinearLayout.LayoutParams(buttonParams));
+        buttons.addView(goNow, new LinearLayout.LayoutParams(buttonParams));
+        content.addView(buttons, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(modalRoot).setOnCancelListener(d -> clearActiveReminder(program)).create();
+        this.reminderDialog = dialog;
+        discard.setOnClickListener(v -> clearActiveReminder(program));
+        goNow.setOnClickListener(v -> {
+            clearActiveReminder(program);
+            goToLivePage();
+        });
+        dialog.setOnShowListener(d -> {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                android.view.WindowManager.LayoutParams attributes = window.getAttributes();
+                attributes.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.82f);
+                window.setAttributes(attributes);
+            }
+            this.reminderTimer = new CountDownTimer(10000L, 1000L) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    int seconds = (int) Math.ceil(millisUntilFinished / 1000.0d);
+                    status.setText("O programa começa em " + seconds + " segundos");
+                    countdown.setText(String.valueOf(seconds));
+                    progress.setProgress(seconds);
+                }
+
+                @Override
+                public void onFinish() {
+                    status.setText("O programa está começando agora");
+                    countdown.setText("0");
+                    progress.setProgress(0);
+                }
+            }.start();
+        });
+        dialog.setOnDismissListener(d -> {
+            if (this.reminderTimer != null) {
+                this.reminderTimer.cancel();
+                this.reminderTimer = null;
+            }
+            this.reminderDialog = null;
+        });
+        dialog.show();
+    }
+
+    private void clearActiveReminder(CatchUpEpg program) {
+        if (this.selectedChannel != null && program != null) {
+            EpgReminderStore.setScheduled(this, this.selectedChannel.getStream_id(), program, false);
+        }
+        if (this.reminderTimer != null) {
+            this.reminderTimer.cancel();
+            this.reminderTimer = null;
+        }
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            this.reminderDialog.dismiss();
+        }
+        this.activeReminder = null;
     }
 
     private void initView() {
@@ -207,7 +434,6 @@ public class CatchUpActivity extends AppCompatActivity {
         this.date_list.setPreserveFocusAfterLayout(true);
         final View[] viewArr = {null};
         this.date_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.CatchUpActivity.2
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr2 = viewArr;
@@ -224,7 +450,6 @@ public class CatchUpActivity extends AppCompatActivity {
         this.epg_list.setLoop(false);
         final View[] viewArr2 = {null};
         this.epg_list.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.CatchUpActivity.3
-            @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
             public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                 super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                 View[] viewArr3 = viewArr2;
@@ -285,7 +510,6 @@ public class CatchUpActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         List<CatchUpEpg> list;
         if (keyEvent.getAction() == 0) {
@@ -322,7 +546,6 @@ public class CatchUpActivity extends AppCompatActivity {
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_catch_up);
@@ -330,7 +553,14 @@ public class CatchUpActivity extends AppCompatActivity {
         this.preferenceHelper = new PreferenceHelper(this);
         this.wordModels = GetSharedInfo.getWordModel(this);
         initView();
-        this.selectedChannel = RealmController.with().getEpgChannelByName(LTVApp.channelName);
+        String requestedStreamId = getIntent().getStringExtra("catchup_stream_id");
+        EPGChannel channelByStreamId = RealmController.with().getEpgChannelByStreamId(requestedStreamId);
+        this.selectedChannel = channelByStreamId != null ? channelByStreamId : RealmController.with().getEpgChannelByName(LTVApp.channelName);
+        if (this.selectedChannel == null) {
+            Toast.makeText(this, this.wordModels.getNo_epg_avaliable(), Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         TextView textView = this.channel_name;
         StringBuilder sbM = Insets$$ExternalSyntheticOutline0.m("");
         sbM.append(this.selectedChannel.getNum());
@@ -343,14 +573,13 @@ public class CatchUpActivity extends AppCompatActivity {
             Glide.with((FragmentActivity) this).load(Integer.valueOf(R.drawable.home_logo)).error(R.drawable.home_logo).into(this.channel_image);
         }
         final int i = 0;
-        DateRecyclerAdapter dateRecyclerAdapter = new DateRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
+        DateRecyclerAdapter dateRecyclerAdapter = new DateRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
             public final /* synthetic */ CatchUpActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = CatchUpActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i) {
                     case 0:
@@ -363,14 +592,13 @@ public class CatchUpActivity extends AppCompatActivity {
         this.dateAdapter = dateRecyclerAdapter;
         this.date_list.setAdapter(dateRecyclerAdapter);
         final int i2 = 1;
-        ProgramRecyclerAdapter programRecyclerAdapter = new ProgramRecyclerAdapter(this, new ArrayList(), new Function3(this) { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
+        ProgramRecyclerAdapter programRecyclerAdapter = new ProgramRecyclerAdapter(this, new ArrayList(), new Function3() { // from class: com.ouropro.player.activities.CatchUpActivity$$ExternalSyntheticLambda0
             public final /* synthetic */ CatchUpActivity f$0;
 
             {
-                this.f$0 = this;
+                this.f$0 = CatchUpActivity.this;
             }
 
-            @Override // kotlin.jvm.functions.Function3
             public final Object invoke(Object obj, Object obj2, Object obj3) {
                 switch (i2) {
                     case 0:
@@ -381,7 +609,31 @@ public class CatchUpActivity extends AppCompatActivity {
             }
         });
         this.programAdapter = programRecyclerAdapter;
+        programRecyclerAdapter.setBellClickListener(new ProgramRecyclerAdapter.BellClickListener() {
+            @Override
+            public boolean isScheduled(CatchUpEpg program) {
+                return isReminderScheduled(program);
+            }
+
+            @Override
+            public void onBellClick(CatchUpEpg program) {
+                toggleReminder(program);
+            }
+        });
         this.epg_list.setAdapter(programRecyclerAdapter);
         getEpg();
+    }
+
+    @Override
+    protected void onDestroy() {
+        this.reminderHandler.removeCallbacksAndMessages(null);
+        if (this.reminderTimer != null) {
+            this.reminderTimer.cancel();
+            this.reminderTimer = null;
+        }
+        if (this.reminderDialog != null && this.reminderDialog.isShowing()) {
+            this.reminderDialog.dismiss();
+        }
+        super.onDestroy();
     }
 }

@@ -11,14 +11,17 @@ import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets$$ExternalSyntheticOutline0;
 import androidx.recyclerview.widget.RecyclerView;
 import com.ouropro.player.R;
+import com.ouropro.player.activities.TrailerSearchActivity;
 import com.ouropro.player.models.SeriesModel;
+import com.ouropro.player.models.EpisodeModel;
+import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.utils.ImageLoaderJava;
 import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeViewHolder> {
+public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<RecyclerSeriesHomeAdapter.LiveHomeViewHolder> {
     public Function3<SeriesModel, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<SeriesModel> models;
@@ -27,10 +30,12 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         public ImageView image_logo;
         public ImageView image_movie;
         public TextView txt_name;
+        public TextView btn_trailer;
 
         public LiveHomeViewHolder(@NonNull RecyclerSeriesHomeAdapter recyclerSeriesHomeAdapter, View view) {
             super(view);
             this.txt_name = (TextView) view.findViewById(R.id.txt_name);
+            this.btn_trailer = (TextView) view.findViewById(R.id.btn_trailer);
             this.image_movie = (ImageView) view.findViewById(R.id.image_channel);
             this.image_logo = (ImageView) view.findViewById(R.id.image_logo);
         }
@@ -74,7 +79,6 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         return false;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<SeriesModel> list = this.models;
         if (list == null) {
@@ -83,18 +87,18 @@ public class RecyclerSeriesHomeAdapter extends RecyclerView.Adapter<LiveHomeView
         return list.size();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @SuppressLint({"ClickableViewAccessibility"})
     public void onBindViewHolder(@NonNull LiveHomeViewHolder liveHomeViewHolder, int i) {
         SeriesModel seriesModel = this.models.get(i);
         liveHomeViewHolder.txt_name.setText(seriesModel.getName());
         ImageLoaderJava.imageLoadUrlWithVodHolder(this.context, liveHomeViewHolder.image_movie, seriesModel.getStream_icon(), R.drawable.default_series, liveHomeViewHolder.image_logo);
+        liveHomeViewHolder.btn_trailer.setVisibility(View.VISIBLE);
+        liveHomeViewHolder.btn_trailer.setOnClickListener(view -> TrailerSearchActivity.open(this.context, seriesModel.getName()));
         liveHomeViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, seriesModel, i, liveHomeViewHolder, 8));
         liveHomeViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, seriesModel, i, 11));
         liveHomeViewHolder.itemView.setOnTouchListener(new RecyclerVodHomeAdapter$$ExternalSyntheticLambda0(this, liveHomeViewHolder, seriesModel, i, 2));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public LiveHomeViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new LiveHomeViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_home_vod, viewGroup, false));

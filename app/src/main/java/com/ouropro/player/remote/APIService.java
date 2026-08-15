@@ -33,6 +33,10 @@ public interface APIService {
     @GET("/xmltv.php")
     Call<ResponseBody> getEpgXml(@Query("username") String str, @Query("password") String str2);
 
+    @Streaming
+    @GET
+    Call<ResponseBody> getEpgXmlUrl(@Url String url);
+
     @GET
     Call<MovieCreditResponse> getMovieCreditModels(@Url String str);
 
@@ -62,6 +66,9 @@ public interface APIService {
 
     @GET("/player_api.php?action=get_series&category_id=*")
     Call<List<SeriesModel>> get_series(@Query("username") String str, @Query("password") String str2);
+
+    @GET("/player_api.php?action=get_series")
+    Call<List<SeriesModel>> get_series_by_category(@Query("username") String username, @Query("password") String password, @Query("category_id") String categoryId);
 
     @GET("/player_api.php?action=get_series_categories")
     Call<List<CategoryModel>> get_series_categories(@Query("username") String str, @Query("password") String str2);

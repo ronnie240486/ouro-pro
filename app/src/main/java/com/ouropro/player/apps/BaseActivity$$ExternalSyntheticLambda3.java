@@ -22,7 +22,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda3 implem
         this.f$3 = list2;
     }
 
-    @Override // com.ouropro.player.net.NetworkTask.OnCompleteListener
     public final void onComplete(Object obj) {
         switch (this.$r8$classId) {
             case 0:

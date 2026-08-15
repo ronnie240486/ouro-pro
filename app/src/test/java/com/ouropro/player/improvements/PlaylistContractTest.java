@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import org.junit.Test;
 
@@ -21,7 +22,9 @@ public class PlaylistContractTest {
     }
 
     private static final class PlaylistJson {
+        @SerializedName("playlist_url")
         String playlistUrl;
+        @SerializedName("playlist_name")
         String playlistName;
     }
 }

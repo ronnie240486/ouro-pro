@@ -647,7 +647,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private String getKeyFromCategoryName(String str) {
-        for (String str2 : new TreeSet(this.categoryHashMap.keySet())) {
+        for (String str2 : new TreeSet<String>(this.categoryHashMap.keySet())) {
             if (getCategoryNameFromKey(str2).equalsIgnoreCase(str)) {
                 return str2;
             }
@@ -712,7 +712,7 @@ public class BaseActivity extends AppCompatActivity {
         while (it.hasNext()) {
             addChannelToCategory(it.next());
         }
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
@@ -768,7 +768,7 @@ public class BaseActivity extends AppCompatActivity {
         while (it.hasNext()) {
             addMovieToCategory(it.next());
         }
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getResume_to_watch()));
@@ -898,7 +898,7 @@ public class BaseActivity extends AppCompatActivity {
             addSeriesToCategory(it.next());
         }
         this.categoryHashMap.keySet();
-        TreeSet treeSet = new TreeSet(this.categoryHashMap.keySet());
+        TreeSet treeSet = new TreeSet<String>(this.categoryHashMap.keySet());
         int i = 0;
         ArrayList arrayList = new ArrayList();
         arrayList.add(new CategoryModel(Constants.resume_id, this.wordModels.getRecently_viewed()));
@@ -929,7 +929,7 @@ public class BaseActivity extends AppCompatActivity {
         }
         ArrayList arrayList = new ArrayList();
         this.episodeModelHashMap.keySet();
-        Iterator it2 = new TreeSet(this.episodeModelHashMap.keySet()).iterator();
+        Iterator it2 = new TreeSet<String>(this.episodeModelHashMap.keySet()).iterator();
         while (true) {
             i = 0;
             if (!it2.hasNext()) {

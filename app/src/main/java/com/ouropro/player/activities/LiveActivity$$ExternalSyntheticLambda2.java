@@ -11,7 +11,6 @@ public final /* synthetic */ class LiveActivity$$ExternalSyntheticLambda2 implem
         this.f$0 = liveActivity;
     }
 
-    @Override // java.lang.Runnable
     public final void run() {
         switch (this.$r8$classId) {
             case 0:

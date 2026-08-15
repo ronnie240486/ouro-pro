@@ -10,7 +10,6 @@ public abstract class YouTubeUriExtractor extends YouTubeExtractor {
         super(context);
     }
 
-    @Override // at.huber.youtubeExtractor.YouTubeExtractor
     public final void onExtractionComplete(SparseArray<YtFile> sparseArray, VideoMeta videoMeta) {
         onUrisAvailable(videoMeta.getVideoId(), videoMeta.getTitle(), sparseArray);
     }

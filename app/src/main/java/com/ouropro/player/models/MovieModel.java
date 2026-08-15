@@ -4,13 +4,12 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import com.google.gson.annotations.SerializedName;
 import io.realm.RealmObject;
-import io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface;
 import io.realm.internal.RealmObjectProxy;
 import iptv.m3u.parser.M3UItem;
 import java.io.Serializable;
 
 /* JADX INFO: loaded from: classes.dex */
-public class MovieModel extends RealmObject implements Serializable, com_flextv_livestore_models_MovieModelRealmProxyInterface {
+public class MovieModel extends RealmObject implements Serializable {
 
     @SerializedName("added")
     private String added;
@@ -186,202 +185,162 @@ public class MovieModel extends RealmObject implements Serializable, com_flextv_
         return realmGet$is_recent();
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$added() {
         return this.added;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$category_id() {
         return this.category_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$category_name() {
         return this.category_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$custom_sid() {
         return this.custom_sid;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$extension() {
         return this.extension;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public boolean realmGet$is_favorite() {
         return this.is_favorite;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public boolean realmGet$is_locked() {
         return this.is_locked;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public boolean realmGet$is_recent() {
         return this.is_recent;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$name() {
         return this.name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public int realmGet$num() {
         return this.num;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public int realmGet$pro() {
         return this.pro;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$rating() {
         return this.rating;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public long realmGet$recent_mil() {
         return this.recent_mil;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$stream_icon() {
         return this.stream_icon;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$stream_id() {
         return this.stream_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$stream_type() {
         return this.stream_type;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public long realmGet$time() {
         return this.time;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$tmdb_id() {
         return this.tmdb_id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$type() {
         return this.type;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public String realmGet$url() {
         return this.url;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$added(String str) {
         this.added = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$category_id(String str) {
         this.category_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$category_name(String str) {
         this.category_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$custom_sid(String str) {
         this.custom_sid = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$extension(String str) {
         this.extension = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$is_favorite(boolean z) {
         this.is_favorite = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$is_locked(boolean z) {
         this.is_locked = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$is_recent(boolean z) {
         this.is_recent = z;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$name(String str) {
         this.name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$num(int i) {
         this.num = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$pro(int i) {
         this.pro = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$rating(String str) {
         this.rating = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$recent_mil(long j) {
         this.recent_mil = j;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$stream_icon(String str) {
         this.stream_icon = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$stream_id(String str) {
         this.stream_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$stream_type(String str) {
         this.stream_type = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$time(long j) {
         this.time = j;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$tmdb_id(String str) {
         this.tmdb_id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$type(String str) {
         this.type = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_MovieModelRealmProxyInterface
     public void realmSet$url(String str) {
         this.url = str;
     }

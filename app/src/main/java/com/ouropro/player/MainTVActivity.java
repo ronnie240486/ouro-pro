@@ -54,6 +54,7 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
     public WordModels wordModels = new WordModels();
     public int failed_count = 0;
     public int playlist_position = 0;
+    private boolean openedHomeForBackgroundSync = false;
 
     @RequiresApi(api = 23)
     private void CheckSDK23Permission() {
@@ -89,7 +90,13 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
         if (time - new Date().getTime() >= 604800000 || appInfoModel.isIs_google_pay()) {
             if (appInfoModel.getResult().size() > 0) {
-                loadingData();
+                if (this.realm.where(com.ouropro.player.models.MovieModel.class).count() > 0
+                        || this.realm.where(com.ouropro.player.models.EPGChannel.class).count() > 0
+                        || this.realm.where(com.ouropro.player.models.SeriesModel.class).count() > 0) {
+                    loadingData();
+                } else {
+                    openHomeForBackgroundSync(appInfoModel);
+                }
                 return;
             }
             this.subscription = "";
@@ -186,6 +193,28 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         getUserInfoModel();
     }
 
+    private void openHomeForBackgroundSync(AppInfoModel info) {
+        if (info == null || info.getResult() == null || info.getResult().isEmpty()) {
+            startActivity(new Intent(this, ChangePlaylistActivity.class));
+            finish();
+            return;
+        }
+        int position = GetSharedInfo.getPlaylistPosition(this);
+        if (position < 0 || position >= info.getResult().size()) {
+            position = 0;
+        }
+        String playlistUrl = info.getResult().get(position).getUrl();
+        if (playlistUrl == null || playlistUrl.trim().isEmpty()) {
+            loadingData();
+            return;
+        }
+        this.openedHomeForBackgroundSync = true;
+        Intent home = new Intent(this, HomeActivity.class);
+        home.putExtra("bootstrap_playlist_url", playlistUrl.trim());
+        startActivity(home);
+        finish();
+    }
+
     private void getUserInfoModel() {
         String strTrim = Security.getStringData(Utils.getDeviceId(this), LTVApp.version_name, false, "tv").trim();
         GetDataRequest getDataRequest = new GetDataRequest(this, 1000);
@@ -229,17 +258,20 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i);
         this.descriptionDlgFragment = descriptionDlgFragmentNewInstance;
         descriptionDlgFragmentNewInstance.setButtonClickListener(new DescriptionDlgFragment.ButtonClickListener() { // from class: com.ouropro.player.MainTVActivity.2
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onCancelClick() {
                 MainTVActivity.this.descriptionDlgFragment.dismiss();
                 MainTVActivity.this.finishApp();
             }
 
-            @Override // com.ouropro.player.dlgfragment.DescriptionDlgFragment.ButtonClickListener
             public void onContinueClick() {
                 MainTVActivity.this.descriptionDlgFragment.dismiss();
                 if (i == -1) {
                     MainTVActivity.this.finishApp();
+                } else if (i > 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.MovieModel.class).count() == 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.EPGChannel.class).count() == 0
+                        && MainTVActivity.this.realm.where(com.ouropro.player.models.SeriesModel.class).count() == 0) {
+                    MainTVActivity.this.openHomeForBackgroundSync(MainTVActivity.this.appInfoModel);
                 } else {
                     MainTVActivity.this.loadingData();
                 }
@@ -259,11 +291,9 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         ExitDlgFragment exitDlgFragmentNewInstance = ExitDlgFragment.newInstance(this.wordModels.getExit(), this.wordModels.getExit_description(), this.wordModels.getStr_yes(), this.wordModels.getNo());
         this.exitDlgFragment = exitDlgFragmentNewInstance;
         exitDlgFragmentNewInstance.setOkButtonClickListener(new ExitDlgFragment.OkButtonClickListener() { // from class: com.ouropro.player.MainTVActivity.3
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onCancelClick() {
             }
 
-            @Override // com.ouropro.player.dlgfragment.ExitDlgFragment.OkButtonClickListener
             public void onOkClick() {
                 List<ActivityManager.AppTask> appTasks;
                 System.exit(0);
@@ -278,7 +308,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         this.exitDlgFragment.show(supportFragmentManager, "fragment_exit");
     }
 
-    @Override // com.ouropro.player.remote.GetDataRequest.OnGetResponseListener
     public void OnGetResponseResult(JSONObject jSONObject, int i) {
         if (jSONObject == null) {
             checkLocalStorageAccount();
@@ -331,8 +360,11 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
     }
 
-    @Override // com.ouropro.player.apps.BaseTVActivity
     public final void doNextTask(boolean z) {
+        if (this.openedHomeForBackgroundSync) {
+            if (this.image_loader != null) this.image_loader.setVisibility(8);
+            return;
+        }
         if (z) {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(System.currentTimeMillis() / 1000);
             startActivity(new Intent(this, (Class<?>) HomeActivity.class));
@@ -344,7 +376,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         finish();
     }
 
-    @Override // com.ouropro.player.apps.BaseTVActivity, androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_main_tv);
@@ -360,7 +391,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         }
     }
 
-    @Override // android.app.Activity, android.view.KeyEvent.Callback
     public boolean onKeyDown(int i, KeyEvent keyEvent) {
         if (keyEvent.getAction() != 0 || i != 4) {
             return super.onKeyDown(i, keyEvent);
@@ -376,7 +406,6 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         return true;
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, android.app.Activity
     public void onRequestPermissionsResult(int i, @NonNull String[] strArr, @NonNull int[] iArr) {
         getMacAddress();
         super.onRequestPermissionsResult(i, strArr, iArr);

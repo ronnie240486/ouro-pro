@@ -336,6 +336,17 @@ public class RealmController {
         return realmQueryNot.contains(str2, "xxx", r5).not().contains(str2, "adult", r5).not().contains(str2, "porn", r5).findAll();
     }
 
+    public RealmResults<EPGChannel> getAllLiveChannels() {
+        return this.realm.where(EPGChannel.class).findAll();
+    }
+
+    public EPGChannel getEpgChannelByStreamId(String streamId) {
+        if (streamId == null || streamId.trim().isEmpty()) {
+            return null;
+        }
+        return this.realm.where(EPGChannel.class).equalTo("stream_id", streamId).findFirst();
+    }
+
     public List<ResumeSeriesModel> getResentSeriesNames() {
         ArrayList arrayList = new ArrayList();
         for (SeriesModel seriesModel : this.realm.where(SeriesModel.class).equalTo("is_recent", Boolean.TRUE).findAll()) {

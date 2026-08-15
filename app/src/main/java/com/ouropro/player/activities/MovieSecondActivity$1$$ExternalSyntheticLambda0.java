@@ -15,7 +15,6 @@ public final /* synthetic */ class MovieSecondActivity$1$$ExternalSyntheticLambd
         this.f$1 = i;
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         switch (this.$r8$classId) {
             case 0:

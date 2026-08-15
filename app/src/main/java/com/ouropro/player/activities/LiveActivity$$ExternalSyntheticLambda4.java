@@ -20,7 +20,6 @@ public final /* synthetic */ class LiveActivity$$ExternalSyntheticLambda4 implem
         this.f$0 = obj;
     }
 
-    @Override // kotlin.jvm.functions.Function3
     public final Object invoke(Object obj, Object obj2, Object obj3) {
         switch (this.$r8$classId) {
             case 0:

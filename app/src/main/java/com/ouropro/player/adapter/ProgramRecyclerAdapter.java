@@ -17,8 +17,14 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHolder> {
+public class ProgramRecyclerAdapter extends RecyclerView.Adapter<ProgramRecyclerAdapter.XCProgramViewHolder> {
+    public interface BellClickListener {
+        boolean isScheduled(CatchUpEpg program);
+        void onBellClick(CatchUpEpg program);
+    }
+
     public Function3<CatchUpEpg, Integer, Boolean, Unit> clickFunctionListener;
+    public BellClickListener bellClickListener;
     public Context context;
     public List<CatchUpEpg> epgModels;
     public int disabled_pos = -1;
@@ -31,6 +37,7 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         public TextView txt_program;
         public TextView txt_program_description;
         public TextView txt_time;
+        public ImageView epg_bell;
 
         public XCProgramViewHolder(@NonNull ProgramRecyclerAdapter programRecyclerAdapter, View view) {
             super(view);
@@ -39,6 +46,7 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
             this.txt_program = (TextView) view.findViewById(R.id.txt_program);
             this.txt_program_description = (TextView) view.findViewById(R.id.txt_program_description);
             this.catch_image = (ImageView) view.findViewById(R.id.catch_image);
+            this.epg_bell = (ImageView) view.findViewById(R.id.epg_bell);
         }
     }
 
@@ -70,7 +78,6 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         this.clickFunctionListener.invoke(catchUpEpg, Integer.valueOf(i), Boolean.TRUE);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<CatchUpEpg> list = this.epgModels;
         if (list == null) {
@@ -95,7 +102,10 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         notifyDataSetChanged();
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
+    public void setBellClickListener(BellClickListener listener) {
+        this.bellClickListener = listener;
+    }
+
     public void onBindViewHolder(@NonNull XCProgramViewHolder xCProgramViewHolder, int i) {
         CatchUpEpg catchUpEpg = this.epgModels.get(i);
         xCProgramViewHolder.txt_program.setText(Utils.decode64String(catchUpEpg.getTitle()));
@@ -112,6 +122,17 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         }
         xCProgramViewHolder.itemView.setOnFocusChangeListener(new CastRecyclerAdapter$$ExternalSyntheticLambda1(this, catchUpEpg, i, xCProgramViewHolder, 4));
         xCProgramViewHolder.itemView.setOnClickListener(new VodRecyclerAdapter$$ExternalSyntheticLambda0(this, catchUpEpg, i, 7));
+        if (this.bellClickListener == null) {
+            xCProgramViewHolder.epg_bell.setVisibility(View.GONE);
+        } else {
+            xCProgramViewHolder.epg_bell.setVisibility(View.VISIBLE);
+            if (this.bellClickListener.isScheduled(catchUpEpg)) {
+                xCProgramViewHolder.epg_bell.setColorFilter(Color.YELLOW);
+            } else {
+                xCProgramViewHolder.epg_bell.clearColorFilter();
+            }
+            xCProgramViewHolder.epg_bell.setOnClickListener(view -> this.bellClickListener.onBellClick(catchUpEpg));
+        }
         if (!this.is_disable) {
             xCProgramViewHolder.itemView.setBackgroundColor(Color.parseColor("#00FFFFFF"));
         } else if (i == this.disabled_pos) {
@@ -119,7 +140,6 @@ public class ProgramRecyclerAdapter extends RecyclerView.Adapter<XCProgramViewHo
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public XCProgramViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new XCProgramViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_program, viewGroup, false));

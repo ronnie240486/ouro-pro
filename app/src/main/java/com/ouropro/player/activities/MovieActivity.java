@@ -1,17 +1,23 @@
 package com.ouropro.player.activities;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.ViewGroup;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -31,6 +37,7 @@ import com.google.gson.Gson;
 import com.ouropro.player.R;
 import com.ouropro.player.activities.mobile.LiveMobileActivity;
 import com.ouropro.player.activities.mobile.MovieMobilePlayer;
+import com.ouropro.player.activities.SettingActivity;
 import com.ouropro.player.adapter.RecyclerVodCategoryAdapter;
 import com.ouropro.player.adapter.SortSpinnerAdapter;
 import com.ouropro.player.adapter.VodRecyclerAdapter;
@@ -40,6 +47,10 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.VoiceCommand;
+import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.VoiceCommandController;
+import com.ouropro.player.improvements.VoiceMediaMatcher;
 import com.ouropro.player.models.CategoryModel;
 import com.ouropro.player.models.MovieModel;
 import com.ouropro.player.models.SubTitleUserModel;
@@ -76,6 +87,9 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
     public TextView txt_search;
     public TextView txt_series;
     public VodRecyclerAdapter vodAdapter;
+    private ImageButton voiceButton;
+    private VoiceCommandController voiceCommandController;
+    private static final int VOICE_PERMISSION_REQUEST = 910;
     public WordModels wordModels;
     public List<String> sortLists = new ArrayList();
     public int category_pos = 0;
@@ -100,7 +114,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             MovieActivity.this.preferenceHelper.setSharedPreferenceVodFavNames(RealmController.with().getFavMovieNames());
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onFavClick(MovieModel movieModel, int i) {
             List<String> list = Constants.xxx_vod_categories;
             MovieActivity movieActivity = MovieActivity.this;
@@ -110,12 +123,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             RealmController.with().addToFavMovie(movieModel.getName(), true, new MovieActivity$1$$ExternalSyntheticLambda0(this, i, 1));
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onFocusPosition(int i) {
             MovieActivity.this.pre_movie_pos = i;
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onItemClick(MovieModel movieModel, int i) {
             MovieActivity movieActivity = MovieActivity.this;
             if (movieActivity.category_pos <= 1 && movieActivity.checkAdultMovie(movieModel.getCategory_name().toLowerCase(), movieModel.getCategory_id())) {
@@ -139,7 +150,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             MovieActivity.this.startActivity(intent);
         }
 
-        @Override // com.ouropro.player.adapter.VodRecyclerAdapter.ItemClickListener
         public void onUnFavClick(MovieModel movieModel, int i) {
             RealmController.with().addToFavMovie(movieModel.getName(), false, new MovieActivity$1$$ExternalSyntheticLambda0(this, i, 0));
         }
@@ -222,7 +232,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             this.recycler_category.setPreserveFocusAfterLayout(true);
             final View[] viewArr = {null};
             this.recycler_category.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.4
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr2 = viewArr;
@@ -244,7 +253,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
             this.recycler_movie.setPreserveFocusAfterLayout(true);
             final View[] viewArr2 = {null};
             this.recycler_movie.setOnChildViewHolderSelectedListener(new OnChildViewHolderSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.5
-                @Override // androidx.leanback.widget.OnChildViewHolderSelectedListener
                 public void onChildViewHolderSelected(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int i, int i2) {
                     super.onChildViewHolderSelected(recyclerView, viewHolder, i, i2);
                     View[] viewArr3 = viewArr2;
@@ -380,7 +388,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
         lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.MovieActivity.6
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 movieActivity.category_pos = i;
@@ -393,13 +400,11 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 MovieActivity.this.recycler_movie.setSelectedPosition(0);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPut_pin_code(), 0).show();
@@ -419,34 +424,31 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         }
         LockDlgFragment lockDlgFragmentNewInstance = LockDlgFragment.newInstance(this.preferenceHelper.getSharedPreferenceParentPassword());
         this.lockDlgFragment = lockDlgFragmentNewInstance;
-        lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener(i, movieModel) { // from class: com.ouropro.player.activities.MovieActivity.7
-            public final /* synthetic */ MovieModel val$movieModel;
+        lockDlgFragmentNewInstance.setOnPinEventListener(new LockDlgFragment.OnPinEventListener() { // from class: com.ouropro.player.activities.MovieActivity.7
+            public final /* synthetic */ MovieModel movieModelValue;
 
             {
-                this.val$movieModel = movieModel;
+                this.movieModelValue = movieModel;
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinCorrect() {
                 Objects.requireNonNull(MovieActivity.this);
                 Intent intent = new Intent(MovieActivity.this, (Class<?>) MovieInfoActivity.class);
-                intent.putExtra("name", this.val$movieModel.getName());
-                intent.putExtra("stream_id", this.val$movieModel.getStream_id());
+                intent.putExtra("name", this.movieModelValue.getName());
+                intent.putExtra("stream_id", this.movieModelValue.getStream_id());
                 if (MovieActivity.this.preferenceHelper.getSharedPreferenceISM3U()) {
-                    intent.putExtra("category_name", this.val$movieModel.getCategory_name());
+                    intent.putExtra("category_name", this.movieModelValue.getCategory_name());
                 } else {
-                    intent.putExtra("category_name", MovieActivity.this.getMovieCategoryName(this.val$movieModel.getCategory_id()));
+                    intent.putExtra("category_name", MovieActivity.this.getMovieCategoryName(this.movieModelValue.getCategory_id()));
                 }
                 MovieActivity.this.startActivity(intent);
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPinIncorrect() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPin_incorrect(), 0).show();
             }
 
-            @Override // com.ouropro.player.dlgfragment.LockDlgFragment.OnPinEventListener
             public void OnPutPinCode() {
                 MovieActivity movieActivity = MovieActivity.this;
                 Toast.makeText(movieActivity, movieActivity.wordModels.getPut_pin_code(), 0).show();
@@ -455,7 +457,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.lockDlgFragment.show(supportFragmentManager, "fragment_lock");
     }
 
-    @Override // androidx.appcompat.app.AppCompatActivity, androidx.core.app.ComponentActivity, android.app.Activity, android.view.Window.Callback
     public boolean dispatchKeyEvent(KeyEvent keyEvent) {
         int i;
         if (keyEvent.getAction() == 0) {
@@ -565,7 +566,125 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         return super.dispatchKeyEvent(keyEvent);
     }
 
-    @Override // android.view.View.OnClickListener
+    private void setupVoiceButton() {
+        FrameLayout content = (FrameLayout) findViewById(android.R.id.content);
+        if (content == null) {
+            return;
+        }
+        this.voiceButton = VoiceButtonFactory.create(this, "Microfone: comando de voz para filmes", view -> requestVoicePermissionAndStart());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.END);
+        params.setMargins(0, 0, 24, 24);
+        content.addView(this.voiceButton, params);
+        if (!VoiceCommandController.isAvailable(this)) {
+            this.voiceButton.setVisibility(View.GONE);
+            return;
+        }
+        this.voiceCommandController = new VoiceCommandController(this, new VoiceCommandController.Listener() {
+            public void onVoiceCommand(VoiceCommand command) {
+                handleVoiceCommand(command);
+            }
+
+            public void onVoiceState(String state) {
+                Toast.makeText(MovieActivity.this, state, Toast.LENGTH_SHORT).show();
+            }
+
+            public void onVoiceError(String message) {
+                Toast.makeText(MovieActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void requestVoicePermissionAndStart() {
+        if (android.os.Build.VERSION.SDK_INT >= 23
+                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, VOICE_PERMISSION_REQUEST);
+            return;
+        }
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    private void handleVoiceCommand(VoiceCommand command) {
+        switch (command.getAction()) {
+            case OPEN_MOVIE_ITEM:
+            case SEARCH_MOVIE:
+            case OPEN_TITLE:
+                applyVoiceMovieSearch(command.getQuery());
+                break;
+            case OPEN_SERIES:
+                startActivity(new Intent(this, SeriesActivity.class));
+                finish();
+                break;
+            case OPEN_LIVE:
+                startActivity(new Intent(this, GetSharedInfo.isTVDevice(this) ? LiveActivity.class : LiveMobileActivity.class));
+                finish();
+                break;
+            case OPEN_SETTINGS:
+                startActivity(new Intent(this, SettingActivity.class));
+                break;
+            default:
+                Toast.makeText(this, "Diga: abrir filme seguido do título", Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void openMovieByVoice(String query) {
+        applyVoiceMovieSearch(query);
+    }
+
+    private void applyVoiceMovieSearch(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+        int allPosition = 0;
+        for (int i = 0; i < this.categoryModels.size(); i++) {
+            if (Constants.all_id.equalsIgnoreCase(this.categoryModels.get(i).getId())) {
+                allPosition = i;
+                break;
+            }
+        }
+        this.category_pos = allPosition;
+        this.recycler_category.setSelectedPosition(allPosition);
+        this.movieModels = RealmController.with().getMovieModelsByCategory(
+                this.categoryModels.get(allPosition), query,
+                this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
+        this.vodAdapter.updateData(this.movieModels);
+        this.recycler_movie.setSelectedPosition(0);
+        this.recycler_movie.scrollToPosition(0);
+        this.et_search.setText(query);
+        Toast.makeText(this, "Filmes encontrados para: " + query, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == VOICE_PERMISSION_REQUEST && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && this.voiceCommandController != null) {
+            this.voiceCommandController.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.stop();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (this.voiceCommandController != null) {
+            this.voiceCommandController.destroy();
+        }
+        super.onDestroy();
+    }
+
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ly_back /* 2131427888 */:
@@ -592,7 +711,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    @Override // androidx.fragment.app.FragmentActivity, androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, android.app.Activity
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_movie);
@@ -603,6 +721,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.sortLists = GetSharedInfo.getVodSortLists(this.wordModels);
         Constants.getVodGroupModels(this.preferenceHelper.getSharedPreferenceInvisibleVodCategories(), this);
         this.categoryModels = LTVApp.vod_categories_filter;
+        if (this.categoryModels == null || this.categoryModels.isEmpty()) {
+            this.categoryModels = new ArrayList<>();
+            this.categoryModels.add(new CategoryModel(Constants.all_id, "All"));
+        }
         this.category_pos = getAvailableCategoryPosition();
         this.sort_pos = this.preferenceHelper.getSharedPreferenceVodOrder();
         this.movieModels = RealmController.with().getMovieModelsByCategory(this.categoryModels.get(this.category_pos), "", this.preferenceHelper.getSharedPreferenceISM3U(), this.sort_pos);
@@ -616,7 +738,6 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         this.sort_spinner.setAdapter((SpinnerAdapter) new SortSpinnerAdapter(this, this.sortLists));
         this.sort_spinner.setSelection(this.sort_pos);
         this.sort_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() { // from class: com.ouropro.player.activities.MovieActivity.2
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long j) {
                 MovieActivity movieActivity = MovieActivity.this;
                 if (movieActivity.sort_pos != i) {
@@ -630,12 +751,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
 
-            @Override // android.widget.AdapterView.OnItemSelectedListener
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
         this.et_search.addTextChangedListener(new TextWatcher() { // from class: com.ouropro.player.activities.MovieActivity.3
-            @Override // android.text.TextWatcher
             public void afterTextChanged(Editable editable) {
                 if (editable.toString().isEmpty()) {
                     return;
@@ -643,11 +762,9 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
                 MovieActivity.this.searchModels(editable.toString());
             }
 
-            @Override // android.text.TextWatcher
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
 
-            @Override // android.text.TextWatcher
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
             }
         });
@@ -656,5 +773,10 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         }
         this.recycler_category.requestFocus();
         GetLoginFromSubtitle();
+        setupVoiceButton();
+        String voiceQuery = getIntent().getStringExtra("voice_query");
+        if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
+            applyVoiceMovieSearch(voiceQuery);
+        }
     }
 }

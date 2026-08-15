@@ -2,23 +2,21 @@ package com.ouropro.player.models;
 
 import android.text.TextUtils;
 import androidx.annotation.Nullable;
-import com.google.android.exoplayer2.text.ttml.TtmlNode;
 import com.google.gson.annotations.SerializedName;
 import io.realm.RealmObject;
-import io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface;
 import io.realm.internal.RealmObjectProxy;
 import iptv.m3u.parser.M3UItem;
 import java.io.Serializable;
 
 /* JADX INFO: loaded from: classes.dex */
-public class EpisodeModel extends RealmObject implements Serializable, com_flextv_livestore_models_EpisodeModelRealmProxyInterface {
+public class EpisodeModel extends RealmObject implements Serializable {
     private String category_name;
 
     @SerializedName("container_extension")
     private String container_extension;
     private String episode_num;
 
-    @SerializedName(TtmlNode.ATTR_ID)
+    @SerializedName("id")
     private String id;
     private EpisodeInfoModel info;
 
@@ -42,20 +40,21 @@ public class EpisodeModel extends RealmObject implements Serializable, com_flext
     @Nullable
     public static EpisodeModel fromM3UItem(M3UItem m3UItem) {
         try {
+            if (m3UItem == null || TextUtils.isEmpty(m3UItem.getStreamURL())) {
+                return null;
+            }
             EpisodeModel episodeModel = new EpisodeModel();
             episodeModel.setCategory_name(TextUtils.isEmpty(m3UItem.getGroupTitle()) ? "All" : m3UItem.getGroupTitle());
             if (!TextUtils.isEmpty(m3UItem.getChannelName())) {
                 episodeModel.setTitle(m3UItem.getChannelName());
-                for (String str : episodeModel.getTitle().split(" ")) {
-                    if (str.matches("S\\d{2}")) {
-                        episodeModel.setSeason_name(episodeModel.getTitle().split(str)[0] + str);
-                        episodeModel.setSeries_name(episodeModel.getTitle().split(str)[0]);
+                for (String token : episodeModel.getTitle().split(" ")) {
+                    if (token.matches("S\\d{2}")) {
+                        episodeModel.setSeason_name(episodeModel.getTitle().split(token)[0] + token);
+                        episodeModel.setSeries_name(episodeModel.getTitle().split(token)[0]);
                     }
                 }
             }
-            if (!TextUtils.isEmpty(m3UItem.getStreamURL())) {
-                episodeModel.setUrl(m3UItem.getStreamURL());
-            }
+            episodeModel.setUrl(m3UItem.getStreamURL());
             if (!TextUtils.isEmpty(m3UItem.getLogoURL())) {
                 episodeModel.setStream_icon(m3UItem.getLogoURL());
             }
@@ -110,112 +109,90 @@ public class EpisodeModel extends RealmObject implements Serializable, com_flext
         return realmGet$url() == null ? "" : realmGet$url();
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$category_name() {
         return this.category_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$container_extension() {
         return this.container_extension;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$episode_num() {
         return this.episode_num;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$id() {
         return this.id;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public EpisodeInfoModel realmGet$info() {
         return this.info;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public int realmGet$season() {
         return this.season;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$season_name() {
         return this.season_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$series_name() {
         return this.series_name;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$stream_icon() {
         return this.stream_icon;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$title() {
         return this.title;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public String realmGet$url() {
         return this.url;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$category_name(String str) {
         this.category_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$container_extension(String str) {
         this.container_extension = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$episode_num(String str) {
         this.episode_num = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$id(String str) {
         this.id = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$info(EpisodeInfoModel episodeInfoModel) {
         this.info = episodeInfoModel;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$season(int i) {
         this.season = i;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$season_name(String str) {
         this.season_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$series_name(String str) {
         this.series_name = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$stream_icon(String str) {
         this.stream_icon = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$title(String str) {
         this.title = str;
     }
 
-    @Override // io.realm.com_flextv_livestore_models_EpisodeModelRealmProxyInterface
     public void realmSet$url(String str) {
         this.url = str;
     }

@@ -14,7 +14,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 
 /* JADX INFO: loaded from: classes.dex */
-public class SubtitleColorRecyclerAdapter extends RecyclerView.Adapter<SubtitleColorViewHolder> {
+public class SubtitleColorRecyclerAdapter extends RecyclerView.Adapter<SubtitleColorRecyclerAdapter.SubtitleColorViewHolder> {
     public Function2<Integer, Boolean, Unit> clickFunctionListener;
     public String[] colorArray;
     public int selected_pos;
@@ -54,7 +54,6 @@ public class SubtitleColorRecyclerAdapter extends RecyclerView.Adapter<SubtitleC
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         String[] strArr = this.colorArray;
         if (strArr == null) {
@@ -63,7 +62,6 @@ public class SubtitleColorRecyclerAdapter extends RecyclerView.Adapter<SubtitleC
         return strArr.length;
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull SubtitleColorViewHolder subtitleColorViewHolder, @SuppressLint({"RecyclerView"}) int i) {
         subtitleColorViewHolder.image_color.setColorFilter(Color.parseColor(this.colorArray[i]));
         subtitleColorViewHolder.itemView.setOnClickListener(new SeasonRecyclerAdapter$$ExternalSyntheticLambda0(this, i, 6));
@@ -75,7 +73,6 @@ public class SubtitleColorRecyclerAdapter extends RecyclerView.Adapter<SubtitleC
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public SubtitleColorViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new SubtitleColorViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_subtitle_color, viewGroup, false));

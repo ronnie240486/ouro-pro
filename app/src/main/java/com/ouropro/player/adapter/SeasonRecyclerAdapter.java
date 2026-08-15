@@ -14,7 +14,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 
 /* JADX INFO: loaded from: classes.dex */
-public class SeasonRecyclerAdapter extends RecyclerView.Adapter<XCSeasonViewHolder> {
+public class SeasonRecyclerAdapter extends RecyclerView.Adapter<SeasonRecyclerAdapter.XCSeasonViewHolder> {
     public Function3<Season, Integer, Boolean, Unit> clickFunctionListener;
     public Context context;
     public List<Season> seasonList;
@@ -60,7 +60,6 @@ public class SeasonRecyclerAdapter extends RecyclerView.Adapter<XCSeasonViewHold
         }
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public int getItemCount() {
         List<Season> list = this.seasonList;
         if (list == null) {
@@ -87,7 +86,6 @@ public class SeasonRecyclerAdapter extends RecyclerView.Adapter<XCSeasonViewHold
         notifyItemChanged(i);
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     public void onBindViewHolder(@NonNull XCSeasonViewHolder xCSeasonViewHolder, int i) {
         xCSeasonViewHolder.txt_season.setText(this.seasonList.get(i).getName());
         xCSeasonViewHolder.itemView.setOnFocusChangeListener(new VodRecyclerAdapter$$ExternalSyntheticLambda1(this, xCSeasonViewHolder, i, 2));
@@ -95,7 +93,6 @@ public class SeasonRecyclerAdapter extends RecyclerView.Adapter<XCSeasonViewHold
         xCSeasonViewHolder.itemView.setOnClickListener(new SeasonRecyclerAdapter$$ExternalSyntheticLambda0(this, i, 0));
     }
 
-    @Override // androidx.recyclerview.widget.RecyclerView.Adapter
     @NonNull
     public XCSeasonViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new XCSeasonViewHolder(this, Insets$$ExternalSyntheticOutline0.m(viewGroup, R.layout.item_season, viewGroup, false));

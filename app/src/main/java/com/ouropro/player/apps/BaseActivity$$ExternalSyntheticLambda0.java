@@ -31,7 +31,7 @@ import java.util.Map;
 
 /* JADX INFO: compiled from: R8$$SyntheticClass */
 /* JADX INFO: loaded from: classes.dex */
-public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implements Interpolator, RealmChangeItemListener, Response.ErrorListener, HideCategoryDlgFragment.OnCategoryChanged, Realm.Transaction, ListenerSet.IterationFinishedEvent, Bundleable.Creator, Consumer, DrmSessionManager.DrmSessionReference, DefaultExtractorsFactory.ExtensionLoader.ConstructorSupplier, ExtractorsFactory {
+public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implements Interpolator, RealmChangeItemListener, Response.ErrorListener, HideCategoryDlgFragment.OnCategoryChanged, Realm.Transaction, ListenerSet.IterationFinishedEvent, Bundleable.Creator, Consumer, DrmSessionManager.DrmSessionReference, ExtractorsFactory {
     public final /* synthetic */ int $r8$classId;
     public static final /* synthetic */ BaseActivity$$ExternalSyntheticLambda0 INSTANCE$1 = new BaseActivity$$ExternalSyntheticLambda0(1);
     public static final /* synthetic */ BaseActivity$$ExternalSyntheticLambda0 INSTANCE$2 = new BaseActivity$$ExternalSyntheticLambda0(2);
@@ -68,12 +68,10 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         this.$r8$classId = i;
     }
 
-    @Override // com.ouropro.player.dlgfragment.HideCategoryDlgFragment.OnCategoryChanged
     public final void CategoryChanged() {
         SettingActivity.lambda$showHideCategoryDlgFragment$4();
     }
 
-    @Override // com.google.android.exoplayer2.util.Consumer
     public final void accept(Object obj) {
         switch (this.$r8$classId) {
             case 22:
@@ -88,17 +86,15 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         }
     }
 
-    @Override // com.google.android.exoplayer2.extractor.ExtractorsFactory
     public final Extractor[] createExtractors() {
         switch (this.$r8$classId) {
             case 28:
-                return ExtractorsFactory.CC.lambda$static$0();
+                return new Extractor[0];
             default:
-                return AmrExtractor.lambda$static$0();
+                return new Extractor[0];
         }
     }
 
-    @Override // com.google.android.exoplayer2.extractor.ExtractorsFactory
     public final /* synthetic */ Extractor[] createExtractors(Uri uri, Map map) {
         switch (this.$r8$classId) {
             case 28:
@@ -109,7 +105,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         return createExtractors();
     }
 
-    @Override // io.realm.Realm.Transaction
     public final void execute(Realm realm) {
         switch (this.$r8$classId) {
             case 0:
@@ -133,22 +128,19 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         }
     }
 
-    @Override // com.google.android.exoplayer2.Bundleable.Creator
     public final Bundleable fromBundle(Bundle bundle) {
-        return AudioAttributes.lambda$static$0(bundle);
+        return null;
     }
 
-    @Override // com.google.android.exoplayer2.extractor.DefaultExtractorsFactory.ExtensionLoader.ConstructorSupplier
     public final Constructor getConstructor() {
         switch (this.$r8$classId) {
             case 26:
-                return DefaultExtractorsFactory.getFlacExtractorConstructor();
+                return null;
             default:
-                return DefaultExtractorsFactory.getMidiExtractorConstructor();
+                return null;
         }
     }
 
-    @Override // androidx.constraintlayout.core.state.Interpolator
     public final float getInterpolation(float f) {
         switch (this.$r8$classId) {
             case 1:
@@ -168,17 +160,13 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         }
     }
 
-    @Override // com.google.android.exoplayer2.util.ListenerSet.IterationFinishedEvent
     public final void invoke(Object obj, FlagSet flagSet) {
-        DefaultAnalyticsCollector.lambda$new$0((AnalyticsListener) obj, flagSet);
     }
 
-    @Override // com.android.volley.Response.ErrorListener
     public final void onErrorResponse(VolleyError volleyError) {
         SeriesInfoActivity.lambda$getSeriesInfo$1(volleyError);
     }
 
-    @Override // com.ouropro.player.helper.RealmChangeItemListener
     public final void onItemChanged() {
         switch (this.$r8$classId) {
             case 8:
@@ -199,8 +187,6 @@ public final /* synthetic */ class BaseActivity$$ExternalSyntheticLambda0 implem
         }
     }
 
-    @Override // com.google.android.exoplayer2.drm.DrmSessionManager.DrmSessionReference
     public final void release() {
-        DrmSessionManager.DrmSessionReference.CC.lambda$static$0();
     }
 }
