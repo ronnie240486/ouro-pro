@@ -29,9 +29,11 @@ public class LockDlgFragment extends DialogFragment {
 
     /* JADX INFO: Access modifiers changed from: private */
     public /* synthetic */ void lambda$onCreateView$0(View view) {
-        if (this.et_pass.getText().toString().isEmpty()) {
+        String entered = this.et_pass.getText().toString().trim();
+        String expected = this.pin_code == null ? "" : this.pin_code.trim();
+        if (entered.isEmpty() || expected.isEmpty() || "0000".equals(expected)) {
             this.listener.OnPutPinCode();
-        } else if (this.pin_code.equalsIgnoreCase(this.et_pass.getText().toString())) {
+        } else if (expected.equalsIgnoreCase(entered)) {
             dismiss();
             this.listener.OnPinCorrect();
         } else {

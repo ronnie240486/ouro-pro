@@ -47,6 +47,7 @@ import com.ouropro.player.dlgfragment.LockDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
+import com.ouropro.player.improvements.ParentalContentGuard;
 import com.ouropro.player.improvements.VoiceCommand;
 import com.ouropro.player.improvements.VoiceButtonFactory;
 import com.ouropro.player.improvements.VoiceCommandController;
@@ -129,7 +130,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
 
         public void onItemClick(MovieModel movieModel, int i) {
             MovieActivity movieActivity = MovieActivity.this;
-            if (movieActivity.category_pos <= 1 && movieActivity.checkAdultMovie(movieModel.getCategory_name().toLowerCase(), movieModel.getCategory_id())) {
+            if (movieActivity.checkAdultMovie(movieModel.getCategory_name(), movieModel.getCategory_id())) {
                 MovieActivity.this.showMovieLockDlgFragment(movieModel, i);
                 return;
             }
@@ -162,9 +163,12 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
     }
 
     /* JADX INFO: Access modifiers changed from: private */
-    public boolean checkAdultMovie(String str, String str2) {
+    private boolean checkAdultMovie(String str, String str2) {
+        if (ParentalContentGuard.isAdult(str)) {
+            return true;
+        }
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
-            return str.contains("xxx") || str.contains("porn") || str.contains("adult");
+            return ParentalContentGuard.isAdult(str);
         }
         return Constants.xxx_vod_categories.contains(str2);
     }
@@ -294,7 +298,7 @@ public class MovieActivity extends AppCompatActivity implements View.OnClickList
         if (!bool.booleanValue() || this.category_pos == num.intValue()) {
             return null;
         }
-        if (Constants.xxx_vod_categories.contains(categoryModel.getId())) {
+        if (checkAdultMovie(categoryModel.getName(), categoryModel.getId())) {
             showLockDlgFragment(num.intValue());
             return null;
         }

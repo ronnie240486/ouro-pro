@@ -91,6 +91,7 @@ import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.improvements.VoiceButtonFactory;
+import com.ouropro.player.improvements.ParentalContentGuard;
 import com.ouropro.player.improvements.EpgReminderBinder;
 import com.ouropro.player.improvements.VoiceChannelMatcher;
 import com.ouropro.player.improvements.VoiceCommand;
@@ -523,14 +524,14 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
 
     private boolean isAdultChannel(String str, String str2) {
         String category = str2 == null ? "" : str2.toLowerCase(java.util.Locale.US);
-        boolean adultName = category.contains("adult") || category.contains("xxx") || category.contains("porn");
+        boolean adultName = ParentalContentGuard.isAdult(category);
         if (!adultName && (category.contains("notic") || category.contains("news"))) {
             return false;
         }
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
             return adultName;
         }
-        return Constants.xxx_live_categories.contains(str);
+        return adultName || Constants.xxx_live_categories.contains(str);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
