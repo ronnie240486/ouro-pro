@@ -216,10 +216,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
             this.preferenceHelper.setSharedPreferenceLastPlaylistDate(0L);
             String playlistUrl = urlModel.getUrl() == null ? "" : urlModel.getUrl().trim();
             String lowerPlaylistUrl = playlistUrl.toLowerCase(java.util.Locale.ROOT);
-            if (lowerPlaylistUrl.contains("get.php") || lowerPlaylistUrl.contains("type=m3u") || lowerPlaylistUrl.contains("output=mpegts")) {
-                this.preferenceHelper.setSharedPreferenceISM3U(true);
-                reloadM3UData(playlistUrl, this.wordModels);
-            } else if (playlistUrl.contains("username")) {
+            if (lowerPlaylistUrl.contains("username")) {
                 this.preferenceHelper.setSharedPreferenceISM3U(false);
                 goToLogin(playlistUrl, this.wordModels);
             } else if (GetSharedInfo.checkXUILink(playlistUrl)) {
@@ -655,10 +652,7 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
             try {
                 String lower = url.toLowerCase(java.util.Locale.ROOT);
-                if (lower.contains("get.php") || lower.contains("type=m3u") || lower.contains("output=mpegts")) {
-                    this.preferenceHelper.setSharedPreferenceISM3U(true);
-                    reloadM3UData(url, this.wordModels);
-                } else if (lower.contains("username")) {
+                if (lower.contains("username")) {
                     this.preferenceHelper.setSharedPreferenceISM3U(false);
                     goToLogin(url, this.wordModels);
                 } else if (GetSharedInfo.checkXUILink(url)) {
