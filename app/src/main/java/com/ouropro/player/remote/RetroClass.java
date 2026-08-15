@@ -22,7 +22,9 @@ public final class RetroClass {
     }
 
     public static APIService getAPIService(String rawBaseUrl) {
-        return getRetrofitInstance(rawBaseUrl, false).create(APIService.class);
+        boolean legacyCleartext = rawBaseUrl != null
+                && rawBaseUrl.trim().toLowerCase(java.util.Locale.ROOT).startsWith("http://");
+        return getRetrofitInstance(rawBaseUrl, legacyCleartext).create(APIService.class);
     }
 
     public static APIService getAPIService(String rawBaseUrl, boolean allowLegacyCleartext) {
