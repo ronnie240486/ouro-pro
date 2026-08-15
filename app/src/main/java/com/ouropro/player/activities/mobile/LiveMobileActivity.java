@@ -517,6 +517,10 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         this.playerView.getVideoSurfaceView().setOnClickListener(new SearchActivity$$ExternalSyntheticLambda0(this, 6));
     }
 
+    private boolean isAdultCategoryModel(CategoryModel categoryModel) {
+        return categoryModel != null && isAdultChannel(categoryModel.getId(), categoryModel.getName());
+    }
+
     private boolean isAdultChannel(String str, String str2) {
         String category = str2 == null ? "" : str2.toLowerCase(java.util.Locale.US);
         boolean adultName = category.contains("adult") || category.contains("xxx") || category.contains("porn");
@@ -610,7 +614,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             return null;
         }
         this.et_search.setText("");
-        if (Constants.xxx_live_categories.contains(categoryModel.getId())) {
+        if (isAdultCategoryModel(categoryModel)) {
             showLockDlgFragment(num.intValue());
             return null;
         }
