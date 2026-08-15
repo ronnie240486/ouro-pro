@@ -1295,36 +1295,20 @@ try {
     }
 
     private void ensureVisibleEpgPanel() {
-        if (this.main_lay == null || this.epgAdapter == null) {
+        if (this.recycler_epg == null || this.epgAdapter == null) {
             return;
         }
-        if (this.visibleEpgPanel == null) {
-            RecyclerView panel = new RecyclerView(this);
-            panel.setId(View.generateViewId());
-            panel.setFocusable(true);
-            panel.setFocusableInTouchMode(true);
-            panel.setClickable(true);
-            panel.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-            panel.setNextFocusUpId(R.id.recycler_channel);
-            panel.setNextFocusLeftId(R.id.recycler_channel);
-            panel.setBackgroundColor(Color.TRANSPARENT);
-            panel.setLayoutManager(new LinearLayoutManager(this));
-            panel.setAdapter(this.epgAdapter);
-            ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(0, 0);
-            params.startToStart = R.id.vertical_line2;
-            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
-            params.topToBottom = R.id.txt_name;
-            params.bottomToTop = R.id.btn_catch_up;
-            int margin = getResources().getDimensionPixelSize(R.dimen._5sdp);
-            params.setMargins(margin, margin, margin, margin);
-            this.main_lay.addView(panel, params);
-            this.visibleEpgPanel = panel;
-        }
+        this.visibleEpgPanel = this.recycler_epg;
         this.visibleEpgPanel.setVisibility(View.VISIBLE);
+        this.visibleEpgPanel.setFocusable(true);
+        this.visibleEpgPanel.setFocusableInTouchMode(true);
+        this.visibleEpgPanel.setClickable(true);
+        this.visibleEpgPanel.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        this.visibleEpgPanel.setNextFocusUpId(R.id.recycler_channel);
+        this.visibleEpgPanel.setNextFocusLeftId(R.id.recycler_channel);
         if (this.recycler_channel != null) {
             this.recycler_channel.setNextFocusDownId(this.visibleEpgPanel.getId());
         }
-        this.visibleEpgPanel.setNextFocusUpId(this.recycler_channel == null ? View.NO_ID : this.recycler_channel.getId());
         this.visibleEpgPanel.bringToFront();
         this.visibleEpgPanel.requestLayout();
         this.visibleEpgPanel.setOnFocusChangeListener((view, hasFocus) -> {
@@ -2188,8 +2172,9 @@ try {
         EpgReminderBinder.bind(this, this.epgAdapter, () -> this.selectedChannel == null ? this.stream_id : this.selectedChannel.getStream_id());
         this.recycler_epg.setLayoutManager(new LinearLayoutManager(this));
         this.recycler_epg.setAdapter(this.epgAdapter);
-        this.recycler_epg.setFocusable(false);
-        this.recycler_epg.setVisibility(View.GONE);
+        this.recycler_epg.setFocusable(true);
+        this.recycler_epg.setFocusableInTouchMode(true);
+        this.recycler_epg.setVisibility(View.VISIBLE);
         ensureVisibleEpgPanel();
         if (this.epgChannels.size() <= 0) {
             this.recycler_category.requestFocus();
