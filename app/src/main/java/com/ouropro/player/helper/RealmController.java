@@ -32,7 +32,7 @@ import java.util.TreeSet;
 public class RealmController {
     private static HashMap<String, List<EpisodeModel>> episodeModelHashMap;
     public static RealmController instance;
-    public Realm realm = Realm.getInstance(new RealmConfiguration.Builder().name("MTV.realm").schemaVersion(1).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build());
+    public Realm realm = Realm.getInstance(new RealmConfiguration.Builder().name("MTV-clean-v176.realm").schemaVersion(1).deleteRealmIfMigrationNeeded().allowWritesOnUiThread(true).build());
 
     private static void addEpisodeToSeason(EpisodeModel episodeModel) {
         String season_name = episodeModel.getSeason_name();
