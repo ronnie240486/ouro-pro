@@ -125,7 +125,6 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.image_reload.setImageResource(R.drawable.reload_icon);
         this.image_exit.setImageResource(R.drawable.exit_icon);
         try {
-            Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/live_tv").error(R.drawable.icon_live).into(this.image_live);
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/movies").error(R.drawable.movie_icon).into(this.image_movie);
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/series").error(R.drawable.icon_series).into(this.image_series);
             Glide.with((FragmentActivity) this).load("https://renciaapp.manus.space/api/v4/icon/account").error(R.drawable.account_icon).into(this.image_account);
