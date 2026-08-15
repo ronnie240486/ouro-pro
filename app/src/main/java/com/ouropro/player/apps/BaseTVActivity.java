@@ -27,6 +27,7 @@ import com.ouropro.player.utils.Utils;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmModel;
+import io.realm.RealmObject;
 import io.realm.RealmResults;
 import iptv.m3u.parser.M3UItem;
 import java.net.URL;
@@ -493,10 +494,57 @@ public class BaseTVActivity extends FragmentActivity {
         this.categoryHashMap.put(keyFromCategoryName, ePGChannel.getCategory_name());
     }
 
+    private String getSafeSeriesName(EpisodeModel episodeModel) {
+        if (episodeModel == null) {
+            return "";
+        }
+        String current = episodeModel.getSeries_name();
+        if (current != null && !current.trim().isEmpty() && !current.trim().equalsIgnoreCase("null") && !current.trim().equalsIgnoreCase("All")) {
+            return current.trim();
+        }
+        String title = episodeModel.getTitle();
+        if (title != null && !title.trim().isEmpty()) {
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(?i)\\bS\\d{1,2}\\b").matcher(title);
+            if (matcher.find()) {
+                String derived = title.substring(0, matcher.start()).trim();
+                if (!derived.isEmpty()) {
+                    return derived;
+                }
+            }
+        }
+        return "";
+    }
+
+    private String getSafeEpisodeCategory(EpisodeModel episodeModel) {
+        if (episodeModel == null) {
+            return "Sem categoria";
+        }
+        String category = episodeModel.getCategory_name();
+        if (category == null || category.trim().isEmpty() || category.trim().equalsIgnoreCase("null")) {
+            return "Sem categoria";
+        }
+        return category.trim();
+    }
+
+    private void normalizeEpisodeIdentities(final List<EpisodeModel> episodes) {
+        if (episodes == null || episodes.isEmpty()) {
+            return;
+        }
+        this.realm.executeTransaction(realm -> {
+            for (EpisodeModel episode : episodes) {
+                String safeName = getSafeSeriesName(episode);
+                if (!safeName.isEmpty()) {
+                    episode.setSeries_name(safeName);
+                }
+                episode.setCategory_name(getSafeEpisodeCategory(episode));
+            }
+        });
+    }
+
     private void addEpisodeToSeries(EpisodeModel episodeModel) {
-        String series_name = episodeModel.getSeries_name();
-        if (series_name == null || series_name.equals("null")) {
-            series_name = "All";
+        String series_name = getSafeSeriesName(episodeModel);
+        if (series_name.isEmpty()) {
+            return;
         }
         List<EpisodeModel> arrayList = this.episodeModelHashMap.get(series_name);
         if (arrayList == null) {
@@ -916,6 +964,7 @@ public class BaseTVActivity extends FragmentActivity {
         List<EpisodeModel> list2;
         List<String> sharedPreferenceSeriesFavNames = this.preferenceHelper.getSharedPreferenceSeriesFavNames();
         List<ResumeSeriesModel> sharedPreferenceRecentSeriesNames = this.preferenceHelper.getSharedPreferenceRecentSeriesNames();
+        normalizeEpisodeIdentities(list);
         this.episodeModelHashMap = new HashMap<>();
         Iterator<EpisodeModel> it = list.iterator();
         while (it.hasNext()) {
@@ -927,8 +976,21 @@ public class BaseTVActivity extends FragmentActivity {
             if (str != null && (list2 = this.episodeModelHashMap.get(str)) != null && list2.size() > 0) {
                 SeriesModel seriesModel = new SeriesModel();
                 seriesModel.setName(str);
-                seriesModel.setCategory_name(list2.get(0).getCategory_name());
-                seriesModel.setStream_icon(list2.get(0).getStream_icon());
+                String safeCategory = "Sem categoria";
+                for (EpisodeModel episode : list2) {
+                    String candidate = getSafeEpisodeCategory(episode);
+                    if (!candidate.isEmpty() && !candidate.equalsIgnoreCase("Sem categoria")) {
+                        safeCategory = candidate;
+                        break;
+                    }
+                }
+                seriesModel.setCategory_name(safeCategory);
+                for (EpisodeModel episode : list2) {
+                    if (episode.getStream_icon() != null && !episode.getStream_icon().trim().isEmpty() && !episode.getStream_icon().trim().equalsIgnoreCase("null")) {
+                        seriesModel.setStream_icon(episode.getStream_icon());
+                        break;
+                    }
+                }
                 arrayList.add(seriesModel);
             }
         }
