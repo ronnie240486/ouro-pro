@@ -33,6 +33,8 @@ import com.ouropro.player.improvements.NullTextGuard;
 import com.ouropro.player.improvements.StreamingM3UImporter;
 import com.ouropro.player.improvements.SeriesCatalogDeduplicator;
 import com.ouropro.player.improvements.MovieCatalogDeduplicator;
+import com.ouropro.player.improvements.SeriesMetadataMerger;
+import com.ouropro.player.improvements.SeriesCatalogLoader;
 import com.ouropro.player.net.FetchChannelsTask;
 import com.ouropro.player.net.FetchEpisodeTask;
 import com.ouropro.player.net.FetchM3uItemsTask;
@@ -1001,8 +1003,21 @@ public class BaseActivity extends AppCompatActivity {
                 seriesModel.setName(str);
                 seriesModel.setCategory_name(list2.get(0).getCategory_name());
                 seriesModel.setStream_icon(list2.get(0).getStream_icon());
+                if (this.preferenceHelper.getSharedPreferenceISM3U()) {
+                    for (EpisodeModel episode : list2) {
+                        String extractedId = extractM3USeriesId(episode == null ? "" : episode.getUrl());
+                        if (extractedId != null && !extractedId.isEmpty()) {
+                            seriesModel.setSeries_id(extractedId);
+                            break;
+                        }
+                    }
+                }
                 arrayList.add(seriesModel);
             }
+        }
+        if (this.preferenceHelper.getSharedPreferenceISM3U()) {
+            enrichM3USeriesCatalog(arrayList, sharedPreferenceSeriesFavNames, sharedPreferenceRecentSeriesNames);
+            return;
         }
         this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(arrayList, 2));
         if (sharedPreferenceSeriesFavNames.size() > 0) {
@@ -1018,6 +1033,47 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
         getSeriesCategoryModels(arrayList);
+    }
+
+    private void enrichM3USeriesCatalog(final List<SeriesModel> m3uSeries, final List<String> favorites, final List<ResumeSeriesModel> recent) {
+        final String server = this.preferenceHelper.getSharedPreferenceServerUrl();
+        final String username = this.preferenceHelper.getSharedPreferenceUsername();
+        final String password = this.preferenceHelper.getSharedPreferencePassword();
+        if (server == null || server.trim().isEmpty() || username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            finishM3USeriesCatalog(m3uSeries, favorites, recent);
+            return;
+        }
+        boolean allowLegacyCleartext = server.trim().toLowerCase(Locale.ROOT).startsWith("http://");
+        try {
+            SeriesCatalogLoader.load(RetroClass.getAPIService(server, allowLegacyCleartext), username, password, new SeriesCatalogLoader.Listener() {
+                @Override
+                public void onComplete(List<SeriesModel> officialSeries, List<CategoryModel> categories) {
+                    finishM3USeriesCatalog(SeriesMetadataMerger.merge(m3uSeries, officialSeries), favorites, recent);
+                }
+
+                @Override
+                public void onFailure(String message) {
+                    finishM3USeriesCatalog(m3uSeries, favorites, recent);
+                }
+            });
+        } catch (Exception ignored) {
+            finishM3USeriesCatalog(m3uSeries, favorites, recent);
+        }
+    }
+
+    private void finishM3USeriesCatalog(final List<SeriesModel> series, List<String> favorites, List<ResumeSeriesModel> recent) {
+        this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda8(series, 2));
+        if (favorites != null) {
+            for (String favorite : favorites) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda7(favorite, 13));
+            }
+        }
+        if (recent != null) {
+            for (ResumeSeriesModel item : recent) {
+                this.realm.executeTransaction(new BaseActivity$$ExternalSyntheticLambda6(item, 0));
+            }
+        }
+        getSeriesCategoryModels(series);
     }
 
     /* JADX INFO: Access modifiers changed from: private */
