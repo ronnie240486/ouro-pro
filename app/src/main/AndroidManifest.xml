@@ -64,6 +64,7 @@
         <activity android:exported="false" android:name="com.ouropro.player.activities.MovieActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.LiveActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.ChangePlaylistActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:excludeFromRecents="true" android:exported="false" android:noHistory="true" android:name="com.ouropro.player.improvements.BackgroundPlaylistSyncActivity" android:screenOrientation="landscape" android:theme="@style/Theme.PlayCore.Transparent"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.HomeActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.RadioActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:exported="false" android:name="com.ouropro.player.activities.ContinueWatchingActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"/>

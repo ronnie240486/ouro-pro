@@ -3,6 +3,7 @@ package com.ouropro.player.improvements;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -10,6 +11,8 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.ouropro.player.apps.BaseActivity;
 import com.ouropro.player.apps.BaseTVActivity;
+import com.ouropro.player.activities.LiveActivity;
+import com.ouropro.player.activities.mobile.LiveMobileActivity;
 import com.ouropro.player.apps.Constants;
 import com.ouropro.player.apps.LTVApp;
 import com.ouropro.player.helper.GetSharedInfo;
@@ -40,6 +43,9 @@ public final class PlaylistFailoverManager {
     public static final String EXTRA_PLAYLIST_URL = "playlist_url";
     public static final String EXTRA_PLAYLIST_POSITION = "playlist_position";
     public static final String EXTRA_MESSAGE = "playlist_sync_message";
+    public static final String EXTRA_TARGET_STREAM_ID = "target_stream_id";
+    public static final String EXTRA_BACKGROUND_SYNC = "background_sync";
+    public static final String EXTRA_GO_TO_CHANNEL = "go_to_channel";
     public static final String ACTION_EXPIRATION_NOTICE = "com.ouropro.player.EXPIRATION_NOTICE";
     public static final String EXTRA_EXPIRATION_KEY = "expiration_modal_key";
     public static final String EXTRA_EXPIRATION_TITLE = "expiration_modal_title";
@@ -174,6 +180,25 @@ public final class PlaylistFailoverManager {
         WordModels words = GetSharedInfo.getWordModel(activity);
         String url = playlistUrl.trim();
         boolean xtream = url.toLowerCase(Locale.ROOT).contains("username");
+        if (!xtream && activity instanceof LiveActivity) {
+            LiveActivity liveActivity = (LiveActivity) activity;
+            if (liveActivity.someActivityResultLauncher != null) {
+                Intent syncIntent = new Intent(activity, BackgroundPlaylistSyncActivity.class);
+                syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_PLAYLIST_URL, url);
+                syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_TARGET_STREAM_ID, liveActivity.stream_id);
+                liveActivity.someActivityResultLauncher.launch(syncIntent);
+                return;
+            }
+        } else if (!xtream && activity instanceof LiveMobileActivity) {
+            LiveMobileActivity liveMobileActivity = (LiveMobileActivity) activity;
+            if (liveMobileActivity.someActivityResultLauncher != null) {
+                Intent syncIntent = new Intent(activity, BackgroundPlaylistSyncActivity.class);
+                syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_PLAYLIST_URL, url);
+                syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_TARGET_STREAM_ID, liveMobileActivity.stream_id);
+                liveMobileActivity.someActivityResultLauncher.launch(syncIntent);
+                return;
+            }
+        }
         if (activity instanceof BaseTVActivity) {
             BaseTVActivity base = (BaseTVActivity) activity;
             if (xtream) {

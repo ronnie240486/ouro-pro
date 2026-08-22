@@ -583,6 +583,13 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         if (activityResult.getResultCode() != -1 || (data = activityResult.getData()) == null) {
             return;
         }
+        if (data.getBooleanExtra("background_sync", false)) {
+            String targetStreamId = data.getStringExtra("target_stream_id");
+            if (targetStreamId != null && !targetStreamId.trim().isEmpty()) {
+                selectChannelByStreamId(targetStreamId);
+            }
+            return;
+        }
         if (data.getStringExtra("is_changed").equalsIgnoreCase("from_search")) {
             this.is_full = true;
             setFull();
@@ -1476,6 +1483,44 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
         if (voiceQuery != null && !voiceQuery.trim().isEmpty()) {
             openVoiceChannel(voiceQuery);
         }
+        String targetStreamId = getIntent().getStringExtra("target_stream_id");
+        if (targetStreamId != null && !targetStreamId.trim().isEmpty()) {
+            selectChannelByStreamId(targetStreamId);
+            getIntent().removeExtra("target_stream_id");
+        }
+    }
+
+    private boolean selectChannelByStreamId(String targetStreamId) {
+        if (targetStreamId == null || targetStreamId.trim().isEmpty() || this.categoryModels == null) {
+            return false;
+        }
+        for (int categoryIndex = 0; categoryIndex < this.categoryModels.size(); categoryIndex++) {
+            RealmResults<EPGChannel> channels = RealmController.with().getLiveChannelsByCategory(this.categoryModels.get(categoryIndex), "", this.preferenceHelper.getSharedPreferenceISM3U(), this.preferenceHelper.getSharedPreferenceLiveOrder());
+            for (int channelIndex = 0; channelIndex < channels.size(); channelIndex++) {
+                EPGChannel channel = (EPGChannel) channels.get(channelIndex);
+                if (channel != null && targetStreamId.equalsIgnoreCase(channel.getStream_id())) {
+                    this.category_pos = categoryIndex;
+                    this.channel_pos = channelIndex;
+                    this.epgChannels = channels;
+                    this.selectedChannel = channel;
+                    if (this.channelAdapter != null) {
+                        this.channelAdapter.updateData(this.epgChannels, channelIndex);
+                    }
+                    if (this.recycler_category != null) {
+                        this.recycler_category.scrollToPosition(categoryIndex);
+                    }
+                    if (this.recycler_channel != null) {
+                        this.recycler_channel.scrollToPosition(channelIndex);
+                    }
+                    if (this.categoryAdapter != null) {
+                        this.categoryAdapter.setCategoryPosition(categoryIndex);
+                    }
+                    playSelectedChannel(channel);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private int voiceDp(int value) {
