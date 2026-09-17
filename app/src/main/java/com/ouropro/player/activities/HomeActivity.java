@@ -125,13 +125,16 @@ public class HomeActivity extends BaseActivity implements View.OnClickListener {
         this.image_reload.setImageResource(R.drawable.reload_icon);
         this.image_exit.setImageResource(R.drawable.exit_icon);
         try {
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/movies").error(R.drawable.movie_icon).into(this.image_movie);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/series").error(R.drawable.icon_series).into(this.image_series);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/account").error(R.drawable.account_icon).into(this.image_account);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/change_playlist").error(R.drawable.change_m3u_icon).into(this.image_change);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/settings").error(R.drawable.ic_setting).into(this.image_setting);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/reload").error(R.drawable.reload_icon).into(this.image_reload);
-            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/exit").error(R.drawable.exit_icon).into(this.image_exit);
+            // DiskCacheStrategy.NONE + skipMemoryCache: sem isso o Glide guarda
+            // cada ícone em cache associado à URL fixa pra sempre, e nunca
+            // busca de novo quando o painel troca algum ícone.
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/movies").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.movie_icon).into(this.image_movie);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/series").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.icon_series).into(this.image_series);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/account").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.account_icon).into(this.image_account);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/change_playlist").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.change_m3u_icon).into(this.image_change);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/settings").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.ic_setting).into(this.image_setting);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/reload").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.reload_icon).into(this.image_reload);
+            Glide.with((FragmentActivity) this).load("https://renciaapp-production.up.railway.app/api/v4/icon/exit").diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE).skipMemoryCache(true).error(R.drawable.exit_icon).into(this.image_exit);
         } catch (Exception unused) {
         }
     }

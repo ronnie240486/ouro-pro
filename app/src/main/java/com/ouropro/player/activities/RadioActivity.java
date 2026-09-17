@@ -138,6 +138,8 @@ public class RadioActivity extends AppCompatActivity {
         background.setAlpha(0.36f);
         Glide.with(this)
                 .load("https://renciaapp-production.up.railway.app/api/v4/bg.php")
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .placeholder(R.drawable.background1)
                 .error(R.drawable.background1)
                 .into(background);
