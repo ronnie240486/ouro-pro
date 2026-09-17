@@ -1,0 +1,75 @@
+name: Build APK (direto no Actions)
+
+# Builda o OuroPro direto aqui no GitHub Actions a cada push que muda o
+# app ou o próprio workflow, sem precisar de nenhuma ferramenta externa.
+# É um projeto Android nativo (Java + Gradle), então não tem passo de
+# "prebuild" nenhum — só configura o JDK/SDK e roda o Gradle, igual
+# qualquer projeto Android comum.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar o Android SDK (instalação manual, sem depender de action de terceiro)
+        run: |
+          ANDROID_SDK_ROOT="$HOME/android-sdk"
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -sSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+
+      - name: Cache do Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Rodar os testes unitários
+        run: ./gradlew test --no-daemon --stacktrace
+
+      - name: Buildar o APK (debug, sem assinatura de produção)
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Encontrar o APK gerado
+        id: apk
+        run: |
+          APK_PATH=$(find app/build/outputs/apk -name "*.apk" | head -n1)
+          echo "path=$APK_PATH" >> "$GITHUB_OUTPUT"
+          echo "Encontrado: $APK_PATH"
+
+      - name: Enviar o APK como artefato do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ouropro-debug-apk
+          path: ${{ steps.apk.outputs.path }}
+          if-no-files-found: error
