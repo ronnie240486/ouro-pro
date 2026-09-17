@@ -1102,7 +1102,7 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         this.episode_position = getIntent().getIntExtra("position", 0);
         this.season_pos = getIntent().getIntExtra("season_pos", 0);
         this.series_name = getIntent().getStringExtra("series_name");
-        HeartbeatHelper.sendHeartbeat(this.preferenceHelper.getSharedPreferenceMacAddress(), this.series_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+        HeartbeatHelper.sendHeartbeat(this.preferenceHelper.getSharedPreferenceMacAddress(), this.series_name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
         this.season_name = getIntent().getStringExtra("season_name");
         this.tmdb_id = getIntent().getStringExtra("tmdb_id");
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {

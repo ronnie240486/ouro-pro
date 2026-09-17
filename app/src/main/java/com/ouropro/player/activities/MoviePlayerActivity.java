@@ -1266,7 +1266,7 @@ public class MoviePlayerActivity extends AppCompatActivity implements View.OnCli
         initView();
         this.description = getIntent().getStringExtra("description");
         this.movie_name = getIntent().getStringExtra("name");
-        HeartbeatHelper.sendHeartbeat(this.preferenceHelper.getSharedPreferenceMacAddress(), this.movie_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+        HeartbeatHelper.sendHeartbeat(this.preferenceHelper.getSharedPreferenceMacAddress(), this.movie_name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
         this.tmdb_id = getIntent().getStringExtra("tmdb_id");
         this.stream_id = getIntent().getStringExtra("stream_id");
         if (this.preferenceHelper.getSharedPreferenceISM3U() || this.stream_id.isEmpty()) {

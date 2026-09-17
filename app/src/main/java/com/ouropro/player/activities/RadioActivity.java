@@ -137,7 +137,7 @@ public class RadioActivity extends AppCompatActivity {
         background.setScaleType(ImageView.ScaleType.CENTER_CROP);
         background.setAlpha(0.36f);
         Glide.with(this)
-                .load("https://renciaapp-ldyffp73.manus.space/api/v4/bg.php")
+                .load("https://renciaapp-production.up.railway.app/api/v4/bg.php")
                 .placeholder(R.drawable.background1)
                 .error(R.drawable.background1)
                 .into(background);

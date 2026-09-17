@@ -965,7 +965,7 @@ try {
             }
             HeartbeatPeriodicHelper heartbeatPeriodicHelper2 = new HeartbeatPeriodicHelper();
             this.heartbeatHelper = heartbeatPeriodicHelper2;
-            heartbeatPeriodicHelper2.start(sharedPreferenceMacAddress, str, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+            heartbeatPeriodicHelper2.start(sharedPreferenceMacAddress, str, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
             showFavImageIcon(this.selectedChannel.is_favorite());
             if (this.preferenceHelper.getSharedPreferenceISM3U()) {
                 this.content_url = this.selectedChannel.getUrl();
