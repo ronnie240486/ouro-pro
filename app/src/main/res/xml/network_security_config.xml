@@ -7,7 +7,7 @@
         </trust-anchors>
     </base-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">renciaapp-ldyffp73.manus.space</domain>
+        <domain includeSubdomains="true">renciaapp-production.up.railway.app</domain>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
