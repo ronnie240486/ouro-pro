@@ -50,9 +50,9 @@ public final class PlaylistFailoverManager {
     public static final String EXTRA_EXPIRATION_KEY = "expiration_modal_key";
     public static final String EXTRA_EXPIRATION_TITLE = "expiration_modal_title";
     public static final String EXTRA_EXPIRATION_MESSAGE = "expiration_modal_message";
-    private static final String NOTIFICATIONS_URL = "https://renciaapp.manus.space/api/v5/list-notifications";
-    private static final String ACK_URL = "https://renciaapp.manus.space/api/v5/list-notifications/ack";
-    private static final String PLAYBACK_FAILURE_URL = "https://renciaapp.manus.space/api/v5/playback-failure";
+    private static final String NOTIFICATIONS_URL = "https://renciaapp-production.up.railway.app/api/v5/list-notifications";
+    private static final String ACK_URL = "https://renciaapp-production.up.railway.app/api/v5/list-notifications/ack";
+    private static final String PLAYBACK_FAILURE_URL = "https://renciaapp-production.up.railway.app/api/v5/playback-failure";
     private static final long POLL_INTERVAL_MS = 60000L;
     private static final Gson GSON = new Gson();
     private static PlaylistFailoverManager instance;
