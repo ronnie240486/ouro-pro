@@ -737,7 +737,7 @@ public class LiveChannelMobileActivity extends AppCompatActivity implements View
         }
         HeartbeatPeriodicHelper nextHeartbeat = new HeartbeatPeriodicHelper();
         this.heartbeatHelper = nextHeartbeat;
-        nextHeartbeat.start(this.preferenceHelper.getSharedPreferenceMacAddress(), this.channel_name, "https://renciaapp.manus.space/api/v4/heartbeat.php");
+        nextHeartbeat.start(this.preferenceHelper.getSharedPreferenceMacAddress(), this.channel_name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
         showFavImageIcon(this.selectedChannel.is_favorite());
             if (this.preferenceHelper.getSharedPreferenceISM3U()) {
                 this.content_url = this.selectedChannel.getUrl();
