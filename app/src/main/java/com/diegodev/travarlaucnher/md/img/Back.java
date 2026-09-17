@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide;
  * The catalog and Realm flows do not depend on this view.
  */
 public class Back extends ImageView {
-    private static final String DEFAULT_IMAGE_URL = "https://renciaapp-ldyffp73.manus.space/api/v4/bg.php";
+    private static final String DEFAULT_IMAGE_URL = "https://renciaapp-production.up.railway.app/api/v4/bg.php";
 
     public Back(Context context) {
         super(context);

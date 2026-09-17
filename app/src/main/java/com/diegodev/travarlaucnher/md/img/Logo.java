@@ -8,7 +8,7 @@ import com.bumptech.glide.Glide;
 
 /** Compatibility ImageView required by the original 6.1 layouts. */
 public class Logo extends ImageView {
-    private static final String DEFAULT_LOGO_URL = "https://renciaapp-ldyffp73.manus.space/api/v4/logo.php";
+    private static final String DEFAULT_LOGO_URL = "https://renciaapp-production.up.railway.app/api/v4/logo.php";
 
     public Logo(Context context) {
         super(context);

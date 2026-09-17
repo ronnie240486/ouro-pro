@@ -35,9 +35,9 @@ public class EncryptedApiCaller {
             json.put("version", "5.0");
             json.put("is_paid", false);
             String encryptedData = CryptoHelper.getEncodedString(json);
-            Log.d("EncryptedApiCaller", "Enviando para: https://renciaapp-ldyffp73.manus.space/api/guim.php");
+            Log.d("EncryptedApiCaller", "Enviando para: https://renciaapp-production.up.railway.app/api/guim.php");
             Log.d("EncryptedApiCaller", "Body: " + encryptedData);
-            URL url = new URL("https://renciaapp-ldyffp73.manus.space/api/guim.php");
+            URL url = new URL("https://renciaapp-production.up.railway.app/api/guim.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
