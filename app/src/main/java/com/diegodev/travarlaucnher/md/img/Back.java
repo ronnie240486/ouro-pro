@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 /**
  * Compatibility view required by the original 6.1 layouts.
@@ -31,7 +32,16 @@ public class Back extends ImageView {
     private void initialize(Context context) {
         setBackgroundColor(0xFF000000);
         try {
-            Glide.with(context).load(DEFAULT_IMAGE_URL).into(this);
+            // O endpoint sempre manda a imagem atual (sem cache HTTP), mas por
+            // padrão o Glide guarda o bitmap em disco/memória associado a essa
+            // mesma URL pra sempre — então mesmo trocando a imagem no painel,
+            // o app nunca ia buscar de novo. DiskCacheStrategy.NONE +
+            // skipMemoryCache forçam sempre buscar na rede a cada tela aberta.
+            Glide.with(context)
+                    .load(DEFAULT_IMAGE_URL)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .into(this);
         } catch (Throwable ignored) {
             // Keep the black fallback; startup must not fail because of the background.
         }

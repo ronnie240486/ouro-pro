@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 /** Compatibility ImageView required by the original 6.1 layouts. */
 public class Logo extends ImageView {
@@ -27,7 +28,14 @@ public class Logo extends ImageView {
 
     private void initialize(Context context) {
         try {
-            Glide.with(context).load(DEFAULT_LOGO_URL).into(this);
+            // Mesmo motivo do Back.java: sem isso o Glide guarda a logo em
+            // cache pra sempre associado a essa URL fixa, e nunca busca de
+            // novo quando o painel troca a imagem.
+            Glide.with(context)
+                    .load(DEFAULT_LOGO_URL)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .into(this);
         } catch (Throwable ignored) {
             // The drawable supplied by XML remains visible as a safe fallback.
         }
