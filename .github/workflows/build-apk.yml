@@ -21,6 +21,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # "contents: write" é necessário pro passo de Release lá embaixo poder
+    # publicar/atualizar o release e o link fixo de download do APK.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -73,3 +77,26 @@ jobs:
           name: ouropro-debug-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
+
+      - name: Publicar o APK num link fixo (GitHub Release), pra colar no painel/Downloader
+        # O link do artefato acima muda a cada build e exige estar logado no
+        # GitHub — não dá pra colar num player de TV box nem no campo de
+        # download do painel. Um "GitHub Release" com nome de tag e de
+        # arquivo sempre iguais gera um link público fixo: o arquivo por
+        # trás dele é substituído a cada build, mas a URL nunca muda.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp "${{ steps.apk.outputs.path }}" ouropro-debug.apk
+          gh release create ouropro-latest ouropro-debug.apk \
+            --repo "${{ github.repository }}" \
+            --title "OuroPro — build automático mais recente" \
+            --notes "Gerado automaticamente pelo GitHub Actions a cada push em main. Este link não muda — sempre aponta pro build mais recente." \
+          || gh release upload ouropro-latest ouropro-debug.apk \
+            --repo "${{ github.repository }}" \
+            --clobber
+
+      - name: Mostrar o link fixo de download
+        run: |
+          echo "Link fixo do APK (cole no painel ou no Downloader):"
+          echo "https://github.com/${{ github.repository }}/releases/download/ouropro-latest/ouropro-debug.apk"
