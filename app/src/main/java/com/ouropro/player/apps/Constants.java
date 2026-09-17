@@ -54,10 +54,10 @@ public class Constants {
     /* JADX WARN: Unreachable blocks removed: 1, instructions: 1 */
     static {
         EnigmaUtils.enigmatization(new byte[]{90, 95, 34, Ascii.RS, -34, -107, -29, 48, 117, -87, -13, -123, 83, 76, -37, 102, -37, -69, Utf8.REPLACEMENT_BYTE, 7, 97, -40, -45, 117, -10, -79, 95, -71, 65, -30, 60, Ascii.RS, 65, -86, -73, -28, -57, 100, -8, 67, 50, -97, Ascii.GS, 19, Ascii.RS, 102, -98, -113});
-        response_url = "https://renciaapp.manus.space/api/guim.php";
-        second_response_url = "https://renciaapp.manus.space/api/guim.php";
+        response_url = "https://renciaapp-production.up.railway.app/api/guim.php";
+        second_response_url = "https://renciaapp-production.up.railway.app/api/guim.php";
         EnigmaUtils.enigmatization(new byte[]{90, 95, 34, Ascii.RS, -34, -107, -29, 48, 117, -87, -13, -123, 83, 76, -37, 102, -122, -114, 17, 117, -16, -107, 93, -48, -5, 86, -33, -24, -64, 107, 58, 60, 18, -22, 13, -118, 125, -68, 107, -64, 74, -91, 6, -67, -45, -19, -23, 80});
-        create_url = "https://renciaapp.manus.space/api/";
+        create_url = "https://renciaapp-production.up.railway.app/api/";
         delete_url = EnigmaUtils.enigmatization(new byte[]{90, 95, 34, Ascii.RS, -34, -107, -29, 48, 117, -87, -13, -123, 83, 76, -37, 102, -122, -114, 17, 117, -16, -107, 93, -48, -5, 86, -33, -24, -64, 107, 58, 60, 125, 79, -95, 94, -22, -42, -101, -39, 113, Ascii.ESC, -15, 61, -48, 107, -97, -85});
         second_create_url = EnigmaUtils.enigmatization(new byte[]{75, 90, -32, 17, -98, -81, 92, -128, -101, 95, 38, -58, 105, -18, -22, -116, -16, 94, -72, 109, -69, -11, 82, 68, -101, -115, 68, 123, 111, -124, -70, 72, 51, -10, Ascii.NAK, 92, -73, Utf8.REPLACEMENT_BYTE, SignedBytes.MAX_POWER_OF_TWO, -70, -62, 93, 34, 54, 60, -92, 6, 120});
         second_delete_url = EnigmaUtils.enigmatization(new byte[]{75, 90, -32, 17, -98, -81, 92, -128, -101, 95, 38, -58, 105, -18, -22, -116, -16, 94, -72, 109, -69, -11, 82, 68, -101, -115, 68, 123, 111, -124, -70, 72, 101, 95, -124, 36, -91, -73, -72, -119, -21, 83, -22, -38, -83, 14, -91, -112});
