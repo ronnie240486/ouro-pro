@@ -13,11 +13,13 @@ import com.ouropro.player.R;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.WordModels;
+import com.ouropro.player.utils.TestPlaylistClient;
 
 /* JADX INFO: loaded from: classes.dex */
 public class DescriptionDlgFragment extends DialogFragment {
     public Button btn_cancel;
     public Button btn_reload;
+    public Button btn_test;
     public Context context;
     public String description;
     public ButtonClickListener listener;
@@ -30,6 +32,13 @@ public class DescriptionDlgFragment extends DialogFragment {
     public TextView txt_mac_address;
     public TextView txt_subscription;
     public int playlist_size = 0;
+    // Só true quando o painel confirma que esse MAC ainda não está
+    // cadastrado (AppInfoModel.is_trial == 1 -- ver MainTVActivity). Um
+    // cliente já cadastrado cuja assinatura simplesmente venceu NÃO recebe
+    // esse botão aqui (isso furaria a cobrança do revendedor); pra esse
+    // caso, o botão de fallback fica em NoConnectionDlgFragment, que só
+    // aparece depois que o MAC já passou dessa checagem de cadastro.
+    public boolean allowTest = false;
     public WordModels wordModels = new WordModels();
 
     public interface ButtonClickListener {
@@ -46,6 +55,7 @@ public class DescriptionDlgFragment extends DialogFragment {
         this.str_device_key = (TextView) view.findViewById(R.id.str_device_key);
         this.btn_reload = (Button) view.findViewById(R.id.btn_reload);
         this.btn_cancel = (Button) view.findViewById(R.id.btn_cancel);
+        this.btn_test = (Button) view.findViewById(R.id.btn_test);
         this.str_mac_address = (TextView) view.findViewById(R.id.str_mac_address);
         this.btn_reload.setText(this.wordModels.getStr_continue());
         this.btn_cancel.setText(this.wordModels.getCancel());
@@ -72,11 +82,16 @@ public class DescriptionDlgFragment extends DialogFragment {
     }
 
     public static DescriptionDlgFragment newInstance(Context context, String str, String str2, int i) {
+        return newInstance(context, str, str2, i, false);
+    }
+
+    public static DescriptionDlgFragment newInstance(Context context, String str, String str2, int i, boolean allowTest) {
         DescriptionDlgFragment descriptionDlgFragment = new DescriptionDlgFragment();
         descriptionDlgFragment.context = context;
         descriptionDlgFragment.subscription = str;
         descriptionDlgFragment.description = str2;
         descriptionDlgFragment.playlist_size = i;
+        descriptionDlgFragment.allowTest = allowTest;
         return descriptionDlgFragment;
     }
 
@@ -134,6 +149,23 @@ public class DescriptionDlgFragment extends DialogFragment {
                 }
             }
         });
+        if (this.allowTest && this.btn_test != null) {
+            this.btn_test.setVisibility(View.VISIBLE);
+            this.btn_test.setOnClickListener((View v) -> {
+                // IMPORTANTE: this.context aqui é o Application Context (veja
+                // MainTVActivity.showDescriptionDlgFragment, que passa
+                // getApplicationContext() pro newInstance) -- um AlertDialog
+                // criado com ele quebra com "BadTokenException" ao tentar
+                // aparecer. Precisa ser a Activity de verdade.
+                android.app.Activity hostActivity = getActivity();
+                if (hostActivity == null || hostActivity.isFinishing()) return;
+                String mac = this.preferenceHelper.getSharedPreferenceMacAddress();
+                TestPlaylistClient.showTestLeadDialog(hostActivity, mac, () -> {
+                    dismiss();
+                    TestPlaylistClient.restartApp(hostActivity);
+                });
+            });
+        }
         this.btn_reload.requestFocus();
         return viewInflate;
     }
