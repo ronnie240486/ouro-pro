@@ -160,6 +160,13 @@
     <id name="btn_search" />
     <id name="btn_show_cast" />
     <id name="btn_sub" />
+    <!-- Botão TESTE novo (ver TestPlaylistClient, DescriptionDlgFragment e
+         NoConnectionDlgFragment). Precisa estar declarado aqui, igual todo
+         outro id do projeto, porque os layouts referenciam ids com "@id/foo"
+         (sem "+"), então o AAPT exige que já exista em algum lugar antes de
+         compilar; sem essa linha o build falha com
+         "resource id/btn_test not found". -->
+    <id name="btn_test" />
     <id name="btn_title_setting" />
     <id name="btn_trailer" />
     <id name="btn_tv_pay" />
