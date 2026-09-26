@@ -113,7 +113,14 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
             }
             String str = this.wordModels.getTo_continue() + " €" + appInfoModel.getPrice() + " " + this.wordModels.getVia_website();
             this.description = str;
-            showDescriptionDlgFragment(this.subscription, str, -1);
+            // is_trial == 1 é o sinal que o painel manda (server/apiRoutes.ts,
+            // rota /api/guim.php) SEMPRE que esse MAC não existe no banco --
+            // ou seja, "nunca foi cadastrado", diferente de um cliente de
+            // verdade cuja assinatura só venceu (esse vem com is_trial == 0
+            // mesmo vencido). Só nesse primeiro caso libera o botão TESTE,
+            // pra não dar teste de graça pra quem deixou de pagar.
+            boolean neverRegistered = appInfoModel.getIs_trial() == 1;
+            showDescriptionDlgFragment(this.subscription, str, -1, neverRegistered);
             return;
         }
         String str2 = this.wordModels.getSub_remaining() + " " + ((int) ((((time - new Date().getTime()) / 1000) / 3600) / 24)) + " " + this.wordModels.getDays();
@@ -247,6 +254,10 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
     }
 
     private void showDescriptionDlgFragment(String str, String str2, final int i) {
+        showDescriptionDlgFragment(str, str2, i, false);
+    }
+
+    private void showDescriptionDlgFragment(String str, String str2, final int i, boolean allowTest) {
         this.image_loader.setVisibility(8);
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
@@ -255,7 +266,7 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
             Insets$$ExternalSyntheticOutline0.m(fragmentTransactionBeginTransaction, fragmentFindFragmentByTag, (String) null);
             return;
         }
-        DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i);
+        DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i, allowTest);
         this.descriptionDlgFragment = descriptionDlgFragmentNewInstance;
         descriptionDlgFragmentNewInstance.setButtonClickListener(new DescriptionDlgFragment.ButtonClickListener() { // from class: com.ouropro.player.MainTVActivity.2
             public void onCancelClick() {
