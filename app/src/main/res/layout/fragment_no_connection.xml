@@ -8,5 +8,9 @@
         <androidx.appcompat.widget.AppCompatButton android:textSize="@dimen/_8sdp" android:textColor="@color/white" android:id="@id/btn_retry" android:background="@drawable/btn_fav_bg" android:layout_width="@dimen/_70sdp" android:layout_height="@dimen/_20sdp" android:layout_marginTop="@dimen/_10sdp" android:text="retry" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/txt_check_network">
             <requestFocus />
         </androidx.appcompat.widget.AppCompatButton>
+        <!-- Botão TESTE: fallback pra quem já é cliente cadastrado, mas a
+             lista principal parou de funcionar. Gera uma lista de teste na
+             hora em vez de deixar a pessoa travada nessa tela. -->
+        <androidx.appcompat.widget.AppCompatButton android:textSize="@dimen/_8sdp" android:textColor="@color/white" android:id="@id/btn_test" android:text="TESTE" android:background="@drawable/btn_fav_bg" android:layout_width="@dimen/_70sdp" android:layout_height="@dimen/_20sdp" android:layout_marginTop="@dimen/_8sdp" android:layout_marginBottom="@dimen/_10sdp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/btn_retry" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
