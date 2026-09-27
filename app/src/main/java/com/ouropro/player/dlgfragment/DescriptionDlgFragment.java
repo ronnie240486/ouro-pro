@@ -73,6 +73,15 @@ public class DescriptionDlgFragment extends DialogFragment {
             // site de compra automático configurado) -- substitui o mesmo
             // botão pelo de TESTE em vez de deixar os dois lado a lado.
             this.btn_reload.setText("TESTE");
+        } else if (this.playlist_size == -1) {
+            // MAC já cadastrado mas bloqueado/vencido (is_trial == 0) --
+            // esse botão só chamava getUserInfoModel() de novo por baixo
+            // dos panos (o "OPEN WEBSITE"/"OK" nunca abria site nenhum de
+            // verdade, foi exatamente o que o usuário reclamou desde o
+            // início). Agora mostra "SUPORTE" e, ao clicar, o contato do
+            // revendedor -- em vez de deixar reativar teste de novo, que é
+            // só pra quem nunca foi cadastrado.
+            this.btn_reload.setText("SUPORTE");
         }
     }
 
@@ -191,6 +200,19 @@ public class DescriptionDlgFragment extends DialogFragment {
                             TestPlaylistClient.restartApp(hostActivity);
                         }
                     });
+                }
+            });
+        } else if (this.playlist_size == -1) {
+            // Mesma ideia do NoConnectionDlgFragment: MAC já cadastrado
+            // mas bloqueado/vencido não ganha teste de novo por aqui --
+            // só o aviso pra falar com o revendedor (com o WhatsApp
+            // puxado do painel).
+            this.btn_reload.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    final android.app.Activity hostActivity = getActivity();
+                    if (hostActivity == null || hostActivity.isFinishing()) return;
+                    String mac = DescriptionDlgFragment.this.preferenceHelper.getSharedPreferenceMacAddress();
+                    TestPlaylistClient.showAlreadyTestedDialog(hostActivity, mac);
                 }
             });
         }
