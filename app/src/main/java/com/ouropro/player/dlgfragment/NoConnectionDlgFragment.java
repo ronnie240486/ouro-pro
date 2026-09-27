@@ -15,8 +15,12 @@ import com.ouropro.player.R;
 import com.ouropro.player.activities.SearchActivity$$ExternalSyntheticLambda0;
 import com.ouropro.player.helper.GetSharedInfo;
 import com.ouropro.player.helper.PreferenceHelper;
+import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.utils.TestPlaylistClient;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /* JADX INFO: loaded from: classes.dex */
 public class NoConnectionDlgFragment extends DialogFragment {
@@ -65,15 +69,48 @@ public class NoConnectionDlgFragment extends DialogFragment {
                 public void onClick(View v) {
                     final android.app.Activity hostActivity = getActivity();
                     if (hostActivity == null || hostActivity.isFinishing()) return;
-                    String mac = new PreferenceHelper(hostActivity).getSharedPreferenceMacAddress();
-                    TestPlaylistClient.showTestLeadDialog(hostActivity, mac, new Runnable() {
-                        public void run() {
-                            dismiss();
-                            TestPlaylistClient.restartApp(hostActivity);
-                        }
-                    });
+                    PreferenceHelper preferenceHelper = new PreferenceHelper(hostActivity);
+                    String mac = preferenceHelper.getSharedPreferenceMacAddress();
+                    // Pedido do usuário: sem essa checagem, um MAC já
+                    // cadastrado mas bloqueado/vencido ficaria gerando
+                    // teste de graça toda vez que a lista principal
+                    // falhasse, sem limite nenhum. Cliente com assinatura
+                    // ativa (liberado) pode usar esse botão quantas vezes
+                    // precisar -- é só uma reserva pra quando a lista dele
+                    // cai. Quem está bloqueado/vencido só vê o aviso pra
+                    // falar com o revendedor.
+                    if (isAccountLiberado(preferenceHelper)) {
+                        TestPlaylistClient.showTestLeadDialog(hostActivity, mac, new Runnable() {
+                            public void run() {
+                                dismiss();
+                                TestPlaylistClient.restartApp(hostActivity);
+                            }
+                        });
+                    } else {
+                        TestPlaylistClient.showAlreadyTestedDialog(hostActivity, mac);
+                    }
                 }
             });
+        }
+    }
+
+    /**
+     * true só quando o cache local mostra uma assinatura de verdade ativa
+     * (is_trial == 0, ou seja, MAC conhecido pelo painel, e ainda dentro
+     * da validade). MAC nunca cadastrado (is_trial == 1) não deveria nem
+     * chegar nessa tela na prática -- essa checagem é só uma segurança a
+     * mais.
+     */
+    private boolean isAccountLiberado(PreferenceHelper preferenceHelper) {
+        try {
+            AppInfoModel info = preferenceHelper.getSharedPreferenceAppInfo();
+            if (info == null || info.getIs_trial() == 1) {
+                return false;
+            }
+            long expireMillis = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(info.getExpiredDate()).getTime();
+            return expireMillis - new Date().getTime() > 0;
+        } catch (Exception e) {
+            return false;
         }
     }
 
