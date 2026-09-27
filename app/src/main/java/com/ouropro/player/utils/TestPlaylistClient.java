@@ -276,6 +276,78 @@ public final class TestPlaylistClient {
     }
 
     /**
+     * Mostra "seu teste já foi feito, fale com seu revendedor" pra MAC
+     * cadastrado mas bloqueado/vencido -- pedido do usuário pra impedir
+     * que a mesma pessoa fique gerando teste de graça toda hora só porque
+     * a lista dela caiu ou venceu. O WhatsApp mostrado vem do PRÓPRIO
+     * painel (gpcpro_contact_whatsapp / gpcpro_contact_info, o mesmo campo
+     * que resolveRegisterUrl já lê) em vez de fixo no código -- se o
+     * revendedor trocar o número no painel, o modal já atualiza sozinho
+     * sem precisar gerar um APK novo.
+     */
+    public static void showAlreadyTestedDialog(Context context, String mac) {
+        final Context safeContext = context;
+        new Thread(() -> {
+            String phone = resolveContactPhone(mac);
+            new Handler(Looper.getMainLooper()).post(() -> showAlreadyTestedDialogUi(safeContext, phone));
+        }).start();
+    }
+
+    private static void showAlreadyTestedDialogUi(Context context, String phone) {
+        if (context instanceof android.app.Activity && ((android.app.Activity) context).isFinishing()) {
+            return;
+        }
+        String message = phone.isEmpty()
+                ? "Seu teste já foi feito. Entre em contato com seu revendedor pra assinar."
+                : "Seu teste já foi feito.\n\nEntre em contato com seu revendedor:\n" + phone;
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                .setTitle("Teste já utilizado")
+                .setMessage(message)
+                .setNegativeButton("Fechar", null);
+        if (!phone.isEmpty()) {
+            final String phoneFinal = phone;
+            builder.setPositiveButton("Chamar no WhatsApp", (dialog, which) -> {
+                try {
+                    String digits = phoneFinal.replaceAll("[^0-9]", "");
+                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://wa.me/" + digits));
+                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                } catch (Exception ignored) {
+                    // sem WhatsApp instalado ou número inválido -- ignora, o modal já mostrou o número.
+                }
+            });
+        }
+        builder.show();
+    }
+
+    /** Railway primeiro, cai pro Manus, e por último "sem número" (o modal ainda mostra a mensagem, só sem WhatsApp). */
+    private static String resolveContactPhone(String mac) {
+        String macSafe = mac == null ? "" : mac;
+        try {
+            String guim = getText(PANEL_ROOT_PRIMARY + "/api/guim.php?mac=" + URLEncoder.encode(macSafe, "UTF-8"));
+            String phone = extractContactPhone(guim);
+            if (!phone.isEmpty()) return phone;
+        } catch (Exception ignored) {
+            // tenta o próximo
+        }
+        try {
+            String guim = getText(PANEL_ROOT_FALLBACK + "/api/guim.php?mac=" + URLEncoder.encode(macSafe, "UTF-8"));
+            String phone = extractContactPhone(guim);
+            if (!phone.isEmpty()) return phone;
+        } catch (Exception ignored) {
+            // sem número mesmo -- o modal mostra só o texto.
+        }
+        return "";
+    }
+
+    private static String extractContactPhone(String guimJson) throws Exception {
+        JSONObject json = new JSONObject(guimJson);
+        String whatsapp = json.optString("gpcpro_contact_whatsapp", "").trim();
+        if (!whatsapp.isEmpty()) return whatsapp;
+        return json.optString("gpcpro_contact_info", "").trim();
+    }
+
+    /**
      * Reabre o app do zero pela própria tela inicial dele -- mais simples e
      * seguro do que tentar adivinhar qual Activity específica chamou o
      * diálogo de teste (DescriptionDlgFragment e NoConnectionDlgFragment
