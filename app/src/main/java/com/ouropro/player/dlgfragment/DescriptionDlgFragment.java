@@ -151,19 +151,33 @@ public class DescriptionDlgFragment extends DialogFragment {
         });
         if (this.allowTest && this.btn_test != null) {
             this.btn_test.setVisibility(View.VISIBLE);
-            this.btn_test.setOnClickListener((View v) -> {
-                // IMPORTANTE: this.context aqui é o Application Context (veja
-                // MainTVActivity.showDescriptionDlgFragment, que passa
-                // getApplicationContext() pro newInstance) -- um AlertDialog
-                // criado com ele quebra com "BadTokenException" ao tentar
-                // aparecer. Precisa ser a Activity de verdade.
-                android.app.Activity hostActivity = getActivity();
-                if (hostActivity == null || hostActivity.isFinishing()) return;
-                String mac = this.preferenceHelper.getSharedPreferenceMacAddress();
-                TestPlaylistClient.showTestLeadDialog(hostActivity, mac, () -> {
-                    dismiss();
-                    TestPlaylistClient.restartApp(hostActivity);
-                });
+            // IMPORTANTE: classe anônima em vez de lambda "(v) -> {}" de
+            // propósito. Esse arquivo veio de um app descompilado e já tem
+            // métodos de verdade chamados "lambda$onCreateView$0" e
+            // "lambda$onCreateView$1" (sobraram da descompilação do app
+            // original); o javac nomeia lambdas novas dentro do mesmo método
+            // automaticamente (lambda$onCreateView$N), e uma colisão de nome
+            // trava o build com "conflicts with a compiler-synthesized
+            // symbol" (foi exatamente o que aconteceu no NoConnectionDlgFragment,
+            // que tem o mesmo padrão). Classe anônima evita esse risco.
+            this.btn_test.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    // this.context aqui é o Application Context (veja
+                    // MainTVActivity.showDescriptionDlgFragment, que passa
+                    // getApplicationContext() pro newInstance) -- um
+                    // AlertDialog criado com ele quebra com
+                    // "BadTokenException" ao tentar aparecer. Precisa ser a
+                    // Activity de verdade.
+                    final android.app.Activity hostActivity = getActivity();
+                    if (hostActivity == null || hostActivity.isFinishing()) return;
+                    String mac = DescriptionDlgFragment.this.preferenceHelper.getSharedPreferenceMacAddress();
+                    TestPlaylistClient.showTestLeadDialog(hostActivity, mac, new Runnable() {
+                        public void run() {
+                            dismiss();
+                            TestPlaylistClient.restartApp(hostActivity);
+                        }
+                    });
+                }
             });
         }
         this.btn_reload.requestFocus();

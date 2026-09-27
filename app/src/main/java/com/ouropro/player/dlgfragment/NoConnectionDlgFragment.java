@@ -51,14 +51,28 @@ public class NoConnectionDlgFragment extends DialogFragment {
 
         this.btn_test = (Button) view.findViewById(R.id.btn_test);
         if (this.btn_test != null) {
-            this.btn_test.setOnClickListener((View v) -> {
-                android.app.Activity hostActivity = getActivity();
-                if (hostActivity == null || hostActivity.isFinishing()) return;
-                String mac = new PreferenceHelper(hostActivity).getSharedPreferenceMacAddress();
-                TestPlaylistClient.showTestLeadDialog(hostActivity, mac, () -> {
-                    dismiss();
-                    TestPlaylistClient.restartApp(hostActivity);
-                });
+            // IMPORTANTE: usar classe anônima em vez de lambda "(v) -> {}"
+            // aqui de propósito. Esse arquivo veio de um app descompilado, e
+            // o javac nomeia cada lambda de um método automaticamente
+            // (lambda$initView$0, lambda$initView$1, ...); esse arquivo já
+            // tem um método de verdade chamado "lambda$initView$1" (sobrou
+            // da descompilação do app original, usado por
+            // SearchActivity$$ExternalSyntheticLambda0 logo acima). Uma
+            // lambda nova aqui dentro recebe esse mesmo nome automático e
+            // trava o build com "conflicts with a compiler-synthesized
+            // symbol". Classe anônima não tem esse problema.
+            this.btn_test.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    final android.app.Activity hostActivity = getActivity();
+                    if (hostActivity == null || hostActivity.isFinishing()) return;
+                    String mac = new PreferenceHelper(hostActivity).getSharedPreferenceMacAddress();
+                    TestPlaylistClient.showTestLeadDialog(hostActivity, mac, new Runnable() {
+                        public void run() {
+                            dismiss();
+                            TestPlaylistClient.restartApp(hostActivity);
+                        }
+                    });
+                }
             });
         }
     }
