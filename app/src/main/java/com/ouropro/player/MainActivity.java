@@ -117,7 +117,15 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             }
             String to_continue = this.wordModels.getTo_continue();
             this.description = to_continue;
-            showDescriptionDlgFragment(this.subscription, to_continue, -1);
+            // is_trial == 1 é o sinal que o painel manda pra MAC nunca
+            // cadastrado (ver o mesmo comentário/lógica em MainTVActivity).
+            // Esse app abre por AQUI (MainActivity, launcher normal) na
+            // maioria dos boxes Android genéricos, não pelo MainTVActivity
+            // (que só é usado pelo launcher Leanback de Android TV de
+            // verdade) -- por isso essa checagem precisa existir aqui
+            // também, senão o botão TESTE nunca aparece nesses boxes.
+            boolean neverRegistered = appInfoModel.getIs_trial() == 1;
+            showDescriptionDlgFragment(this.subscription, to_continue, -1, neverRegistered);
             return;
         }
         String str = this.wordModels.getSub_remaining() + " " + ((int) ((((time - new Date().getTime()) / 1000) / 3600) / 24)) + " " + this.wordModels.getDays();
@@ -314,6 +322,10 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
     }
 
     private void showDescriptionDlgFragment(String str, String str2, final int i) {
+        showDescriptionDlgFragment(str, str2, i, false);
+    }
+
+    private void showDescriptionDlgFragment(String str, String str2, final int i, boolean allowTest) {
         setLoaderVisibility(8);
         FragmentManager supportFragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransactionBeginTransaction = supportFragmentManager.beginTransaction();
@@ -322,7 +334,7 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
             Insets$$ExternalSyntheticOutline0.m(fragmentTransactionBeginTransaction, fragmentFindFragmentByTag, (String) null);
             return;
         }
-        DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i);
+        DescriptionDlgFragment descriptionDlgFragmentNewInstance = DescriptionDlgFragment.newInstance(getApplicationContext(), str, str2, i, allowTest);
         this.descriptionDlgFragment = descriptionDlgFragmentNewInstance;
         descriptionDlgFragmentNewInstance.setButtonClickListener(new DescriptionDlgFragment.ButtonClickListener() { // from class: com.ouropro.player.MainActivity.2
             public void onCancelClick() {
