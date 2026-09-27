@@ -34,6 +34,7 @@ import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.WordModels;
 import com.ouropro.player.remote.GetDataRequest;
 import com.ouropro.player.utils.Security;
+import com.ouropro.player.utils.TestPlaylistClient;
 import com.ouropro.player.utils.Utils;
 import com.ouropro.player.view.LiveVerticalGridView;
 import java.text.SimpleDateFormat;
@@ -116,6 +117,62 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         if (Utils.IsAmazonDevice()) {
             this.btn_pay.setVisibility(4);
         }
+    }
+
+    /**
+     * true só quando esse MAC tem assinatura de verdade ativa: is_trial ==
+     * 2 (ativado por código dentro do app), is_google_pay == true, ou
+     * ainda dentro da validade (expiredDate no futuro). MAC nunca
+     * cadastrado (is_trial == 1) nunca conta como liberado.
+     */
+    private boolean isAccountLiberado() {
+        AppInfoModel info = this.appInfoModel;
+        if (info == null || info.getIs_trial() == 1) {
+            return false;
+        }
+        if (info.getIs_trial() == 2 || info.isIs_google_pay()) {
+            return true;
+        }
+        try {
+            long expireMillis = this.expire_format.parse(info.getExpiredDate()).getTime();
+            return expireMillis - new Date().getTime() > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Troca o botão "Renovar Agora" (que só tentava abrir uma URL inválida
+     * e nunca fazia nada) pelo fluxo de TESTE -- com a mesma trava contra
+     * abuso já usada em NoConnectionDlgFragment/DescriptionDlgFragment.
+     */
+    private void configureWebSiteButton() {
+        final boolean liberado = isAccountLiberado();
+        this.btn_web_site.setText(liberado ? "TESTE" : "SUPORTE");
+        // IMPORTANTE: classe anônima em vez de lambda "(v) -> {}" de
+        // propósito -- esse arquivo já tem um método de verdade chamado
+        // "lambda$initView$3" (sobrou da descompilação do app original,
+        // ainda usado por SearchActivity$$ExternalSyntheticLambda0). Uma
+        // lambda nova aqui dentro do mesmo initView() receberia esse mesmo
+        // nome automático do javac e travaria o build com "conflicts with
+        // a compiler-synthesized symbol" (o mesmo bug já visto em
+        // DescriptionDlgFragment/NoConnectionDlgFragment). Reatribuir o
+        // listener aqui (depois da atribuição original em initView) troca
+        // o clique por completo -- um View só guarda um por vez.
+        this.btn_web_site.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String mac = ChangePlaylistActivity.this.preferenceHelper.getSharedPreferenceMacAddress();
+                if (liberado) {
+                    TestPlaylistClient.showTestLeadDialog(ChangePlaylistActivity.this, mac, new Runnable() {
+                        public void run() {
+                            TestPlaylistClient.restartApp(ChangePlaylistActivity.this);
+                        }
+                    });
+                } else {
+                    TestPlaylistClient.showAlreadyTestedDialog(ChangePlaylistActivity.this, mac);
+                }
+            }
+        });
     }
 
     private void deletePlaylist(final AppInfoModel.UrlModel urlModel) {
@@ -235,8 +292,20 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
             this.image_qr.setVisibility(8);
             this.btn_web_site.setVisibility(0);
             this.str_scan_code.setVisibility(8);
+            // Pedido do usuário: esse botão (rotulado "Renovar Agora" pela
+            // tradução configurada no painel pro campo "open_website") só
+            // tentava abrir Uri.parse("Suporte com seu revendedor") -- uma
+            // string que não é uma URL de verdade -- e caía silenciosamente
+            // no catch, sem fazer nada visível. Substitui pelo mesmo botão
+            // de TESTE (com a mesma trava de abuso já usada em
+            // NoConnectionDlgFragment/DescriptionDlgFragment): cliente
+            // liberado pode gerar teste à vontade; bloqueado/vencido só vê
+            // o aviso pra contatar o revendedor.
         }
         this.btn_web_site.setText(this.wordModels.getOpen_website());
+        if (!GetSharedInfo.isTVDevice(this)) {
+            configureWebSiteButton();
+        }
         this.notiTitle.setText(this.wordModels.getIbo_pro_description());
         this.notiContent.setText(this.wordModels.getIbo_pro_general_player());
         this.str_upload.setText(this.wordModels.getTo_add_manage());
