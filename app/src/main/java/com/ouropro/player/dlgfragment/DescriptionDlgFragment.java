@@ -67,6 +67,13 @@ public class DescriptionDlgFragment extends DialogFragment {
                 this.btn_reload.setText(this.wordModels.getOpen_website());
             }
         }
+        if (this.allowTest) {
+            // Pedido do usuário: pra quem nunca foi cadastrado, o botão
+            // "OPEN WEBSITE"/"OK" não leva a lugar nenhum de útil (não tem
+            // site de compra automático configurado) -- substitui o mesmo
+            // botão pelo de TESTE em vez de deixar os dois lado a lado.
+            this.btn_reload.setText("TESTE");
+        }
     }
 
     /* JADX INFO: Access modifiers changed from: private */
@@ -149,8 +156,15 @@ public class DescriptionDlgFragment extends DialogFragment {
                 }
             }
         });
-        if (this.allowTest && this.btn_test != null) {
-            this.btn_test.setVisibility(View.VISIBLE);
+        if (this.allowTest) {
+            // Substitui o clique do botão (agora com texto "TESTE", ver
+            // initView) em vez de manter um botão extra ao lado -- pedido do
+            // usuário, já que "OPEN WEBSITE"/"OK" não fazia nada útil aqui
+            // pra quem nunca foi cadastrado. Atribuir de novo o listener do
+            // MESMO botão (depois da atribuição original logo acima) troca o
+            // clique por completo -- um View só guarda um
+            // OnClickListener por vez, então o mais recente vale.
+            //
             // IMPORTANTE: classe anônima em vez de lambda "(v) -> {}" de
             // propósito. Esse arquivo veio de um app descompilado e já tem
             // métodos de verdade chamados "lambda$onCreateView$0" e
@@ -160,7 +174,7 @@ public class DescriptionDlgFragment extends DialogFragment {
             // trava o build com "conflicts with a compiler-synthesized
             // symbol" (foi exatamente o que aconteceu no NoConnectionDlgFragment,
             // que tem o mesmo padrão). Classe anônima evita esse risco.
-            this.btn_test.setOnClickListener(new View.OnClickListener() {
+            this.btn_reload.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     // this.context aqui é o Application Context (veja
                     // MainTVActivity.showDescriptionDlgFragment, que passa
