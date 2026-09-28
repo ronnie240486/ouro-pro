@@ -7,7 +7,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.common.net.HttpHeaders;
 import java.util.HashMap;
 import java.util.Map;
-import org.androidannotations.api.rest.MediaType;
+import com.ouropro.player.compat.MediaType;
 import org.json.JSONObject;
 
 /* JADX INFO: loaded from: classes.dex */
