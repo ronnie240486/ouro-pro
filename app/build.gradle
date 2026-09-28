@@ -32,6 +32,22 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Assinatura de release pra Play Store. A keystore de verdade NUNCA
+        // fica commitada aqui (o .gitignore já bloqueia *.keystore/*.jks) --
+        // ela só existe: (1) no GitHub Actions, decodificada em tempo de
+        // build a partir do secret KEYSTORE_BASE64 (ver
+        // .github/workflows/build-apk.yml, job build-release-aab), ou (2)
+        // na sua própria máquina, se você exportar as mesmas variáveis de
+        // ambiente antes de rodar `./gradlew :app:bundleRelease` localmente.
+        // Sem essas variáveis definidas, essa keystore fica com valores
+        // vazios/nulos e só dá erro se alguém tentar rodar bundleRelease
+        // sem configurá-las -- não afeta o build de debug de jeito nenhum.
+        release {
+            storeFile file(System.getenv('OUROPRO_RELEASE_KEYSTORE_PATH') ?: (project.findProperty('OUROPRO_RELEASE_KEYSTORE_PATH') ?: 'ouropro-release.keystore'))
+            storePassword System.getenv('OUROPRO_RELEASE_STORE_PASSWORD') ?: project.findProperty('OUROPRO_RELEASE_STORE_PASSWORD')
+            keyAlias System.getenv('OUROPRO_RELEASE_KEY_ALIAS') ?: (project.findProperty('OUROPRO_RELEASE_KEY_ALIAS') ?: 'ouropro')
+            keyPassword System.getenv('OUROPRO_RELEASE_KEY_PASSWORD') ?: project.findProperty('OUROPRO_RELEASE_KEY_PASSWORD')
+        }
     }
 
     defaultConfig {
@@ -69,6 +85,7 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField 'boolean', 'ENABLE_VERBOSE_NETWORK_LOGS', 'false'
+            signingConfig signingConfigs.release
         }
     }
 
