@@ -108,17 +108,30 @@ jobs:
   build-release-aab:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
+    # BUG corrigido: o GitHub NÃO deixa usar o contexto "secrets" dentro de
+    # "if:" no nível do JOB (só dentro de "if:" de cada STEP) -- usar assim
+    # não pula o job, invalida o arquivo do workflow inteiro, com o erro
+    # "Unrecognized named-value: 'secrets'" (foi exatamente o que aconteceu
+    # nas primeiras runs). A correção: calcula um env var booleano aqui
+    # (env: no nível do job aceita "secrets" numa boa) e usa esse env var
+    # -- não mais "secrets" diretamente -- no "if:" de CADA step abaixo.
+    # Sem os 3 secrets cadastrados, todo step deste job aparece como
+    # "Skipped", sem quebrar a run.
+    env:
+      HAS_SIGNING_SECRETS: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v4
+        if: env.HAS_SIGNING_SECRETS == 'true'
 
       - name: Setup JDK 17
+        if: env.HAS_SIGNING_SECRETS == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Preparar o Android SDK (instalação manual, sem depender de action de terceiro)
+        if: env.HAS_SIGNING_SECRETS == 'true'
         run: |
           ANDROID_SDK_ROOT="$HOME/android-sdk"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
@@ -133,6 +146,7 @@ jobs:
           "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null
 
       - name: Cache do Gradle
+        if: env.HAS_SIGNING_SECRETS == 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -143,10 +157,12 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Decodificar a keystore de release (nunca fica salva no repositório)
+        if: env.HAS_SIGNING_SECRETS == 'true'
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/ouropro-release.keystore
 
       - name: Buildar o .aab assinado (formato exigido pela Play Store)
+        if: env.HAS_SIGNING_SECRETS == 'true'
         env:
           OUROPRO_RELEASE_KEYSTORE_PATH: ouropro-release.keystore
           OUROPRO_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -159,6 +175,7 @@ jobs:
         run: rm -f app/ouropro-release.keystore
 
       - name: Encontrar o .aab gerado
+        if: env.HAS_SIGNING_SECRETS == 'true'
         id: aab
         run: |
           AAB_PATH=$(find app/build/outputs/bundle -name "*.aab" | head -n1)
@@ -166,6 +183,7 @@ jobs:
           echo "Encontrado: $AAB_PATH"
 
       - name: Enviar o .aab como artefato do build (baixe aqui pra subir na Play Console)
+        if: env.HAS_SIGNING_SECRETS == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ouropro-release-aab
