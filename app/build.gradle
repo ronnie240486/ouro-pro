@@ -63,8 +63,9 @@ android {
         // BUG corrigido: o Play Console rejeita reenvio com o mesmo
         // versionCode -- mesmo quando a versão anterior falhou na
         // validação (ex.: pelo erro de targetSdk), o número já fica
-        // "gasto". Subindo pra 244 aqui.
-        versionCode 244
+        // "gasto". 245: versao sem REQUEST_INSTALL_PACKAGES
+        // (Play Console exige declaracao e recusa pra player IPTV).
+        versionCode 245
         versionName '6.4.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
