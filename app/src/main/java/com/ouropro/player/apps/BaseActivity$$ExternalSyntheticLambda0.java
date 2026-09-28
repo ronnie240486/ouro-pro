@@ -2,7 +2,7 @@ package com.ouropro.player.apps;
 
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.constraintlayout.core.state.Interpolator;
+import com.ouropro.player.compat.Interpolator;
 import com.ouropro.player.compat.Transition;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
