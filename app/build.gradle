@@ -6,7 +6,13 @@ apply plugin: 'realm-android'
 
 android {
     namespace 'com.ouropro.player'
-    compileSdk 35
+    // BUG corrigido: estava compileSdk 35 / targetSdk 34. A partir de
+    // 2025 a Google Play passou a exigir targetSdk >= 36 (Android 16) pra
+    // publicar/atualizar qualquer app novo -- o Play Console recusa o
+    // upload do .aab com o erro "esse nível precisa ser de pelo menos 36"
+    // enquanto isso não for corrigido. compileSdk precisa ser >= targetSdk,
+    // por isso os dois sobem juntos.
+    compileSdk 36
 
     // BUG corrigido: não existia esse bloco -- o Gradle usava a assinatura
     // "debug" padrão dele mesmo, que quando não existe ~/.android/debug.keystore
@@ -53,7 +59,7 @@ android {
     defaultConfig {
         applicationId 'com.ouropro.player'
         minSdk 21
-        targetSdk 34
+        targetSdk 36
         versionCode 243
         versionName '6.4'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
