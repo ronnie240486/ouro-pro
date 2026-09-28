@@ -1,6 +1,6 @@
 package com.ouropro.player.helper;
 
-import androidx.constraintlayout.core.state.Interpolator;
+import com.ouropro.player.compat.Interpolator;
 import com.ouropro.player.compat.Transition;
 import io.realm.Realm;
 
