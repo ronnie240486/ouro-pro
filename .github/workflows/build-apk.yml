@@ -100,3 +100,74 @@ jobs:
         run: |
           echo "Link fixo do APK (cole no painel ou no Downloader):"
           echo "https://github.com/${{ github.repository }}/releases/download/ouropro-latest/ouropro-debug.apk"
+
+  # Build separado, só pra gerar o .aab assinado que a Play Store exige.
+  # Só roda se os 3 secrets de assinatura já estiverem cadastrados no repo
+  # (Settings -> Secrets and variables -> Actions) -- antes disso, esse job
+  # fica marcado como "pulado" (não como erro) em toda run.
+  build-release-aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.KEYSTORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar o Android SDK (instalação manual, sem depender de action de terceiro)
+        run: |
+          ANDROID_SDK_ROOT="$HOME/android-sdk"
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -sSL "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+
+      - name: Cache do Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Decodificar a keystore de release (nunca fica salva no repositório)
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/ouropro-release.keystore
+
+      - name: Buildar o .aab assinado (formato exigido pela Play Store)
+        env:
+          OUROPRO_RELEASE_KEYSTORE_PATH: ouropro-release.keystore
+          OUROPRO_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          OUROPRO_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          OUROPRO_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:bundleRelease --no-daemon --stacktrace
+
+      - name: Apagar a keystore decodificada (não deixa sobrar no runner)
+        if: always()
+        run: rm -f app/ouropro-release.keystore
+
+      - name: Encontrar o .aab gerado
+        id: aab
+        run: |
+          AAB_PATH=$(find app/build/outputs/bundle -name "*.aab" | head -n1)
+          echo "path=$AAB_PATH" >> "$GITHUB_OUTPUT"
+          echo "Encontrado: $AAB_PATH"
+
+      - name: Enviar o .aab como artefato do build (baixe aqui pra subir na Play Console)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ouropro-release-aab
+          path: ${{ steps.aab.outputs.path }}
+          if-no-files-found: error
