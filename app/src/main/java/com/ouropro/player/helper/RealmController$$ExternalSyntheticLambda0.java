@@ -1,7 +1,7 @@
 package com.ouropro.player.helper;
 
 import androidx.constraintlayout.core.state.Interpolator;
-import androidx.constraintlayout.core.state.Transition;
+import com.ouropro.player.compat.Transition;
 import io.realm.Realm;
 
 /* JADX INFO: compiled from: R8$$SyntheticClass */
