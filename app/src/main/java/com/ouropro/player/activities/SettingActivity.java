@@ -46,7 +46,6 @@ import com.ouropro.player.dlgfragment.PayForTvDlgFragment;
 import com.ouropro.player.dlgfragment.SubtitleSettingDlgFragment;
 import com.ouropro.player.dlgfragment.UpdateDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
-import com.ouropro.player.improvements.InAppApkUpdateTask;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.models.AppInfoModel;
 import com.ouropro.player.models.LanguageModel;
@@ -384,32 +383,26 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     }
 
     private void startUpdateDownload(String serverLink) {
-        String apkLink = serverLink == null ? "" : serverLink.trim();
-        if (apkLink.isEmpty()) {
-            showUpdateError("O painel não retornou um link de APK atualizado");
-            return;
-        }
-        if (!(apkLink.startsWith("https://") || apkLink.startsWith("http://"))) {
-            showUpdateError("O painel retornou um link de atualização inválido");
-            return;
-        }
-        String cacheBustedLink = apkLink + (apkLink.contains("?") ? "&" : "?") + "ouropro_update=" + System.currentTimeMillis();
-        new InAppApkUpdateTask(this, "Baixando atualização...", new InAppApkUpdateTask.Listener() {
-            @Override public void onSuccess(File apk) {
-                startInstall(apk);
+        // Play Store: o app nao pode baixar/instalar APK por conta propria
+        // (politica do Google + REQUEST_INSTALL_PACKAGES removida).
+        // Atualizacao passa a ser pela propria Play Store.
+        openPlayStorePage();
+    }
+
+    private void openPlayStorePage() {
+        try {
+            Intent market = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + getPackageName()));
+            market.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(market);
+        } catch (Exception notInstalled) {
+            try {
+                Intent web = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + getPackageName()));
+                web.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(web);
+            } catch (Exception e) {
+                showUpdateError("Atualize o app pela Play Store");
             }
-            @Override public void onFailure(String message) {
-                if (message != null && message.startsWith("Seu APK já está na última versão")) {
-                    new AlertDialog.Builder(SettingActivity.this)
-                            .setTitle("Atualização")
-                            .setMessage(message)
-                            .setPositiveButton("OK", null)
-                            .show();
-                } else {
-                    Toast.makeText(SettingActivity.this, message, Toast.LENGTH_LONG).show();
-                }
-            }
-        }).execute(cacheBustedLink);
+        }
     }
 
     private void showUpdateError(String message) {
@@ -816,23 +809,11 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
 
     /* JADX INFO: Access modifiers changed from: private */
     public void startInstall(File file) {
-        if (Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
-            Intent permissionIntent = new Intent("android.settings.MANAGE_UNKNOWN_APP_SOURCES");
-            permissionIntent.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(permissionIntent);
-            Toast.makeText(this, "Autorize a instalação por esta fonte e toque em Atualizar novamente.", Toast.LENGTH_LONG).show();
-            return;
+        // Instalacao de APK removida (politica da Play Store).
+        if (file != null && file.exists()) {
+            file.delete();
         }
-        Intent intent = new Intent("android.intent.action.VIEW");
-        if (Build.VERSION.SDK_INT > 24) {
-            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName() + ".provider", file), "application/vnd.android.package-archive");
-            intent.setFlags(268435456);
-            intent.addFlags(1);
-        } else {
-            intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
-            intent.setFlags(268435456);
-        }
-        startActivity(intent);
+        openPlayStorePage();
     }
 
     private void startReviewFlow() {
