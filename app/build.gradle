@@ -60,8 +60,12 @@ android {
         applicationId 'com.ouropro.player'
         minSdk 21
         targetSdk 36
-        versionCode 243
-        versionName '6.4'
+        // BUG corrigido: o Play Console rejeita reenvio com o mesmo
+        // versionCode -- mesmo quando a versão anterior falhou na
+        // validação (ex.: pelo erro de targetSdk), o número já fica
+        // "gasto". Subindo pra 244 aqui.
+        versionCode 244
+        versionName '6.4.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
         // BUG corrigido: essa suposição ("praticamente todo TV box é
