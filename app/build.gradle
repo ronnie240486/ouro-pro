@@ -63,10 +63,18 @@ android {
         // BUG corrigido: o Play Console rejeita reenvio com o mesmo
         // versionCode -- mesmo quando a versão anterior falhou na
         // validação (ex.: pelo erro de targetSdk), o número já fica
-        // "gasto". 246: versao sem REQUEST_INSTALL_PACKAGES
-        // (Play Console exige declaracao e recusa pra player IPTV).
-        versionCode 246
-        versionName '6.4.1'
+        // "gasto". Subindo pra 244 aqui.
+        versionCode 244
+        // BUG corrigido: versionName tinha virado '6.4.1' (3 números),
+        // mas SettingActivity.java faz Double.parseDouble(LTVApp.version_name)
+        // pra comparar com a versão do painel e decidir se tem atualização
+        // disponível -- um versionName com DOIS pontos (6.4.1) quebra esse
+        // parse com "NumberFormatException: multiple points", travando a
+        // tela de Configurações inteira ao abrir (crash reproduzido: tela
+        // "Enviar feedback" do Android ao tocar em Configurações). Mantendo
+        // o formato "major.minor" de um ponto só, que é o que esse código
+        // legado espera.
+        versionName '6.5'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
         // BUG corrigido: essa suposição ("praticamente todo TV box é
