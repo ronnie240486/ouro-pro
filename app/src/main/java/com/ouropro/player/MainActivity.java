@@ -480,6 +480,10 @@ public class MainActivity extends BaseActivity implements GetDataRequest.OnGetRe
         if (this.preferenceHelper.getSharedPreferenceDeviceType() == null) {
             this.preferenceHelper.setSharedPreferenceDeviceType(this.device_type);
         }
+        // Mesma ideia do MainTVActivity: começa a baixar o fundo/ícones da
+        // Home em paralelo com a checagem da lista, em vez de só depois dela
+        // -- assim quando a Home abrir, a imagem já está pronta no cache.
+        com.ouropro.player.utils.HomeAssetsPreloader.preload(getApplicationContext());
         if (Build.VERSION.SDK_INT >= 23) {
             CheckSDK23Permission();
         } else {
