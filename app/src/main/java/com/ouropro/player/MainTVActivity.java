@@ -395,6 +395,14 @@ public class MainTVActivity extends BaseTVActivity implements GetDataRequest.OnG
         this.preferenceHelper = preferenceHelper;
         preferenceHelper.setSharedPreferenceDeviceType("tv");
         this.image_loader = (GifImageView) findViewById(R.id.image_loader);
+        // O fundo da Home (Back.java) e os ícones só começavam a baixar quando
+        // a Home abria -- ou seja, DEPOIS de toda a checagem de MAC/lista aqui
+        // na tela de loading terminar. Isso somava o tempo dos dois: primeiro
+        // a checagem da lista, só depois o download do fundo. Disparando o
+        // download do fundo/ícones aqui, em paralelo com a checagem da lista,
+        // quando a Home realmente abrir a imagem já está pronta (ou quase) no
+        // cache do Glide/OkHttp, aparecendo na hora.
+        com.ouropro.player.utils.HomeAssetsPreloader.preload(getApplicationContext());
         if (Build.VERSION.SDK_INT >= 23) {
             CheckSDK23Permission();
         } else {
