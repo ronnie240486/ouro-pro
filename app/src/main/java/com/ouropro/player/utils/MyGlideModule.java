@@ -11,6 +11,7 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.module.AppGlideModule;
 import java.io.File;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 
@@ -42,8 +43,19 @@ public class MyGlideModule extends AppGlideModule {
         // o OkHttp passa a validar com o servidor (rápido, poucos bytes) em
         // vez de sempre baixar tudo de novo, e o Glide ainda assim buscava
         // a imagem posta mais atual sempre que ela muda de verdade.
+        // Algumas TV boxes (ex.: modelos "Mxq" genéricos) têm Wi-Fi fraco e
+        // demoram bem mais que o padrão do OkHttp (10s) pra completar a
+        // conexão ou receber a resposta -- isso derrubava a conexão antes
+        // de terminar, tanto no proxy pesado do /api/v4/bg.php quanto nos
+        // redirects leves dos ícones. Timeout maior (30s) + retryOnConnectionFailure
+        // dão mais chance de completar em rede ruim, em vez de desistir cedo
+        // e deixar a view sem imagem.
         OkHttpClient client = new OkHttpClient.Builder()
                 .cache(new Cache(new File(context.getCacheDir(), "http_image_cache"), 25L * 1024 * 1024))
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
                 .build();
         registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(client));
     }
