@@ -76,7 +76,9 @@ android {
         // fica "gasto". 244 E 245 já foram usados (rejeitados mas
         // "queimados" mesmo assim) -- pulando pra 260 aqui, com folga,
         // pra não precisar ficar testando número um por um de novo.
-        versionCode 260
+        // 260 e 261 também já foram enviados ao Play Console (número gasto,
+        // mesmo recusado) -- por isso 270, com folga.
+        versionCode 270
         // BUG corrigido: versionName tinha virado '6.4.1' (3 números),
         // mas SettingActivity.java faz Double.parseDouble(LTVApp.version_name)
         // pra comparar com a versão do painel e decidir se tem atualização
@@ -143,13 +145,62 @@ android {
             java.srcDirs = ['src/main/java']
             res.srcDirs = ['src/main/res']
             assets.srcDirs = ['src/main/assets']
-            jniLibs.srcDirs = ['src/main/jniLibs']
+            // BUG corrigido (Play Console: "O app precisa aceitar páginas de
+            // 16 KB de memória", exigência desde 31/10/2025 pra app com
+            // targetSdk 35+): as bibliotecas nativas copiadas à mão em
+            // src/main/jniLibs (libffmpegJNI, librealm-jni,
+            // libpl_droidsonroids_gif) são do APK original e estão alinhadas
+            // em 4 KB -- o Google recusa. Elas foram ignoradas de propósito:
+            //  - libffmpegJNI.so: nenhum código do app carrega essa
+            //    biblioteca (não existe loadLibrary nem a extensão FFmpeg do
+            //    ExoPlayer no projeto), era peso morto;
+            //  - Realm e gif-drawable: as dependências (realm 10.19.0 e
+            //    android-gif-drawable 1.2.29) já trazem a própria versão
+            //    nativa, compatível com 16 KB.
+            // As cópias antigas podem continuar na pasta; ficam sem uso.
+            jniLibs.srcDirs = []
         }
     }
 }
 
 realm {
     syncEnabled = false
+}
+
+// Trava de segurança: antes de gerar o .aab de release, confere se TODA
+// biblioteca nativa de 64 bits (arm64-v8a e x86_64) está alinhada em 16 KB.
+// Se alguma não estiver, o build falha AQUI dizendo qual -- em vez de subir
+// pro Play e só descobrir na rejeição. 32 bits (armeabi-v7a) não entra na regra.
+tasks.configureEach { task ->
+    if (task.name == 'mergeReleaseNativeLibs') {
+        task.doLast {
+            def bad = []
+            task.outputs.files.each { root ->
+                if (!root.exists()) return
+                root.eachFileRecurse { File f ->
+                    if (!f.name.endsWith('.so')) return
+                    def abi = f.parentFile.name
+                    if (abi != 'arm64-v8a' && abi != 'x86_64') return
+                    def bb = java.nio.ByteBuffer.wrap(f.bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                    if (bb.limit() < 64 || bb.get(4) != 2) return
+                    long phoff = bb.getLong(0x20)
+                    int phentsize = bb.getShort(0x36) & 0xffff
+                    int phnum = bb.getShort(0x38) & 0xffff
+                    for (int i = 0; i < phnum; i++) {
+                        int off = (int) (phoff + (long) i * phentsize)
+                        if (bb.getInt(off) == 1 && bb.getLong(off + 48) < 16384L) {
+                            bad << "${abi}/${f.name}"
+                            break
+                        }
+                    }
+                }
+            }
+            if (!bad.isEmpty()) {
+                throw new GradleException("Bibliotecas nativas NÃO alinhadas em 16 KB (o Google Play recusa): " + bad.join(', '))
+            }
+            println "16 KB OK: todas as bibliotecas nativas de 64 bits estão alinhadas."
+        }
+    }
 }
 
 dependencies {
