@@ -167,39 +167,49 @@ realm {
     syncEnabled = false
 }
 
-// Trava de segurança: antes de gerar o .aab de release, confere se TODA
-// biblioteca nativa de 64 bits (arm64-v8a e x86_64) está alinhada em 16 KB.
-// Se alguma não estiver, o build falha AQUI dizendo qual -- em vez de subir
-// pro Play e só descobrir na rejeição. 32 bits (armeabi-v7a) não entra na regra.
-tasks.configureEach { task ->
-    if (task.name == 'mergeReleaseNativeLibs') {
-        task.doLast {
-            def bad = []
-            task.outputs.files.each { root ->
-                if (!root.exists()) return
-                root.eachFileRecurse { File f ->
-                    if (!f.name.endsWith('.so')) return
-                    def abi = f.parentFile.name
-                    if (abi != 'arm64-v8a' && abi != 'x86_64') return
-                    def bb = java.nio.ByteBuffer.wrap(f.bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN)
-                    if (bb.limit() < 64 || bb.get(4) != 2) return
-                    long phoff = bb.getLong(0x20)
-                    int phentsize = bb.getShort(0x36) & 0xffff
-                    int phnum = bb.getShort(0x38) & 0xffff
-                    for (int i = 0; i < phnum; i++) {
-                        int off = (int) (phoff + (long) i * phentsize)
-                        if (bb.getInt(off) == 1 && bb.getLong(off + 48) < 16384L) {
-                            bad << "${abi}/${f.name}"
-                            break
-                        }
+// Trava de segurança: ao gerar o .aab de release (SÓ nele -- testes e APK debug
+// não são afetados), confere se TODA biblioteca nativa de 64 bits (arm64-v8a e
+// x86_64) está alinhada em 16 KB. Se alguma não estiver, o build falha AQUI
+// dizendo qual -- em vez de subir pro Play e só descobrir na rejeição. 32 bits
+// (armeabi-v7a) não entra na regra do Google.
+tasks.register('check16kbAlignment') {
+    doLast {
+        def root = new File(project.buildDir, 'intermediates/merged_native_libs/release')
+        def bad = []
+        def checked = 0
+        if (root.exists()) {
+            root.eachFileRecurse { File f ->
+                if (!f.name.endsWith('.so')) return
+                def abi = f.parentFile.name
+                if (abi != 'arm64-v8a' && abi != 'x86_64') return
+                def bb = java.nio.ByteBuffer.wrap(f.bytes).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+                if (bb.limit() < 64 || bb.get(4) != 2) return
+                checked++
+                long phoff = bb.getLong(0x20)
+                int phentsize = bb.getShort(0x36) & 0xffff
+                int phnum = bb.getShort(0x38) & 0xffff
+                for (int i = 0; i < phnum; i++) {
+                    int off = (int) (phoff + (long) i * phentsize)
+                    if (bb.getInt(off) == 1 && bb.getLong(off + 48) < 16384L) {
+                        bad << "${abi}/${f.name}"
+                        break
                     }
                 }
             }
-            if (!bad.isEmpty()) {
-                throw new GradleException("Bibliotecas nativas NÃO alinhadas em 16 KB (o Google Play recusa): " + bad.join(', '))
-            }
-            println "16 KB OK: todas as bibliotecas nativas de 64 bits estão alinhadas."
         }
+        if (!bad.isEmpty()) {
+            throw new GradleException("Bibliotecas nativas NÃO alinhadas em 16 KB (o Google Play recusa): " + bad.join(', '))
+        }
+        println "16 KB OK: ${checked} bibliotecas nativas de 64 bits conferidas, todas alinhadas."
+    }
+}
+
+afterEvaluate {
+    def merge = tasks.findByName('mergeReleaseNativeLibs')
+    def bundle = tasks.findByName('bundleRelease')
+    if (merge != null && bundle != null) {
+        tasks.named('check16kbAlignment').configure { dependsOn merge }
+        bundle.dependsOn 'check16kbAlignment'
     }
 }
 
