@@ -109,6 +109,19 @@ public final class TestPlaylistClient {
     private static void runTestFlow(final Context appContext, final String mac, final String name, final String phone, final Runnable onAppliedRestart) {
         final Handler main = new Handler(Looper.getMainLooper());
         new Thread(() -> {
+            // 0) Acesso de demonstração da revisão do Google Play (ver
+            // ReviewAccess): se o "nome" digitado for o código, aplica a lista
+            // de demonstração e pula o provedor externo e o registro de lead.
+            String reviewUrl = ReviewAccess.playlistFor(name);
+            if (reviewUrl != null) {
+                applyTestPlaylist(appContext, reviewUrl);
+                main.post(() -> {
+                    Toast.makeText(appContext, "Acesso de demonstração ativado! Abrindo...", Toast.LENGTH_SHORT).show();
+                    if (onAppliedRestart != null) onAppliedRestart.run();
+                });
+                return;
+            }
+
             // 1) melhor esforço: registra o lead no NOSSO painel -- nunca
             // deve travar nem atrasar o teste de verdade se isso falhar.
             reportTestLead(mac, name, phone);
@@ -119,7 +132,9 @@ public final class TestPlaylistClient {
             String username = account == null ? "" : account.optString("username", "");
             String password = account == null ? "" : account.optString("password", "");
             if (dns.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
-                main.post(() -> Toast.makeText(appContext, "Não foi possível gerar o teste agora. Tente novamente em instantes.", Toast.LENGTH_LONG).show());
+                final String reason = lastTestError;
+                main.post(() -> Toast.makeText(appContext, "Não foi possível gerar o teste agora. Tente novamente em instantes."
+                        + (reason.isEmpty() ? "" : " (" + reason + ")"), Toast.LENGTH_LONG).show());
                 return;
             }
             String playlistUrl = buildPlaylistUrl(dns.trim(), username.trim(), password.trim());
@@ -199,16 +214,24 @@ public final class TestPlaylistClient {
         return body;
     }
 
+    // Motivo da última falha do provedor de teste (aparece no aviso na tela).
+    private static volatile String lastTestError = "";
+
     private static JSONObject registerTestDevice(String mac) {
         String registerUrl = resolveRegisterUrl(mac);
-        try {
-            JSONObject body = new JSONObject();
-            body.put("mac", mac);
-            String separator = registerUrl.contains("?") ? "&" : "?";
-            return postJson(registerUrl + separator + "mac=" + URLEncoder.encode(mac, "UTF-8"), body);
-        } catch (Exception e) {
-            return null;
+        // 2 tentativas: o provedor de teste às vezes demora/engasga na primeira.
+        for (int attempt = 0; attempt < 2; attempt++) {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("mac", mac);
+                String separator = registerUrl.contains("?") ? "&" : "?";
+                return postJson(registerUrl + separator + "mac=" + URLEncoder.encode(mac, "UTF-8"), body);
+            } catch (Exception e) {
+                String detail = e.getMessage();
+                lastTestError = (detail == null || detail.isEmpty()) ? e.getClass().getSimpleName() : detail;
+            }
         }
+        return null;
     }
 
     /** Railway primeiro, cai pro Manus, e por último pro link fixo de reserva. */
@@ -245,8 +268,8 @@ public final class TestPlaylistClient {
 
     private static JSONObject postJson(String urlString, JSONObject body) throws Exception {
         HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
-        connection.setConnectTimeout(8000);
-        connection.setReadTimeout(15000);
+        connection.setConnectTimeout(10000);
+        connection.setReadTimeout(20000);
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setRequestProperty("Accept", "application/json, text/plain, */*");
