@@ -110,6 +110,12 @@ public class HeartbeatHelper {
             if (app == null) return;
             com.ouropro.player.helper.PreferenceHelper prefs = new com.ouropro.player.helper.PreferenceHelper(app);
             AppInfoModel info = prefs.getSharedPreferenceAppInfo();
+            if (info != null && info.isIs_google_pay()) {
+                // sessão de TESTE/demonstração: o lead do teste fica Bloqueado no painel por padrão
+                // e o teste vale pela data local. Não derruba.
+                blockedHandled = false;
+                return;
+            }
             if (info != null) {
                 Calendar yesterday = Calendar.getInstance();
                 yesterday.add(Calendar.DAY_OF_YEAR, -1);
