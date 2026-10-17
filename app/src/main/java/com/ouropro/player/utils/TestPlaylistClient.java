@@ -133,8 +133,10 @@ public final class TestPlaylistClient {
             String password = account == null ? "" : account.optString("password", "");
             if (dns.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
                 final String reason = lastTestError;
-                main.post(() -> Toast.makeText(appContext, "Não foi possível gerar o teste agora. Tente novamente em instantes."
-                        + (reason.isEmpty() ? "" : " (" + reason + ")"), Toast.LENGTH_LONG).show());
+                // motivo primeiro: o aviso na tela é curto e cortava justamente o motivo.
+                main.post(() -> Toast.makeText(appContext, reason.isEmpty()
+                        ? "Não foi possível gerar o teste agora. Tente novamente em instantes."
+                        : "Teste indisponível: " + reason, Toast.LENGTH_LONG).show());
                 return;
             }
             String playlistUrl = buildPlaylistUrl(dns.trim(), username.trim(), password.trim());
@@ -228,7 +230,10 @@ public final class TestPlaylistClient {
                 return postJson(registerUrl + separator + "mac=" + URLEncoder.encode(mac, "UTF-8"), body);
             } catch (Exception e) {
                 String detail = e.getMessage();
-                lastTestError = (detail == null || detail.isEmpty()) ? e.getClass().getSimpleName() : detail;
+                String why = (detail == null || detail.isEmpty()) ? e.getClass().getSimpleName() : detail;
+                String host = "";
+                try { host = new URL(registerUrl).getHost(); } catch (Exception ignored) { }
+                lastTestError = host.isEmpty() ? why : why + " [" + host + "]";
             }
         }
         return null;
@@ -295,7 +300,11 @@ public final class TestPlaylistClient {
         InputStream stream = (code >= 200 && code < 300) ? connection.getInputStream() : connection.getErrorStream();
         String text = stream == null ? "" : readStream(stream);
         connection.disconnect();
-        if (code < 200 || code >= 300) throw new Exception("HTTP " + code);
+        if (code < 200 || code >= 300) {
+            String snippet = text.replaceAll("\\s+", " ").trim();
+            if (snippet.length() > 70) snippet = snippet.substring(0, 70);
+            throw new Exception("HTTP " + code + (snippet.isEmpty() ? "" : " - " + snippet));
+        }
         return text.trim().isEmpty() ? new JSONObject() : new JSONObject(text);
     }
 
