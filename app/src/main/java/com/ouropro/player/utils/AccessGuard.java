@@ -81,6 +81,10 @@ public final class AccessGuard {
         PreferenceHelper prefs = new PreferenceHelper(app);
         AppInfoModel cached = prefs.getSharedPreferenceAppInfo();
 
+        // Sessão de TESTE (ou demonstração) deste aparelho: o botão TESTE cria o "lead" no painel
+        // como Bloqueado e o teste vale pela data local (3 dias). Não pode derrubar o teste.
+        if (cached != null && cached.isIs_google_pay()) return;
+
         // is_trial == 1 é MAC nunca cadastrado (sessão de TESTE local): a validade
         // do teste já é controlada pela data local, então não mexe aqui.
         boolean registered = fresh.getIs_trial() == 0;
