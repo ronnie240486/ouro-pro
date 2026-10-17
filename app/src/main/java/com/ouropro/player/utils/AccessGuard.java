@@ -67,9 +67,16 @@ public final class AccessGuard {
 
     private static void handle(final Context app, JSONObject json) throws Exception {
         if (json == null || !json.has("data")) return;
-        AppInfoModel fresh = (AppInfoModel) new Gson().fromJson(
-                new JSONObject(Security.getDecodedString(json.getString("data"))).toString(), AppInfoModel.class);
+        JSONObject raw = new JSONObject(Security.getDecodedString(json.getString("data")));
+        AppInfoModel fresh = (AppInfoModel) new Gson().fromJson(raw.toString(), AppInfoModel.class);
         if (fresh == null) return;
+
+        // Cliente EXCLUÍDO do painel: o painel avisa "device_deleted". Só vale pra quem
+        // era cliente cadastrado neste aparelho (teste e demonstração ficam de fora).
+        if (raw.optBoolean("device_deleted", false)) {
+            lockIfDeleted(app);
+            return;
+        }
 
         PreferenceHelper prefs = new PreferenceHelper(app);
         AppInfoModel cached = prefs.getSharedPreferenceAppInfo();
@@ -80,25 +87,50 @@ public final class AccessGuard {
         boolean blocked = registered && (fresh.getLock() == 1 || isPast(fresh.getExpiredDate()));
 
         if (blocked) {
-            AppInfoModel target = cached != null ? cached : fresh;
-            Calendar yesterday = Calendar.getInstance();
-            yesterday.add(Calendar.DAY_OF_YEAR, -1);
-            target.setLock(1);
-            target.setIs_trial(0);
-            target.setIs_google_pay(false);
-            target.setExpiredDate(new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(yesterday.getTime()));
-            prefs.setSharedPreferenceAppInfo(target);
-            Utils.saveToFile(target);
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                public void run() {
-                    TestPlaylistClient.restartApp(app);
-                }
-            });
+            applyLock(app, cached != null ? cached : fresh);
         } else if (registered && cached != null && cached.getLock() == 1) {
             // estava bloqueado e o painel liberou de novo: grava os dados novos.
             prefs.setSharedPreferenceAppInfo(fresh);
             Utils.saveToFile(fresh);
         }
+    }
+
+    /**
+     * O cliente deste aparelho foi excluído do painel. Se ele estava liberado como cliente
+     * cadastrado (não é teste, não é demonstração), trava o acesso e reabre o app: a tela
+     * inicial consulta o painel de novo e mostra a tela de quem não tem cadastro.
+     * Devolve true se travou.
+     */
+    public static boolean lockIfDeleted(Context context) {
+        try {
+            if (context == null) return false;
+            Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+            AppInfoModel cached = new PreferenceHelper(app).getSharedPreferenceAppInfo();
+            if (cached == null || cached.getIs_trial() != 0 || cached.getLock() == 1 || cached.isIs_google_pay()) {
+                return false;
+            }
+            applyLock(app, cached);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    private static void applyLock(final Context app, AppInfoModel target) {
+        PreferenceHelper prefs = new PreferenceHelper(app);
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR, -1);
+        target.setLock(1);
+        target.setIs_trial(0);
+        target.setIs_google_pay(false);
+        target.setExpiredDate(new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(yesterday.getTime()));
+        prefs.setSharedPreferenceAppInfo(target);
+        Utils.saveToFile(target);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                TestPlaylistClient.restartApp(app);
+            }
+        });
     }
 
     private static boolean isPast(String date) {
