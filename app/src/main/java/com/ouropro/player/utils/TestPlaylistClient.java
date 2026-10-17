@@ -234,23 +234,33 @@ public final class TestPlaylistClient {
         return null;
     }
 
-    /** Railway primeiro, cai pro Manus, e por último pro link fixo de reserva. */
+    /**
+     * Railway primeiro, cai pro Manus, e por último pro link fixo de reserva.
+     * O link vem do campo "API do Servidor" da tela Ouro Pro do painel
+     * (ouropro_server_api_url); se estiver vazio, usa o do Maximus
+     * (gpcpro_server_url) e depois server_url/test_api_url.
+     */
     private static String resolveRegisterUrl(String mac) {
-        try {
-            String guim = getText(PANEL_ROOT_PRIMARY + "/api/guim.php?mac=" + URLEncoder.encode(mac, "UTF-8"));
-            String url = new JSONObject(guim).optString("gpcpro_server_url", "").trim();
-            if (!url.isEmpty()) return url;
-        } catch (Exception ignored) {
-            // tenta o próximo
-        }
-        try {
-            String guim = getText(PANEL_ROOT_FALLBACK + "/api/guim.php?mac=" + URLEncoder.encode(mac, "UTF-8"));
-            String url = new JSONObject(guim).optString("gpcpro_server_url", "").trim();
-            if (!url.isEmpty()) return url;
-        } catch (Exception ignored) {
-            // usa o fallback fixo
+        String[] roots = {PANEL_ROOT_PRIMARY, PANEL_ROOT_FALLBACK};
+        for (String root : roots) {
+            try {
+                String guim = getText(root + "/api/guim.php?mac=" + URLEncoder.encode(mac, "UTF-8"));
+                String url = pickTestApiUrl(new JSONObject(guim));
+                if (!url.isEmpty()) return url;
+            } catch (Exception ignored) {
+                // tenta o próximo
+            }
         }
         return TEST_REGISTER_FALLBACK;
+    }
+
+    private static String pickTestApiUrl(JSONObject guim) {
+        String[] keys = {"ouropro_server_api_url", "gpcpro_server_url", "test_api_url", "server_url"};
+        for (String key : keys) {
+            String value = guim.optString(key, "").trim();
+            if (value.toLowerCase(Locale.ROOT).startsWith("http")) return value;
+        }
+        return "";
     }
 
     private static String getText(String urlString) throws Exception {
