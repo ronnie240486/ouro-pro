@@ -24,7 +24,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.PlaybackException;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.MediaItem;
 import com.ouropro.player.R;
 import com.ouropro.player.improvements.AccessibleFocusHelper;
@@ -46,6 +50,7 @@ import java.util.Map;
 
 /** Catálogo de rádios públicas por categoria, com reprodução direta via ExoPlayer. */
 public class RadioActivity extends AppCompatActivity {
+    private ExoPlayer radioPlayer;
     private static final int GOLD = Color.rgb(255, 211, 42);
     private static final int PAGE = Color.rgb(18, 15, 25);
     private static final int CARD = Color.rgb(39, 33, 50);
@@ -249,15 +254,23 @@ public class RadioActivity extends AppCompatActivity {
 
     private void play(RadioStation station) {
         try {
-            Intent intent = new Intent(this, RadioPlaybackService.class)
-                    .setAction(RadioPlaybackService.ACTION_PLAY)
-                    .putExtra(RadioPlaybackService.EXTRA_URL, station.streamUrl)
-                    .putExtra(RadioPlaybackService.EXTRA_TITLE, station.name);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);
-            } else {
-                startService(intent);
+            if (radioPlayer == null) {
+                radioPlayer = new ExoPlayer.Builder(this).build();
+                radioPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                        .build(), true);
+                radioPlayer.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerError(PlaybackException error) {
+                        nowPlaying.setText("Não foi possível abrir a estação");
+                        Toast.makeText(RadioActivity.this, "Esta rádio não respondeu; tente outra estação", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
+            radioPlayer.setMediaItem(MediaItem.fromUri(station.streamUrl));
+            radioPlayer.prepare();
+            radioPlayer.play();
             nowPlaying.setText("Tocando: " + station.name);
         } catch (Exception error) {
             nowPlaying.setText("Não foi possível abrir: " + station.name);
@@ -294,7 +307,20 @@ public class RadioActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        // A rádio toca só com o app aberto (sem serviço em segundo plano).
+        if (radioPlayer != null) {
+            radioPlayer.pause();
+        }
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
+        if (radioPlayer != null) {
+            radioPlayer.release();
+            radioPlayer = null;
+        }
         super.onDestroy();
     }
 
