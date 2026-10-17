@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.ouropro.player.R;
 
 /**
  * Compatibility view required by the original 6.1 layouts.
@@ -30,6 +31,16 @@ public class Back extends ImageView {
 
     private void initialize(Context context) {
         setBackgroundColor(0xFF000000);
+        // Imagem de fundo PADRÃO, embutida no app (res/drawable-nodpi/bg_default.jpg):
+        // aparece na hora, sem depender de rede, e continua aparecendo se o painel
+        // não tiver imagem configurada (o /api/v4/bg.php responde 204 nesse caso) ou
+        // se a internet falhar. Quando o painel TEM uma imagem de fundo
+        // (Ouro Pro > Imagem de fundo), o Glide baixa e ela substitui a padrão.
+        try {
+            setImageResource(R.drawable.bg_default);
+        } catch (Throwable ignored) {
+            // segue com o fundo preto
+        }
         try {
             // Bug real relatado: em algumas TV boxes com internet fraca o
             // fundo demorava demais pra aparecer, ou simplesmente nunca
@@ -47,7 +58,9 @@ public class Back extends ImageView {
             // a imagem carrega ou se a rede falhar.
             Glide.with(context)
                     .load(DEFAULT_IMAGE_URL)
-                    .placeholder(android.R.color.black)
+                    .placeholder(R.drawable.bg_default)
+                    .error(R.drawable.bg_default)
+                    .fallback(R.drawable.bg_default)
                     .into(this);
         } catch (Throwable ignored) {
             // Keep the black fallback; startup must not fail because of the background.
