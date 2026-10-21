@@ -1378,7 +1378,7 @@ public class WordModels implements Serializable {
 
     public String getTo_continue() {
         String str = this.to_continue;
-        return (str == null || str.isEmpty()) ? "To continue the app, please pay" : this.to_continue;
+        return (str == null || str.isEmpty()) ? "Escolha uma opção abaixo para começar" : this.to_continue;
     }
 
     public String getTrailer() {
@@ -1388,7 +1388,7 @@ public class WordModels implements Serializable {
 
     public String getTrial_ended() {
         String str = this.trial_ended;
-        return (str == null || str.isEmpty()) ? "Trial is ended" : this.trial_ended;
+        return (str == null || str.isEmpty()) ? "Bem-vindo" : this.trial_ended;
     }
 
     public String getTv_is_trial() {
