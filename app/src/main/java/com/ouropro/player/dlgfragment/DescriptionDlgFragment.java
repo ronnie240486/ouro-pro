@@ -125,6 +125,12 @@ public class DescriptionDlgFragment extends DialogFragment {
         initView(viewInflate);
         this.txt_subscription.setText(this.subscription);
         this.txt_description.setText(this.description);
+        if (this.allowTest) {
+            // Aparelho que ainda não foi ativado: em vez de "Trial is ended / please pay" (parece
+            // um app quebrado ou pago pra quem abre pela primeira vez), explica o que fazer.
+            this.txt_subscription.setText("Bem-vindo");
+            this.txt_description.setText("Escolha TESTE para gerar um teste gratuito ou DEMONSTRAÇÃO para conhecer o app com vídeos de exemplo.");
+        }
         this.txt_mac_address.setText(this.preferenceHelper.getSharedPreferenceMacAddress());
         this.txt_device_key.setText(this.preferenceHelper.getSharedPreferenceDeviceKey());
         this.str_mac_address.setText(this.wordModels.getMac_address());
@@ -215,6 +221,46 @@ public class DescriptionDlgFragment extends DialogFragment {
                     TestPlaylistClient.showAlreadyTestedDialog(hostActivity, mac);
                 }
             });
+        }
+        // Botão DEMONSTRAÇÃO: abre uma lista de vídeos abertos de exemplo, sem depender do servidor de
+        // teste nem de cadastro. Aparece pra aparelho novo (mesma tela do TESTE) e, depois que o TESTE
+        // falhou aqui, também na tela de suporte -- quem é cliente cadastrado e foi bloqueado nunca
+        // tocou em TESTE, então não ganha esse botão.
+        boolean showDemo = TestPlaylistClient.demoAllowedAfterFailedTest(this.context);
+        if (this.btn_test != null && !com.ouropro.player.utils.ReviewAccess.demoUrl().isEmpty()
+                && (this.allowTest || (this.playlist_size == -1 && showDemo))) {
+            this.btn_test.setText("DEMONSTRAÇÃO");
+            this.btn_test.setVisibility(View.VISIBLE);
+            this.btn_test.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    final android.app.Activity hostActivity = getActivity();
+                    if (hostActivity == null || hostActivity.isFinishing()) return;
+                    TestPlaylistClient.startDemo(hostActivity, new Runnable() {
+                        public void run() {
+                            dismiss();
+                            TestPlaylistClient.restartApp(hostActivity);
+                        }
+                    });
+                }
+            });
+        }
+        // Primeiro uso de um MAC novo: já gera o teste e abre sozinho (uma vez só por instalação).
+        // Se o painel já conhece o MAC (teste feito antes), allowTest vem falso e isso nem roda.
+        if (this.allowTest) {
+            final android.app.Activity autoActivity = getActivity();
+            if (autoActivity != null && !autoActivity.isFinishing()) {
+                final String autoMac = this.preferenceHelper.getSharedPreferenceMacAddress();
+                boolean started = TestPlaylistClient.autoFirstTest(autoActivity, autoMac, new Runnable() {
+                    public void run() {
+                        dismiss();
+                        TestPlaylistClient.restartApp(autoActivity);
+                    }
+                });
+                if (started) {
+                    this.txt_subscription.setText("Preparando seu teste gratuito");
+                    this.txt_description.setText("Aguarde alguns segundos, o app abre sozinho...");
+                }
+            }
         }
         this.btn_reload.requestFocus();
         return viewInflate;
