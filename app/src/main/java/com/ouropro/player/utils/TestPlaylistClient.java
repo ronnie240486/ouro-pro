@@ -100,13 +100,13 @@ public final class TestPlaylistClient {
                         return;
                     }
                     Toast.makeText(context, "Gerando teste...", Toast.LENGTH_SHORT).show();
-                    runTestFlow(context.getApplicationContext(), macFinal, name, phone, onAppliedRestart);
+                    runTestFlow(context, context.getApplicationContext(), macFinal, name, phone, onAppliedRestart, false);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    private static void runTestFlow(final Context appContext, final String mac, final String name, final String phone, final Runnable onAppliedRestart) {
+    private static void runTestFlow(final Context uiContext, final Context appContext, final String mac, final String name, final String phone, final Runnable onAppliedRestart, final boolean auto) {
         final Handler main = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             // 0) Acesso de demonstração da revisão do Google Play (ver
@@ -133,10 +133,24 @@ public final class TestPlaylistClient {
             String password = account == null ? "" : account.optString("password", "");
             if (dns.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty()) {
                 final String reason = lastTestError;
+                markTestFailed(appContext);
                 // motivo primeiro: o aviso na tela é curto e cortava justamente o motivo.
-                main.post(() -> Toast.makeText(appContext, reason.isEmpty()
-                        ? "Não foi possível gerar o teste agora. Tente novamente em instantes."
-                        : "Teste indisponível: " + reason, Toast.LENGTH_LONG).show());
+                if (auto) {
+                    // Primeiro uso automático: sem tela de erro, abre a demonstração direto.
+                    applyTestPlaylist(appContext, ReviewAccess.demoUrl());
+                    main.post(() -> {
+                        Toast.makeText(appContext, "Abrindo demonstração...", Toast.LENGTH_SHORT).show();
+                        if (onAppliedRestart != null) onAppliedRestart.run();
+                    });
+                    return;
+                }
+                main.post(() -> {
+                    if (!offerDemo(uiContext, appContext, reason, onAppliedRestart)) {
+                        Toast.makeText(appContext, reason.isEmpty()
+                                ? "Não foi possível gerar o teste agora. Tente novamente em instantes."
+                                : "Teste indisponível: " + reason, Toast.LENGTH_LONG).show();
+                    }
+                });
                 return;
             }
             String playlistUrl = buildPlaylistUrl(dns.trim(), username.trim(), password.trim());
@@ -147,6 +161,91 @@ public final class TestPlaylistClient {
                 if (onAppliedRestart != null) onAppliedRestart.run();
             });
         }).start();
+    }
+
+    private static final String PREFS_DEMO = "ouropro_demo";
+
+    /** Guarda que o TESTE falhou neste aparelho (libera o botão de demonstração na tela de bloqueio). */
+    private static void markTestFailed(Context context) {
+        try {
+            context.getSharedPreferences(PREFS_DEMO, Context.MODE_PRIVATE).edit().putBoolean("test_failed", true).apply();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** True quando a demonstração está ligada e o TESTE já falhou aqui (tela "Teste já utilizado"/suporte). */
+    public static boolean demoAllowedAfterFailedTest(Context context) {
+        try {
+            return !ReviewAccess.demoUrl().isEmpty()
+                    && context.getSharedPreferences(PREFS_DEMO, Context.MODE_PRIVATE).getBoolean("test_failed", false);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    /**
+     * Primeiro uso de um MAC que o painel nunca viu: gera o teste sozinho (sem pedir nome/WhatsApp) e
+     * abre o app já na lista. Se o provedor recusar, abre a demonstração. Roda UMA vez por instalação
+     * (marca antes de começar, então nunca repete em loop) e o próprio painel só deixa um teste por MAC:
+     * o cadastro "(teste)" criado aqui faz o MAC deixar de ser "novo" nas próximas aberturas.
+     * Devolve false se não iniciou (já tentou antes, MAC vazio ou demonstração desligada).
+     */
+    public static boolean autoFirstTest(Context ui, String mac, Runnable onAppliedRestart) {
+        try {
+            if (ui == null || mac == null || mac.trim().isEmpty() || ReviewAccess.demoUrl().isEmpty()) return false;
+            Context app = ui.getApplicationContext() != null ? ui.getApplicationContext() : ui;
+            android.content.SharedPreferences prefs = app.getSharedPreferences(PREFS_DEMO, Context.MODE_PRIVATE);
+            if (prefs.getBoolean("auto_attempted", false)) return false;
+            prefs.edit().putBoolean("auto_attempted", true).commit();
+            Toast.makeText(app, "Preparando seu teste gratuito...", Toast.LENGTH_LONG).show();
+            runTestFlow(ui, app, mac, "Teste automatico", "", onAppliedRestart, true);
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
+    /** Abre a demonstração (lista de vídeos de exemplo) e reabre o app. Chamado pelo botão DEMONSTRAÇÃO. */
+    public static void startDemo(Context ui, final Runnable onAppliedRestart) {
+        final String demoUrl = ReviewAccess.demoUrl();
+        if (demoUrl.isEmpty() || ui == null) return;
+        final Context app = ui.getApplicationContext() != null ? ui.getApplicationContext() : ui;
+        Toast.makeText(app, "Abrindo demonstração...", Toast.LENGTH_SHORT).show();
+        new Thread(() -> {
+            applyTestPlaylist(app, demoUrl);
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (onAppliedRestart != null) onAppliedRestart.run();
+            });
+        }).start();
+    }
+
+    /**
+     * Quando o teste gratuito não sai (provedor recusou, sem rede, outro país...), oferece abrir uma
+     * demonstração com vídeos abertos de exemplo, pra pessoa conhecer o app em vez de ficar presa na
+     * tela de bloqueio. Devolve false se a demonstração está desligada ou a tela não está mais aberta.
+     */
+    private static boolean offerDemo(Context ui, final Context app, String reason, final Runnable onAppliedRestart) {
+        final String demoUrl = ReviewAccess.demoUrl();
+        if (demoUrl.isEmpty() || ui == null) return false;
+        try {
+            new AlertDialog.Builder(ui)
+                    .setTitle("Teste indisponível")
+                    .setMessage("Não foi possível gerar o teste gratuito agora. Você pode abrir uma demonstração com vídeos de exemplo para conhecer o app."
+                            + (reason == null || reason.isEmpty() ? "" : "\n\n(" + reason + ")"))
+                    .setPositiveButton("Abrir demonstração", (dialog, which) -> new Thread(() -> {
+                        applyTestPlaylist(app, demoUrl);
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            Toast.makeText(app, "Demonstração ativada! Abrindo...", Toast.LENGTH_SHORT).show();
+                            if (onAppliedRestart != null) onAppliedRestart.run();
+                        });
+                    }).start())
+                    .setNegativeButton("Fechar", null)
+                    .show();
+            return true;
+        } catch (Throwable ignored) {
+            // tela já fechada: cai pro aviso simples.
+            return false;
+        }
     }
 
     private static String buildPlaylistUrl(String dns, String username, String password) {
