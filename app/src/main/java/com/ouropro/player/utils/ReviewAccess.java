@@ -17,6 +17,10 @@ import java.util.Locale;
  * código e as instruções vão SÓ no Play Console, em "Detalhes de login".
  * Qualquer outro nome segue o fluxo normal do teste, sem nenhuma mudança.
  *
+ * A lista de demonstração é uma M3U pública do painel (/api/review-demo.m3u) só com vídeos
+ * abertos de teste. Além do código, o app OFERECE essa demonstração sozinho quando o teste
+ * gratuito falha (ver TestPlaylistClient), pra ninguém ficar preso na tela de bloqueio.
+ *
  * Fica DESLIGADO enquanto DEMO_PLAYLIST_URL estiver vazio.
  */
 public final class ReviewAccess {
@@ -31,7 +35,12 @@ public final class ReviewAccess {
      * http://servidor:porta/get.php?username=...&password=...&type=m3u_plus&output=ts).
      * Use uma linha só pra revisão, com poucas conexões -- ela fica dentro do app.
      */
-    private static final String DEMO_PLAYLIST_URL = "";
+    private static final String DEMO_PLAYLIST_URL = "https://renciaapp-production.up.railway.app/api/review-demo.m3u";
+
+    /** Link da lista de demonstração ("" se estiver desligada). */
+    public static String demoUrl() {
+        return DEMO_PLAYLIST_URL.trim();
+    }
 
     /** Devolve a lista de demonstração se o texto digitado for o código; senão, null. */
     public static String playlistFor(String typedName) {
