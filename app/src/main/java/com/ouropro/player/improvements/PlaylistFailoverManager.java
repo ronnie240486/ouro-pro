@@ -160,18 +160,23 @@ public final class PlaylistFailoverManager {
             if (activeUrl == null || activeUrl.getUrl() == null || activeUrl.getUrl().trim().isEmpty()) {
                 return;
             }
+            final AppInfoModel finalFresh = freshInfo;
+            final AppInfoModel.UrlModel finalActive = activeUrl;
+            final boolean restoring = notificationPayload != null
+                    && "primary_restored".equalsIgnoreCase(notificationPayload.optString("failover_state", ""));
+            final Runnable applySwitch = () -> {
             PreferenceHelper helper = new PreferenceHelper(context);
-            helper.setSharedPreferenceAppInfo(freshInfo);
-            Utils.saveToFile(freshInfo);
+            helper.setSharedPreferenceAppInfo(finalFresh);
+            Utils.saveToFile(finalFresh);
             int position = 0;
             helper.setSharedPreferencePlaylistPosition(position);
             helper.setSharedPreferenceFailoverTransitionId(transitionId);
             android.content.Intent intent = new android.content.Intent(ACTION_PLAYLIST_FAILOVER_SYNC);
             intent.setPackage(context.getPackageName());
-            intent.putExtra(EXTRA_PLAYLIST_URL, activeUrl.getUrl());
+            intent.putExtra(EXTRA_PLAYLIST_URL, finalActive.getUrl());
             intent.putExtra(EXTRA_PLAYLIST_POSITION, position);
             intent.putExtra(EXTRA_MESSAGE, message);
-            boolean reloadedInPlace = reloadActivePlaylist(activeUrl.getUrl(), position);
+            boolean reloadedInPlace = reloadActivePlaylist(finalActive.getUrl(), position);
             if (!reloadedInPlace) {
                 // A tela aberta (player de canal/filme/série, configurações...) não sabe recarregar a lista
                 // sozinha. Antes disso o app só gravava a lista nova e ficava na antiga até alguém reabrir o
@@ -179,6 +184,19 @@ public final class PlaylistFailoverManager {
                 restartIntoNewPlaylist();
             }
             showAndAcknowledgeNotifications(mac, notificationPayload, message);
+            };
+            if (restoring) {
+                // O painel diz que a Lista 1 voltou, mas quem manda é este aparelho: só volta pra ela se ela
+                // abrir aqui de verdade. Senão continua na lista reserva e tenta de novo no próximo ciclo.
+                new Thread(() -> {
+                    if (!EmergencyListManager.isListReachable(finalActive.getUrl())) {
+                        return;
+                    }
+                    handler.post(applySwitch);
+                }).start();
+            } else {
+                applySwitch.run();
+            }
         });
         request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
     }
