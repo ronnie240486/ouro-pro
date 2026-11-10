@@ -55,6 +55,7 @@ public final class TestPlaylistClient {
     private static final String PANEL_ROOT_FALLBACK = "https://renciaapp.manus.space";
     // Mesmo provedor de teste externo usado pelo Maximus/Future -- só entra
     // em ação se o painel não tiver "gpcpro_server_url" configurado.
+    // Link de reserva do teste, dentro do APK: só é usado quando o PAINEL está fora do ar ou sem link de teste.
     private static final String TEST_REGISTER_FALLBACK = "https://nuvixtv.sigmab.pro/api/chatbot/Yen129WPEa/XYgD9JWr6V";
     private static final String USER_AGENT = "smart-tv";
     private static final String TEST_PLAYLIST_NAME = "TESTE";
@@ -318,50 +319,82 @@ public final class TestPlaylistClient {
     // Motivo da última falha do provedor de teste (aparece no aviso na tela).
     private static volatile String lastTestError = "";
 
+    /** Resultado de uma tentativa em um link: a conta (se saiu) e se o servidor chegou a responder. */
+    private static final class RegisterTry {
+        JSONObject account;
+        boolean answered;
+    }
+
     private static JSONObject registerTestDevice(String mac, String name) {
         lastTestError = "";
         String cleanName = (name == null ? "" : name.trim()).replaceAll("(?i)\\s*\\(teste\\)\\s*$", "");
         String appVersion = String.valueOf(com.ouropro.player.apps.LTVApp.version_name);
-        // Tenta cada link candidato (campo do Ouro Pro, depois o do Maximus, depois o de reserva):
-        // se um deles estiver velho ou recusar ("revenda não existe"), passa pro próximo.
+        // 1) API de teste que vem do PAINEL (campo do Ouro Pro, depois o do Maximus). Se um link estiver
+        // velho ou recusar ("revenda não existe"), passa pro próximo link do painel.
+        boolean panelAnswered = false;
         for (String registerUrl : resolveRegisterUrls(mac)) {
-            String host = "";
-            try { host = new URL(registerUrl).getHost(); } catch (Exception ignored) { }
-            // 2 formas de chamar: igual ao Maximus (sem nada na URL) e a forma antiga (com ?mac=).
-            for (int variant = 0; variant < 2; variant++) {
-                try {
-                    JSONObject body = new JSONObject();
-                    // mesmo contrato que o Maximus usa nessa mesma API de teste.
-                    body.put("action", "test_dns");
-                    body.put("source", "maximus");
-                    body.put("dns_url", registerUrl);
-                    body.put("mac", mac);
-                    body.put("name", cleanName + " (teste)");
-                    body.put("app_version", appVersion);
-                    String target = registerUrl;
-                    if (variant == 1) {
-                        target = registerUrl + (registerUrl.contains("?") ? "&" : "?") + "mac=" + URLEncoder.encode(mac, "UTF-8");
-                    }
-                    JSONObject account = postJson(target, body);
-                    if (!account.optString("dns", "").trim().isEmpty()
-                            && !account.optString("username", "").trim().isEmpty()
-                            && !account.optString("password", "").trim().isEmpty()) {
-                        return account;
-                    }
-                    lastTestError = host + ": resposta sem login e senha";
-                } catch (Exception e) {
-                    String detail = e.getMessage();
-                    String why = (detail == null || detail.isEmpty()) ? e.getClass().getSimpleName() : detail;
-                    lastTestError = host.isEmpty() ? why : host + ": " + why;
-                }
-            }
+            RegisterTry attempt = tryRegister(registerUrl, mac, cleanName, appVersion);
+            if (attempt.account != null) return attempt.account;
+            if (attempt.answered) panelAnswered = true;
+        }
+        // Se o painel respondeu e recusou (ex.: esse MAC já fez teste), NÃO cai pro link de reserva do
+        // APK: senão dava pra ganhar outro teste no mesmo MAC por outro provedor.
+        if (panelAnswered) return null;
+        // 2) Só chega aqui se o painel está fora do ar (ou sem link de teste configurado): usa o link
+        // de reserva que fica dentro do APK.
+        String panelError = lastTestError;
+        RegisterTry backup = tryRegister(TEST_REGISTER_FALLBACK, mac, cleanName, appVersion);
+        if (backup.account != null) return backup.account;
+        if (!panelError.isEmpty() && !lastTestError.isEmpty()) {
+            lastTestError = lastTestError + " (painel: " + panelError + ")";
+        } else if (lastTestError.isEmpty()) {
+            lastTestError = panelError;
         }
         return null;
     }
 
+    private static RegisterTry tryRegister(String registerUrl, String mac, String cleanName, String appVersion) {
+        RegisterTry result = new RegisterTry();
+        String host = "";
+        try { host = new URL(registerUrl).getHost(); } catch (Exception ignored) { }
+        // 2 formas de chamar: igual ao Maximus (sem nada na URL) e a forma antiga (com ?mac=).
+        for (int variant = 0; variant < 2; variant++) {
+            try {
+                JSONObject body = new JSONObject();
+                // mesmo contrato que o Maximus usa nessa mesma API de teste.
+                body.put("action", "test_dns");
+                body.put("source", "maximus");
+                body.put("dns_url", registerUrl);
+                body.put("mac", mac);
+                body.put("name", cleanName + " (teste)");
+                body.put("app_version", appVersion);
+                String target = registerUrl;
+                if (variant == 1) {
+                    target = registerUrl + (registerUrl.contains("?") ? "&" : "?") + "mac=" + URLEncoder.encode(mac, "UTF-8");
+                }
+                JSONObject account = postJson(target, body);
+                if (!account.optString("dns", "").trim().isEmpty()
+                        && !account.optString("username", "").trim().isEmpty()
+                        && !account.optString("password", "").trim().isEmpty()) {
+                    result.account = account;
+                    result.answered = true;
+                    return result;
+                }
+                result.answered = true;
+                lastTestError = host + ": resposta sem login e senha";
+            } catch (Exception e) {
+                String detail = e.getMessage();
+                String why = (detail == null || detail.isEmpty()) ? e.getClass().getSimpleName() : detail;
+                // "HTTP 4xx" = o servidor está no ar e recusou; erro de rede/timeout/5xx = fora do ar.
+                if (why.startsWith("HTTP 4")) result.answered = true;
+                lastTestError = host.isEmpty() ? why : host + ": " + why;
+            }
+        }
+        return result;
+    }
+
     /**
-     * Lista de links da API de teste, na ordem: Railway primeiro, cai pro Manus, e por último o
-     * link fixo de reserva. Os links vêm do painel: "API do Servidor" do Ouro Pro
+     * Links da API de teste que vêm do painel (Railway primeiro, cai pro Manus): "API do Servidor" do Ouro Pro
      * (ouropro_server_api_url), depois o do Maximus (gpcpro_server_url), test_api_url, server_url.
      */
     private static List<String> resolveRegisterUrls(String mac) {
@@ -381,7 +414,6 @@ public final class TestPlaylistClient {
                 // tenta o próximo
             }
         }
-        if (!urls.contains(TEST_REGISTER_FALLBACK)) urls.add(TEST_REGISTER_FALLBACK);
         return urls;
     }
 
