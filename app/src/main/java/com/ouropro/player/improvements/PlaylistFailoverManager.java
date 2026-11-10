@@ -164,16 +164,33 @@ public final class PlaylistFailoverManager {
             intent.putExtra(EXTRA_PLAYLIST_URL, activeUrl.getUrl());
             intent.putExtra(EXTRA_PLAYLIST_POSITION, position);
             intent.putExtra(EXTRA_MESSAGE, message);
-            reloadActivePlaylist(activeUrl.getUrl(), position);
+            boolean reloadedInPlace = reloadActivePlaylist(activeUrl.getUrl(), position);
+            if (!reloadedInPlace) {
+                // A tela aberta (player de canal/filme/série, configurações...) não sabe recarregar a lista
+                // sozinha. Antes disso o app só gravava a lista nova e ficava na antiga até alguém reabrir o
+                // app. Agora reabre o app, que carrega a lista gravada acima.
+                restartIntoNewPlaylist();
+            }
             showAndAcknowledgeNotifications(mac, notificationPayload, message);
         });
         request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
     }
 
-    private void reloadActivePlaylist(String playlistUrl, int position) {
+    /** Reabre o app do zero pra ele carregar a lista que acabou de ser gravada como ativa. */
+    private void restartIntoNewPlaylist() {
+        handler.postDelayed(() -> {
+            Activity activity = ForegroundActivityTracker.get();
+            if (activity != null && !activity.isFinishing()) {
+                com.ouropro.player.utils.TestPlaylistClient.restartApp(activity);
+            }
+        }, 1500L);
+    }
+
+    /** Devolve true se a lista foi recarregada na própria tela (ou se não há tela aberta pra recarregar). */
+    private boolean reloadActivePlaylist(String playlistUrl, int position) {
         Activity activity = ForegroundActivityTracker.get();
         if (activity == null || playlistUrl == null || playlistUrl.trim().isEmpty()) {
-            return;
+            return true;
         }
         PreferenceHelper helper = new PreferenceHelper(activity);
         helper.setSharedPreferencePlaylistPosition(Math.max(0, position));
@@ -187,7 +204,7 @@ public final class PlaylistFailoverManager {
                 syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_PLAYLIST_URL, url);
                 syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_TARGET_STREAM_ID, liveActivity.stream_id);
                 liveActivity.someActivityResultLauncher.launch(syncIntent);
-                return;
+                return true;
             }
         } else if (!xtream && activity instanceof LiveMobileActivity) {
             LiveMobileActivity liveMobileActivity = (LiveMobileActivity) activity;
@@ -196,7 +213,7 @@ public final class PlaylistFailoverManager {
                 syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_PLAYLIST_URL, url);
                 syncIntent.putExtra(BackgroundPlaylistSyncActivity.EXTRA_TARGET_STREAM_ID, liveMobileActivity.stream_id);
                 liveMobileActivity.someActivityResultLauncher.launch(syncIntent);
-                return;
+                return true;
             }
         }
         if (activity instanceof BaseTVActivity) {
@@ -207,6 +224,7 @@ public final class PlaylistFailoverManager {
                 helper.setSharedPreferenceISM3U(true);
                 base.reloadM3UData(url, words);
             }
+            return true;
         } else if (activity instanceof BaseActivity) {
             BaseActivity base = (BaseActivity) activity;
             if (xtream) {
@@ -215,7 +233,9 @@ public final class PlaylistFailoverManager {
                 helper.setSharedPreferenceISM3U(true);
                 base.reloadM3UData(url, words);
             }
+            return true;
         }
+        return false;
     }
 
     public static void reportPlaybackFailure(Context context) {
