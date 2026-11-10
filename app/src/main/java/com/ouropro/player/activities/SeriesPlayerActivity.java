@@ -60,6 +60,7 @@ import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.dlgfragment.PlayErrorDlgFragment;
 import com.ouropro.player.dlgfragment.SubtitleTrackDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
+import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.helper.HeartbeatHelper;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
@@ -1092,6 +1093,40 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
+    private HeartbeatPeriodicHelper vodHeartbeat;
+
+    private void startVodHeartbeat() {
+        try {
+            String name = this.series_name;
+            if (name == null || name.trim().isEmpty() || this.preferenceHelper == null) {
+                return;
+            }
+            HeartbeatPeriodicHelper old = this.vodHeartbeat;
+            if (old != null) {
+                old.stopWithoutClear();
+            }
+            HeartbeatPeriodicHelper next = new HeartbeatPeriodicHelper();
+            this.vodHeartbeat = next;
+            next.start(this.preferenceHelper.getSharedPreferenceMacAddress(), name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void stopVodHeartbeat() {
+        HeartbeatPeriodicHelper current = this.vodHeartbeat;
+        if (current != null) {
+            current.stop();
+            this.vodHeartbeat = null;
+        }
+    }
+
+    public void onStart() {
+        super.onStart();
+        if (this.vodHeartbeat == null) {
+            startVodHeartbeat();
+        }
+    }
+
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_series_player);
@@ -1102,7 +1137,7 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
         this.episode_position = getIntent().getIntExtra("position", 0);
         this.season_pos = getIntent().getIntExtra("season_pos", 0);
         this.series_name = getIntent().getStringExtra("series_name");
-        HeartbeatHelper.sendHeartbeat(this.preferenceHelper.getSharedPreferenceMacAddress(), this.series_name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
+        startVodHeartbeat();
         this.season_name = getIntent().getStringExtra("season_name");
         this.tmdb_id = getIntent().getStringExtra("tmdb_id");
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
@@ -1158,6 +1193,7 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
 
     public void onStop() {
         super.onStop();
+        stopVodHeartbeat();
         if (Util.SDK_INT > 23) {
             StyledPlayerView styledPlayerView = this.playerView;
             if (styledPlayerView != null) {

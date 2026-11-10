@@ -961,7 +961,7 @@ try {
             String str = this.channel_name;
             HeartbeatPeriodicHelper heartbeatPeriodicHelper = this.heartbeatHelper;
             if (heartbeatPeriodicHelper != null) {
-                heartbeatPeriodicHelper.stop();
+                heartbeatPeriodicHelper.stopWithoutClear();
             }
             HeartbeatPeriodicHelper heartbeatPeriodicHelper2 = new HeartbeatPeriodicHelper();
             this.heartbeatHelper = heartbeatPeriodicHelper2;
