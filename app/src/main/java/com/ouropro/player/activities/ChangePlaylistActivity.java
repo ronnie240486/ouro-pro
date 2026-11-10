@@ -617,7 +617,40 @@ public class ChangePlaylistActivity extends BaseActivity implements GetDataReque
         this.btn_pay.setFocusable(false);
         this.recycler_playlist.setAdapter(this.portalAdapter);
         this.recycler_playlist.requestFocus();
-        refreshPlaylistsFromPanel();
+        // Troca automática (failover / lista de emergência): escolhe a lista indicada e carrega,
+        // exatamente como se a pessoa tivesse selecionado ela na mão nesta tela.
+        String autoUrl = getIntent().getStringExtra("auto_select_url");
+        int autoPosition = getIntent().getIntExtra("auto_select_position", -1);
+        if ((autoUrl != null && !autoUrl.trim().isEmpty()) || autoPosition >= 0) {
+            runAutoSwitch(autoUrl, autoPosition);
+        } else {
+            refreshPlaylistsFromPanel();
+        }
         this.recycler_playlist.setSelectedPosition(this.playlist_position);
+    }
+
+    private void runAutoSwitch(String url, int position) {
+        if (this.urlModelList == null || this.urlModelList.isEmpty()) {
+            refreshPlaylistsFromPanel();
+            return;
+        }
+        int index = -1;
+        if (url != null && !url.trim().isEmpty()) {
+            String wanted = url.trim();
+            for (int i = 0; i < this.urlModelList.size(); i++) {
+                AppInfoModel.UrlModel candidate = this.urlModelList.get(i);
+                if (candidate != null && candidate.getUrl() != null && wanted.equalsIgnoreCase(candidate.getUrl().trim())) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index < 0) {
+            index = Math.min(Math.max(position, 0), this.urlModelList.size() - 1);
+        }
+        this.playlist_position = index;
+        this.focused_position = index;
+        this.selectedModel = this.urlModelList.get(index);
+        loadingData(this.selectedModel);
     }
 }
