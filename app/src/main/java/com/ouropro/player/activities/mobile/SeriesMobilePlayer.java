@@ -58,6 +58,7 @@ import com.ouropro.player.dlgfragment.EpisodeDlgFragment;
 import com.ouropro.player.dlgfragment.ExitDlgFragment;
 import com.ouropro.player.dlgfragment.PlayErrorDlgFragment;
 import com.ouropro.player.helper.GetSharedInfo;
+import com.ouropro.player.helper.HeartbeatPeriodicHelper;
 import com.ouropro.player.helper.PreferenceHelper;
 import com.ouropro.player.helper.RealmController;
 import com.ouropro.player.models.EpisodeModel;
@@ -778,6 +779,40 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         }
     }
 
+    private HeartbeatPeriodicHelper vodHeartbeat;
+
+    private void startVodHeartbeat() {
+        try {
+            String name = this.series_name;
+            if (name == null || name.trim().isEmpty() || this.preferenceHelper == null) {
+                return;
+            }
+            HeartbeatPeriodicHelper old = this.vodHeartbeat;
+            if (old != null) {
+                old.stopWithoutClear();
+            }
+            HeartbeatPeriodicHelper next = new HeartbeatPeriodicHelper();
+            this.vodHeartbeat = next;
+            next.start(this.preferenceHelper.getSharedPreferenceMacAddress(), name, "https://renciaapp-production.up.railway.app/api/v4/heartbeat.php");
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private void stopVodHeartbeat() {
+        HeartbeatPeriodicHelper current = this.vodHeartbeat;
+        if (current != null) {
+            current.stop();
+            this.vodHeartbeat = null;
+        }
+    }
+
+    public void onStart() {
+        super.onStart();
+        if (this.vodHeartbeat == null) {
+            startVodHeartbeat();
+        }
+    }
+
     public final void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_series_mobile_player);
@@ -791,6 +826,7 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
         this.episode_position = getIntent().getIntExtra("position", 0);
         this.season_pos = getIntent().getIntExtra("season_pos", 0);
         this.series_name = getIntent().getStringExtra("series_name");
+        startVodHeartbeat();
         this.season_name = getIntent().getStringExtra("season_name");
         if (this.preferenceHelper.getSharedPreferenceISM3U()) {
             this.episodeModels = RealmController.with().getEpisodesBySeason(this.series_name, this.season_name);
@@ -863,6 +899,7 @@ public class SeriesMobilePlayer extends AppCompatActivity implements View.OnClic
 
     public void onStop() {
         super.onStop();
+        stopVodHeartbeat();
         if (Util.SDK_INT > 23) {
             StyledPlayerView styledPlayerView = this.playerView;
             if (styledPlayerView != null) {

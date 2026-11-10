@@ -771,7 +771,7 @@ public class LiveMobileActivity extends AppCompatActivity implements View.OnClic
             this.channel_name = this.selectedChannel.getName();
             HeartbeatPeriodicHelper currentHeartbeat = this.heartbeatHelper;
             if (currentHeartbeat != null) {
-                currentHeartbeat.stop();
+                currentHeartbeat.stopWithoutClear();
             }
             HeartbeatPeriodicHelper nextHeartbeat = new HeartbeatPeriodicHelper();
             this.heartbeatHelper = nextHeartbeat;
