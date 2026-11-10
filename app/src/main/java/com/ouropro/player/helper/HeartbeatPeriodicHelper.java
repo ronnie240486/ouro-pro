@@ -21,7 +21,7 @@ public class HeartbeatPeriodicHelper {
                 }
             };
             this.ticker = runnable;
-            this.handler.postDelayed(runnable, 30000L);
+            this.handler.postDelayed(runnable, 20000L);
         }
     }
 
@@ -45,6 +45,16 @@ public class HeartbeatPeriodicHelper {
             return;
         }
         HeartbeatClearHelper.clearHeartbeat(this.mac, this.serverUrl);
+    }
+
+    /** Para o ciclo sem avisar o painel que parou (usado ao trocar de canal: o novo já avisa o que toca). */
+    public void stopWithoutClear() {
+        Runnable runnable;
+        this.running = false;
+        Handler handler = this.handler;
+        if (handler != null && (runnable = this.ticker) != null) {
+            handler.removeCallbacks(runnable);
+        }
     }
 
     public void updateContent(String str) {

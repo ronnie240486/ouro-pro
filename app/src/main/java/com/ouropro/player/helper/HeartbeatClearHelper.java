@@ -15,7 +15,7 @@ public class HeartbeatClearHelper {
         try {
             JSONObject json = new JSONObject();
             json.put("mac", mac.trim());
-            json.put("content", "");
+            json.put("content", "__idle__");
             body = json.toString();
         } catch (Exception ignored) {
             return;
