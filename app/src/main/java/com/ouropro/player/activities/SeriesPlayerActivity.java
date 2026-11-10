@@ -938,12 +938,9 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                     }
                 }
             } else if (keyCode == 89) {
-                if (this.ly_control.getVisibility() != 8) {
-                    seekToRewind();
-                    this.image_rewind.setVisibility(0);
-                } else if ((this.recyclerEpisodes.hasFocus() && this.episode_focused_position == 0) || this.btn_previous.hasFocus()) {
-                    return true;
-                }
+                // tecla "retroceder" do controle: volta o vídeo (igual ao player de filmes).
+                seekToRewind();
+                this.image_rewind.setVisibility(0);
             } else if (keyCode != 90) {
                 switch (keyCode) {
                     case 19:
@@ -991,10 +988,15 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                         break;
                     case 21:
                         if (this.ly_control.getVisibility() != 8) {
-                            if (this.recyclerEpisodes.hasFocus()) {
+                            // controles visíveis: deixa o foco andar para a esquerda
+                            // (voltar/retroceder/anterior). Só trava no primeiro episódio e no botão anterior.
+                            if (this.recyclerEpisodes.hasFocus() && this.episode_focused_position == 0) {
                                 return true;
                             }
-                            return true;
+                            if (this.btn_previous.hasFocus()) {
+                                return true;
+                            }
+                            break;
                         }
                         seekToRewind();
                         this.image_rewind.setVisibility(0);
