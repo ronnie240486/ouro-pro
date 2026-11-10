@@ -996,6 +996,39 @@ public class SeriesPlayerActivity extends AppCompatActivity implements View.OnCl
                             if (this.btn_previous.hasFocus()) {
                                 return true;
                             }
+                            // navegação explícita para a esquerda na fileira de controles
+                            // (não depende da busca automática de foco do Android).
+                            if (this.btn_next.hasFocus()) {
+                                this.btn_forward.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_forward.hasFocus()) {
+                                this.btn_play.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_play.hasFocus()) {
+                                this.btn_rewind.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_rewind.hasFocus()) {
+                                this.btn_previous.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_sub.hasFocus()) {
+                                this.btn_audio.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_resolution.hasFocus()) {
+                                this.btn_sub.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_title_setting.hasFocus()) {
+                                this.btn_resolution.requestFocus();
+                                return true;
+                            }
+                            if (this.btn_audio.hasFocus()) {
+                                return true;
+                            }
                             break;
                         }
                         seekToRewind();
