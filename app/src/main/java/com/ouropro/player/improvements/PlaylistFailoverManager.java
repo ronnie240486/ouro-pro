@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.ouropro.player.activities.ChangePlaylistActivity;
 import com.ouropro.player.apps.BaseActivity;
 import com.ouropro.player.apps.BaseTVActivity;
 import com.ouropro.player.activities.LiveActivity;
@@ -200,6 +201,18 @@ public final class PlaylistFailoverManager {
         }
         PreferenceHelper helper = new PreferenceHelper(activity);
         helper.setSharedPreferencePlaylistPosition(Math.max(0, position));
+        // Caminho principal: abre a tela "Trocar lista", escolhe a lista boa e carrega -- o mesmo que a pessoa
+        // faz na mão (e que sempre funcionou). Só cai nos caminhos antigos abaixo se isso falhar.
+        try {
+            Intent change = new Intent(activity, ChangePlaylistActivity.class);
+            change.putExtra("auto_select_url", playlistUrl.trim());
+            change.putExtra("auto_select_position", Math.max(0, position));
+            change.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            activity.startActivity(change);
+            return true;
+        } catch (Throwable ignored) {
+            // segue para os caminhos antigos
+        }
         WordModels words = GetSharedInfo.getWordModel(activity);
         String url = playlistUrl.trim();
         boolean xtream = url.toLowerCase(Locale.ROOT).contains("username");
