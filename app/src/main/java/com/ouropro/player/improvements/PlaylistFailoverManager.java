@@ -146,17 +146,21 @@ public final class PlaylistFailoverManager {
         GetDataRequest request = new GetDataRequest(context, 9100);
         request.setOnGetResponseListener((jsonObject, requestCode) -> {
             AppInfoModel freshInfo = decodeAppInfo(jsonObject);
-            AppInfoModel activeInfo = freshInfo == null ? new PreferenceHelper(context).getSharedPreferenceAppInfo() : freshInfo;
-            AppInfoModel.UrlModel activeUrl = findActiveUrl(activeInfo, activeListNumber);
-            if (activeUrl == null || activeUrl.getUrl().trim().isEmpty()) {
+            // O painel entrega a lista ATIVA sempre na primeira posição (e a principal por último
+            // enquanto a reserva está ativa). Por isso a lista nova é sempre a posição 0 da configuração
+            // nova -- usar "número da lista - 1" abria a lista errada (muitas vezes a principal que caiu).
+            // Sem configuração nova não dá pra saber a posição certa: tenta de novo no próximo ciclo.
+            if (freshInfo == null || freshInfo.getResult() == null || freshInfo.getResult().isEmpty()) {
+                return;
+            }
+            AppInfoModel.UrlModel activeUrl = freshInfo.getResult().get(0);
+            if (activeUrl == null || activeUrl.getUrl() == null || activeUrl.getUrl().trim().isEmpty()) {
                 return;
             }
             PreferenceHelper helper = new PreferenceHelper(context);
-            if (freshInfo != null) {
-                helper.setSharedPreferenceAppInfo(freshInfo);
-                Utils.saveToFile(freshInfo);
-            }
-            int position = Math.max(0, activeListNumber - 1);
+            helper.setSharedPreferenceAppInfo(freshInfo);
+            Utils.saveToFile(freshInfo);
+            int position = 0;
             helper.setSharedPreferencePlaylistPosition(position);
             helper.setSharedPreferenceFailoverTransitionId(transitionId);
             android.content.Intent intent = new android.content.Intent(ACTION_PLAYLIST_FAILOVER_SYNC);
@@ -276,8 +280,14 @@ public final class PlaylistFailoverManager {
                 }
                 int code = connection.getResponseCode();
                 String response = code >= 200 && code < 300 ? read(connection.getInputStream()) : "";
-                if (code >= 200 && code < 300 && new JSONObject(response).optBoolean("switch_applied", false)) {
-                    poll();
+                if (code >= 200 && code < 300) {
+                    JSONObject result = new JSONObject(response);
+                    if (result.optBoolean("switch_applied", false)) {
+                        poll();
+                    } else if (result.optBoolean("dns_failover_applied", false) || result.optBoolean("retry_current_playlist", false)) {
+                        // O painel trocou só a DNS da MESMA lista: baixa a configuração nova e recarrega a lista atual.
+                        reloadCurrentPlaylistAfterDnsChange();
+                    }
                 }
             } catch (Exception ignored) {
             } finally {
@@ -287,6 +297,40 @@ public final class PlaylistFailoverManager {
                 }
             }
         }).start();
+    }
+
+    private volatile long lastDnsReloadAt = 0L;
+
+    /** Depois que o painel trocou a DNS da lista em uso, baixa a configuração nova e recarrega a lista atual. */
+    private void reloadCurrentPlaylistAfterDnsChange() {
+        long now = System.currentTimeMillis();
+        if (now - lastDnsReloadAt < 90000L) {
+            return; // evita laço de recarga se o player continuar acusando erro
+        }
+        lastDnsReloadAt = now;
+        String requestData = Security.getStringData(Utils.getDeviceId(context), LTVApp.version_name, false, new PreferenceHelper(context).getSharedPreferenceDeviceType()).trim();
+        handler.post(() -> {
+            GetDataRequest request = new GetDataRequest(context, 9100);
+            request.setOnGetResponseListener((jsonObject, requestCode) -> {
+                AppInfoModel freshInfo = decodeAppInfo(jsonObject);
+                if (freshInfo == null || freshInfo.getResult() == null || freshInfo.getResult().isEmpty()) {
+                    return;
+                }
+                PreferenceHelper helper = new PreferenceHelper(context);
+                helper.setSharedPreferenceAppInfo(freshInfo);
+                Utils.saveToFile(freshInfo);
+                int position = GetSharedInfo.getPlaylistPosition(context);
+                AppInfoModel.UrlModel current = freshInfo.getResult().get(Math.min(Math.max(0, position), freshInfo.getResult().size() - 1));
+                if (current == null || current.getUrl() == null || current.getUrl().trim().isEmpty()) {
+                    return;
+                }
+                showMessage("Servidor alternativo ativado. Recarregando a lista...");
+                if (!reloadActivePlaylist(current.getUrl(), position)) {
+                    restartIntoNewPlaylist();
+                }
+            });
+            request.getResponse(Security.getJsonData(requestData), Constants.second_response_url);
+        });
     }
 
     private AppInfoModel decodeAppInfo(JSONObject response) {
