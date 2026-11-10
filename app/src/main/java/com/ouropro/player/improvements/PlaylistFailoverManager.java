@@ -98,6 +98,8 @@ public final class PlaylistFailoverManager {
             return;
         }
         new Thread(() -> {
+            // Lista de emergência ativa? Confere se a lista do cliente voltou (independe do painel).
+            EmergencyListManager.checkRecovery(context);
             HttpURLConnection connection = null;
             try {
                 URL url = new URL(NOTIFICATIONS_URL + "?mac=" + java.net.URLEncoder.encode(mac.trim(), "UTF-8"));
@@ -252,7 +254,29 @@ public final class PlaylistFailoverManager {
         instance.sendPlaybackFailure();
     }
 
+    /** Recarrega agora a lista pedida (usado pela lista de emergência); reabre o app se a tela não souber recarregar. */
+    public static void reloadPlaylistNow(Context context, final String url) {
+        if (context == null || url == null || url.trim().isEmpty()) {
+            return;
+        }
+        start(context);
+        final PlaylistFailoverManager manager = instance;
+        if (manager == null) {
+            return;
+        }
+        manager.handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!manager.reloadActivePlaylist(url, 0)) {
+                    manager.restartIntoNewPlaylist();
+                }
+            }
+        });
+    }
+
     private void sendPlaybackFailure() {
+        // Cliente com lista única: confere se a lista caiu e, se caiu, ativa a lista de emergência.
+        EmergencyListManager.onPlaybackFailure(context);
         if (playbackFailureInFlight) {
             return;
         }
