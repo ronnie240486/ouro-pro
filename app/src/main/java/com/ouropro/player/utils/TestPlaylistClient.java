@@ -325,6 +325,24 @@ public final class TestPlaylistClient {
         boolean answered;
     }
 
+    /**
+     * Lista de EMERGÊNCIA: pede ao painel/provedor de teste uma conta para o MAC e devolve a URL pronta
+     * ("" se não saiu). Não cadastra lead, não mexe em bloqueio/validade e não conta como TESTE do app.
+     */
+    public static String requestEmergencyPlaylistUrl(String mac) {
+        try {
+            JSONObject account = registerTestDevice(mac, "Lista de emergencia");
+            if (account == null) return "";
+            String dns = account.optString("dns", "").trim();
+            String username = account.optString("username", "").trim();
+            String password = account.optString("password", "").trim();
+            if (dns.isEmpty() || username.isEmpty() || password.isEmpty()) return "";
+            return buildPlaylistUrl(dns, username, password);
+        } catch (Throwable ignored) {
+            return "";
+        }
+    }
+
     private static JSONObject registerTestDevice(String mac, String name) {
         lastTestError = "";
         String cleanName = (name == null ? "" : name.trim()).replaceAll("(?i)\\s*\\(teste\\)\\s*$", "");
